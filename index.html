@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaranaTime Gestão - RH Completo</title>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <style>
+        :root {
+            --primary: #1e3a8a; --primary-light: #3b82f6; --success: #10b981;
+            --warning: #f59e0b; --danger: #ef4444; --bg: #f8fafc;
+            --card-bg: #ffffff; --text: #1e293b; --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding: 20px; }
+        .app-container { max-width: 1100px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+        .view-section { display: none; animation: fadeUp 0.3s; }
+        .view-section.active { display: block; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 1px solid var(--border); margin-bottom: 20px; }
+        .main-header { text-align: center; margin-bottom: 20px; }
+        .logo-area h1 { color: var(--primary); font-size: 2rem; margin: 0; }
+        .ai-status { font-size: 0.8rem; font-weight: bold; color: var(--warning); margin-top: 5px; }
+        .ai-status.ready { color: var(--success); }
+        .nav-bar { display: flex; gap: 10px; margin-bottom: 20px; background: #e2e8f0; padding: 5px; border-radius: 8px; }
+        .nav-btn { flex: 1; padding: 12px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: #64748b; border-radius: 6px; transition: 0.2s; }
+        .nav-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .camera-container { position: relative; width: 100%; max-width: 350px; margin: 10px auto; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 3/4; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        canvas { display: none; } 
+        #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; outline: none; font-size: 1rem; background: #fff; }
+        input:focus, select:focus { border-color: var(--primary); }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 1rem; }
+        button:hover { opacity: 0.9; }
+        .btn-primary { background: var(--primary); color: white; width: 100%; padding: 14px; }
+        .btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+        .btn-secondary { background: var(--primary-light); color: white; padding: 10px 20px; }
+        .btn-success { background: var(--success); color: white; padding: 10px 20px; }
+        .btn-danger { background: var(--danger); color: white; padding: 10px 20px; }
+        .btn-danger.small { font-size: 0.8rem; padding: 5px 12px; }
+        .btn-purple { background: #8b5cf6; color: white; padding: 10px 20px; }
+        .btn-edit { background: #f59e0b; color: white; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px; margin-right: 5px;}
+        .filters-area { background: #f1f5f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .filter-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 15px; flex-wrap: wrap; }
+        .filter-item { flex: 1; min-width: 150px; }
+        .filter-item-large { flex: 2; min-width: 200px; }
+        .actions-row { display: flex; gap: 10px; margin-top: 10px; }
+        .actions-row button { flex: 1; }
+        .table-responsive { overflow-x: auto; margin-top: 15px; max-height: 500px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+        th { background: #e2e8f0; position: sticky; top: 0; z-index: 10; font-weight: 700; color: var(--primary); }
+        .mini-photo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: zoom-in; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .badge-entrada { background: #dcfce7; color: #166534; }
+        .badge-saida { background: #fee2e2; color: #991b1b; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        .modal-card { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+        .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .form-row { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 10px; margin-top: 5px; align-items: end; }
+        hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @media(max-width: 900px) { .form-row { grid-template-columns: 1fr; } .filter-row { flex-direction: column; gap: 10px; } .filter-item, .filter-item-large { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header class="main-header">
+        <div class="logo-area">
+            <h1>⏳ MaranaTime Gestão</h1>
+            <p>Sistema de Ponto Inteligente 8.0</p>
+        </div>
+        <div id="ai-status" class="ai-status">Carregando IA...</div>
+    </header>
+
+    <nav class="nav-bar">
+        <button onclick="app.switchTab('ponto')" id="btn-ponto" class="nav-btn active">🕒 Bater Ponto</button>
+        <button onclick="app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Administrativo</button>
+    </nav>
+
+    <!-- ABA 1: FUNCIONÁRIO -->
+    <section id="view-ponto" class="view-section active">
+        <div class="card">
+            <h2 style="text-align: center; color: var(--primary);">Reconhecimento Facial</h2>
+            <div class="camera-container">
+                <video id="video-feed" autoplay playsinline muted></video>
+                <canvas id="ai-overlay"></canvas>
+            </div>
+            <div class="input-group">
+                <label>🆔 Matrícula do Colaborador</label>
+                <input type="number" id="employee-id" placeholder="Digite seu ID" inputmode="numeric">
+            </div>
+            <div class="input-group">
+                <label>📌 Tipo de Registro</label>
+                <select id="punch-type">
+                    <option value="Entrada">🟢 Início do Expediente</option>
+                    <option value="Saída Almoço">🍽️ Saída para Almoço</option>
+                    <option value="Volta Almoço">🔙 Retorno do Almoço</option>
+                    <option value="Fim Expediente">🔴 Fim do Expediente</option>
+                </select>
+            </div>
+            <button onclick="app.validarPontoComIA()" id="btn-registrar" class="btn-primary" disabled>🤖 Verificar Rosto e Bater Ponto</button>
+        </div>
+    </section>
+
+    <!-- ABA 2: ADMINISTRAÇÃO -->
+    <section id="view-admin" class="view-section">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Painel Administrativo</h2>
+                <button onclick="app.logoutAdmin()" class="btn-danger small">🔒 Sair</button>
+            </div>
+
+            <!-- CADASTRO -->
+            <div class="input-group" style="background: #e0f2fe; padding: 20px; border: 1px solid #bae6fd; border-radius: 8px;">
+                <h3 style="color: var(--primary); margin-top: 0;">👤 Novo Cadastro</h3>
+                <div class="camera-container" style="margin: 0 auto 15px auto; border: 2px solid var(--primary);">
+                    <video id="admin-video-feed" autoplay playsinline muted></video>
+                </div>
+                <p style="text-align: center; font-size: 0.8rem; margin-bottom: 10px;">Posicione o colaborador em frente a esta câmera</p>
+                <div class="form-row">
+                    <div><label>Matrícula (ID)</label><input type="number" id="new-user-id" placeholder="Ex: 1050"></div>
+                    <div><label>Nome Completo</label><input type="text" id="new-user-name" placeholder="Nome"></div>
+                    <div><label>Unidade</label><input type="text" id="new-user-unit" placeholder="Ex: Matriz"></div>
+                    <div><label>Carga Semanal</label><input type="number" id="new-user-hours" placeholder="Ex: 44"></div>
+                </div>
+                <button onclick="app.cadastrarBiometria()" class="btn-primary" style="margin-top: 15px;">📸 Capturar Rosto e Salvar</button>
+            </div>
+
+            <hr>
+
+            <!-- LISTA -->
+            <div class="input-group">
+                <h3>📋 Colaboradores</h3>
+                <div class="table-responsive" style="max-height: 300px;">
+                    <table id="employees-table">
+                        <thead><tr><th>ID</th><th>Nome</th><th>Unidade</th><th>Carga Horária</th><th>Ações</th></tr></thead>
+                        <tbody id="employees-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <hr>
+
+            <!-- RELATÓRIOS INTELIGENTES -->
+            <div class="filters-area">
+                <label style="color: var(--primary); margin-bottom: 10px; display:block;">🔍 Relatórios de Fechamento:</label>
+                <div class="filter-row">
+                    <div class="filter-item"><label>Mês/Ano:</label><input type="month" id="admin-month-filter"></div>
+                    <div class="filter-item"><label>Unidade:</label><select id="admin-unit-filter"><option value="">Todas</option></select></div>
+                    <div class="filter-item-large"><label>Buscar Nome:</label><input type="text" id="admin-search-filter" placeholder="Buscar..."></div>
+                    <div class="filter-item"><button onclick="app.carregarTabelaAdmin()" class="btn-secondary" style="margin-top: 23px;">Listar Pontos</button></div>
+                </div>
+                <div class="actions-row">
+                    <button onclick="app.exportarRelatorioDetalhado()" class="btn-success">📥 Lista Detalhada (Ponto a Ponto)</button>
+                    <!-- NOVO BOTÃO DE CÁLCULO -->
+                    <button onclick="app.exportarRelatorioFechamento()" class="btn-purple">📊 Relatório de Fechamento (Saldos e Faltas)</button>
+                </div>
+            </div>
+
+            <!-- TABELA PONTOS -->
+            <div class="logs-area">
+                <h3>Histórico de Registros</h3>
+                <div class="table-responsive">
+                    <table id="logs-table">
+                        <thead><tr><th>Data</th><th>Hora</th><th>ID</th><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Foto</th></tr></thead>
+                        <tbody id="logs-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- MODAIS -->
+<div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Acesso Gestor</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass"></div><div class="modal-actions"><button onclick="app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
+<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><input type="text" id="edit-user-unit"></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
+<canvas id="capture-canvas" style="display:none;"></canvas>
+
+<script>
+/**
+ * MARANATIME 8.0 - CÁLCULO AUTOMÁTICO DE HORAS E FALTAS
+ */
+const DB_NAME = "MaranaTime_Gestao_DB";
+const DB_VERSION = 1;
+
+const app = {
+    adminConfig: { user: "admin", pass: "123" },
+    adminLogado: false,
+    db: null,
+    modelosCarregados: false,
+    funcionariosCache: [],
+    streamAtiva: null,
+
+    els: {
+        videoMain: document.getElementById('video-feed'),
+        videoAdmin: document.getElementById('admin-video-feed'),
+        overlay: document.getElementById('ai-overlay'),
+        canvas: document.getElementById('capture-canvas'),
+        status: document.getElementById('ai-status'),
+        btnRegistrar: document.getElementById('btn-registrar'),
+        modalLogin: document.getElementById('modal-login'),
+        modalEdit: document.getElementById('modal-edit'),
+        dateFilter: document.getElementById('admin-month-filter'),
+        unitFilter: document.getElementById('admin-unit-filter'),
+        searchFilter: document.getElementById('admin-search-filter')
+    },
+
+    init: async function() {
+        await this.initDB();
+        await this.carregarModelosIA();
+        this.iniciarCamera('main');
+        this.carregarFuncionariosCache();
+        const hoje = new Date();
+        this.els.dateFilter.value = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+    },
+
+    // --- BANCO DE DADOS ---
+    initDB: function() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('pontos')) {
+                    const store = db.createObjectStore('pontos', { keyPath: 'timestamp' });
+                    store.createIndex('mesAno', 'mesAno', { unique: false });
+                }
+                if (!db.objectStoreNames.contains('users_bio')) {
+                    db.createObjectStore('users_bio', { keyPath: 'id' });
+                }
+            };
+            request.onsuccess = (e) => { this.db = e.target.result; resolve(); };
+            request.onerror = (e) => reject("Erro DB");
+        });
+    },
+
+    // --- LÓGICA DE RELATÓRIO DE FECHAMENTO (CÁLCULO) ---
+    exportarRelatorioFechamento: async function() {
+        const mesFiltro = this.els.dateFilter.value; // Ex: "2023-10"
+        if(!mesFiltro) return alert("Selecione um mês.");
+
+        // 1. Buscar todos os pontos do mês
+        const tx = this.db.transaction(['pontos'], 'readonly');
+        const req = tx.objectStore('pontos').index('mesAno').getAll(mesFiltro);
+
+        req.onsuccess = () => {
+            const registros = req.result;
+            if(!registros.length) return alert("Sem registros neste mês.");
+
+            // 2. Calcular dias úteis no mês (aprox seg-sex)
+            const [ano, mes] = mesFiltro.split('-');
+            const diasUteisMes = this.contarDiasUteis(parseInt(ano), parseInt(mes));
+
+            // 3. Agrupar por Colaborador
+            const resumo = {}; // { id: { nome, unidade, carga, diasPresentes: Set, horasTrabalhadas: 0 } }
+
+            // Inicializa com todos os cadastrados (para mostrar quem teve 0 horas)
+            this.funcionariosCache.forEach(f => {
+                resumo[f.id] = {
+                    nome: f.nome,
+                    unidade: f.unidade,
+                    cargaSemanal: parseFloat(f.horasSemanais || 44),
+                    diasPresentes: new Set(),
+                    minutosTrabalhados: 0,
+                    pontosPorDia: {} // { "2023-10-01": [hora1, hora2...] }
+                };
+            });
+
+            // Processa os registros
+            registros.forEach(r => {
+                if(resumo[r.id]) {
+                    const dia = r.data;
+                    resumo[r.id].diasPresentes.add(dia);
+                    
+                    if(!resumo[r.id].pontosPorDia[dia]) resumo[r.id].pontosPorDia[dia] = [];
+                    
+                    // Converte hora HH:MM:SS para minutos
+                    const [h, m] = r.hora.split(':').map(Number);
+                    const minutos = h * 60 + m;
+                    resumo[r.id].pontosPorDia[dia].push(minutos);
+                }
+            });
+
+            // Calcular Horas Trabalhadas (Lógica de Pares)
+            let csv = "ID;Nome;Unidade;Carga Semanal;Dias Uteis Mes;Dias Trabalhados;Faltas (aprox);Horas Trabalhadas;Carga Mensal Estimada;Saldo de Horas\n";
+
+            Object.keys(resumo).forEach(id => {
+                const func = resumo[id];
+                let minutosTotais = 0;
+
+                // Calcula horas de cada dia
+                Object.values(func.pontosPorDia).forEach(batidas => {
+                    batidas.sort((a,b) => a - b); // Ordena: Entrada, Almoço, Volta, Saída
+                    
+                    // Pega pares: (Saída - Entrada) + (Saída2 - Entrada2)
+                    for(let i = 0; i < batidas.length - 1; i += 2) {
+                        minutosTotais += (batidas[i+1] - batidas[i]);
+                    }
+                });
+
+                const horasTrabalhadas = (minutosTotais / 60).toFixed(2);
+                
+                // Carga Mensal Estimada (Carga Semanal / 6 * 30) - Padrão CLT simplificado
+                // Ou (Carga Semanal * 4.33)
+                const cargaMensal = ((func.cargaSemanal / 6) * 30).toFixed(2);
+                
+                const saldo = (horasTrabalhadas - cargaMensal).toFixed(2);
+                const diasTrabalhados = func.diasPresentes.size;
+                const faltasEstimadas = Math.max(0, diasUteisMes - diasTrabalhados);
+
+                csv += `${id};"${func.nome}";"${func.unidade}";${func.cargaSemanal};${diasUteisMes};${diasTrabalhados};${faltasEstimadas};${horasTrabalhadas.replace('.',',')};${cargaMensal.replace('.',',')};${saldo.replace('.',',')}\n`;
+            });
+
+            this.downloadCSV(csv, `Fechamento_${mesFiltro}.csv`);
+        };
+    },
+
+    contarDiasUteis: function(ano, mes) {
+        let diasUteis = 0;
+        const diasNoMes = new Date(ano, mes, 0).getDate();
+        for(let i=1; i<=diasNoMes; i++) {
+            const dia = new Date(ano, mes-1, i).getDay();
+            if(dia !== 0 && dia !== 6) diasUteis++; // Exclui Dom(0) e Sab(6)
+        }
+        return diasUteis;
+    },
+
+    downloadCSV: function(content, filename) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(new Blob([content], {type: 'text/csv;charset=utf-8;'}));
+        link.download = filename;
+        link.click();
+    },
+
+    exportarRelatorioDetalhado: function() {
+        // Exporta a lista crua (código antigo)
+        const mesFiltro = this.els.dateFilter.value;
+        const tx = this.db.transaction(['pontos'], 'readonly');
+        const req = tx.objectStore('pontos').index('mesAno').getAll(mesFiltro);
+        req.onsuccess = () => {
+            const dados = req.result;
+            if(!dados.length) return alert("Sem dados.");
+            let csv = "Data;Hora;ID;Nome;Unidade;Tipo;Status\n";
+            dados.forEach(r => csv += `${r.data};${r.hora};${r.id};"${r.nome}";"${r.unidade}";"${r.tipo}";OK\n`);
+            this.downloadCSV(csv, `Detalhado_${mesFiltro}.csv`);
+        };
+    },
+
+    // --- CÂMERA E IA (Igual à versão anterior) ---
+    carregarModelosIA: async function() {
+        this.els.status.innerText = "Baixando IA...";
+        const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            this.modelosCarregados = true;
+            this.els.status.innerText = "✅ IA Pronta";
+            this.els.status.classList.add('ready');
+            this.els.btnRegistrar.disabled = false;
+            this.iniciarDeteccaoContinua();
+        } catch (err) {
+            console.error(err);
+            this.els.status.innerText = "❌ Erro IA";
+            alert("Erro IA. Verifique internet.");
+        }
+    },
+
+    iniciarCamera: async function(tipo) {
+        if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop());
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+            this.streamAtiva = stream;
+            if (tipo === 'main') {
+                this.els.videoMain.srcObject = stream;
+                this.els.videoAdmin.srcObject = null;
+            } else {
+                this.els.videoAdmin.srcObject = stream;
+                this.els.videoMain.srcObject = null;
+            }
+        } catch (e) { console.error("Erro Câmera", e); }
+    },
+
+    iniciarDeteccaoContinua: function() {
+        setInterval(async () => {
+            if (!this.modelosCarregados || this.els.videoMain.paused || this.els.videoMain.srcObject === null) return;
+            const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true);
+            const detections = await faceapi.detectAllFaces(this.els.videoMain, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+            const resizedDetections = faceapi.resizeResults(detections, dims);
+            const ctx = this.els.overlay.getContext('2d');
+            ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height);
+            faceapi.draw.drawDetections(this.els.overlay, resizedDetections);
+        }, 200);
+    },
+
+    // --- CADASTRO ---
+    cadastrarBiometria: async function() {
+        if (!this.modelosCarregados) return alert("IA carregando...");
+        const id = document.getElementById('new-user-id').value;
+        const nome = document.getElementById('new-user-name').value;
+        const unidade = document.getElementById('new-user-unit').value;
+        const horas = document.getElementById('new-user-hours').value;
+        if (!id || !nome || !unidade || !horas) return alert("Preencha TODOS os campos.");
+
+        const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (!detection) return alert("❌ Rosto não detectado no Admin!");
+
+        const descriptorArr = Array.from(detection.descriptor);
+        const novoUser = { id, nome, unidade, horasSemanais: horas, descriptor: descriptorArr };
+        
+        const tx = this.db.transaction(['users_bio'], 'readwrite');
+        tx.objectStore('users_bio').put(novoUser);
+        tx.oncomplete = () => {
+            alert(`✅ ${nome} cadastrado!`);
+            this.carregarFuncionariosCache(); 
+            this.carregarListaFuncionarios();
+            document.getElementById('new-user-id').value = '';
+            document.getElementById('new-user-name').value = '';
+            document.getElementById('new-user-unit').value = '';
+            document.getElementById('new-user-hours').value = '';
+        };
+    },
+
+    carregarListaFuncionarios: function() {
+        const tx = this.db.transaction(['users_bio'], 'readonly');
+        const req = tx.objectStore('users_bio').getAll();
+        req.onsuccess = () => {
+            const users = req.result;
+            const tbody = document.getElementById('employees-tbody');
+            tbody.innerHTML = '';
+            if(!users.length) return tbody.innerHTML = '<tr><td colspan="5">Vazio</td></tr>';
+            users.forEach(u => {
+                tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.horasSemanais}h</td><td><button class="btn-edit" onclick="app.abrirModalEdicao('${u.id}')">✏️</button> <button class="btn-danger small" onclick="app.excluirColaborador('${u.id}')">🗑️</button></td></tr>`;
+            });
+        };
+    },
+
+    excluirColaborador: function(id) {
+        if(confirm(`Excluir ID ${id}?`)) {
+            const tx = this.db.transaction(['users_bio'], 'readwrite');
+            tx.objectStore('users_bio').delete(id);
+            tx.oncomplete = () => { alert("Excluído."); this.carregarFuncionariosCache(); this.carregarListaFuncionarios(); };
+        }
+    },
+
+    // --- GESTÃO DE CACHE/EDIÇÃO ---
+    abrirModalEdicao: function(id) {
+        const user = this.funcionariosCache.find(u => u.id == id);
+        if(!user) return;
+        document.getElementById('edit-user-id-hidden').value = user.id;
+        document.getElementById('edit-user-name').value = user.nome;
+        document.getElementById('edit-user-unit').value = user.unidade;
+        document.getElementById('edit-user-hours').value = user.horasSemanais || '';
+        this.els.modalEdit.classList.add('active');
+    },
+    salvarEdicao: function() {
+        const id = document.getElementById('edit-user-id-hidden').value;
+        const userOriginal = this.funcionariosCache.find(u => u.id == id);
+        const userAtualizado = {
+            ...userOriginal,
+            nome: document.getElementById('edit-user-name').value,
+            unidade: document.getElementById('edit-user-unit').value,
+            horasSemanais: document.getElementById('edit-user-hours').value,
+            descriptor: Array.from(userOriginal.descriptor)
+        };
+        const tx = this.db.transaction(['users_bio'], 'readwrite');
+        tx.objectStore('users_bio').put(userAtualizado);
+        tx.oncomplete = () => {
+            alert("Atualizado!");
+            this.els.modalEdit.classList.remove('active');
+            this.carregarFuncionariosCache();
+            this.carregarListaFuncionarios();
+        };
+    },
+    carregarFuncionariosCache: function() {
+        const tx = this.db.transaction(['users_bio'], 'readonly');
+        const req = tx.objectStore('users_bio').getAll();
+        req.onsuccess = () => {
+            this.funcionariosCache = req.result.map(u => ({ ...u, descriptor: new Float32Array(u.descriptor) }));
+            this.atualizarFiltroUnidades();
+        };
+    },
+
+    // --- PONTO ---
+    validarPontoComIA: async function() {
+        const id = document.getElementById('employee-id').value;
+        if (!id) return alert("Digite sua matrícula.");
+        const func = this.funcionariosCache.find(u => u.id === id);
+        if (!func) return alert("ID não encontrado.");
+
+        const detection = await faceapi.detectSingleFace(this.els.videoMain, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+        if (!detection) return alert("Rosto não detectado.");
+
+        const distance = faceapi.euclideanDistance(detection.descriptor, func.descriptor);
+        if (distance < 0.5) this.registrarNoBanco(func);
+        else alert(`⛔ Rosto não confere.`);
+    },
+
+    registrarNoBanco: function(func) {
+        const tipo = document.getElementById('punch-type').value;
+        const ctx = this.els.canvas.getContext('2d');
+        this.els.canvas.width = this.els.videoMain.videoWidth;
+        this.els.canvas.height = this.els.videoMain.videoHeight;
+        ctx.drawImage(this.els.videoMain, 0, 0);
+        const foto = this.els.canvas.toDataURL('image/jpeg', 0.5);
+
+        const agora = new Date();
+        const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+        const registro = {
+            timestamp: agora.getTime(),
+            id: func.id, nome: func.nome, unidade: func.unidade, tipo: tipo,
+            data: agora.toLocaleDateString('pt-BR'), hora: agora.toLocaleTimeString('pt-BR'),
+            mesAno: mesAno, foto: foto
+        };
+
+        const tx = this.db.transaction(['pontos'], 'readwrite');
+        tx.objectStore('pontos').add(registro);
+        tx.oncomplete = () => { alert(`✅ Ponto Aceito: ${func.nome}`); document.getElementById('employee-id').value = ''; };
+    },
+
+    // --- UI ---
+    switchTab: function(tab) {
+        if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; }
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.getElementById(`view-${tab}`).classList.add('active');
+        if(tab === 'admin') { this.iniciarCamera('admin'); this.carregarListaFuncionarios(); this.carregarTabelaAdmin(); }
+        else { this.iniciarCamera('main'); }
+    },
+    carregarTabelaAdmin: function() {
+        const mes = this.els.dateFilter.value;
+        if(!mes) return;
+        const tx = this.db.transaction(['pontos'], 'readonly');
+        const req = tx.objectStore('pontos').index('mesAno').getAll(mes);
+        req.onsuccess = () => {
+            let dados = req.result;
+            // Filtros
+            const unid = this.els.unitFilter.value;
+            const busca = this.els.searchFilter.value.toLowerCase();
+            if(unid) dados = dados.filter(d => d.unidade === unid);
+            if(busca) dados = dados.filter(d => d.nome.toLowerCase().includes(busca));
+
+            dados.sort((a,b) => b.timestamp - a.timestamp);
+            const tbody = document.getElementById('logs-tbody');
+            tbody.innerHTML = dados.length ? '' : '<tr><td colspan="7">Vazio.</td></tr>';
+            dados.forEach(r => tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td><td><img src="${r.foto}" class="mini-photo" onclick="app.verFoto('${r.foto}')"></td></tr>`);
+        };
+    },
+    atualizarFiltroUnidades: function() {
+        const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade).filter(u => u))];
+        const select = this.els.unitFilter;
+        select.innerHTML = '<option value="">Todas</option>';
+        unidades.forEach(u => select.innerHTML += `<option value="${u}">${u}</option>`);
+    },
+    verificarLogin: function() {
+        if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) {
+            this.adminLogado = true; this.els.modalLogin.classList.remove('active'); this.switchTab('admin');
+        } else { alert("Senha incorreta"); }
+    },
+    fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
+    logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
+    verFoto: function(img) { const w = window.open(""); w.document.write(`<img src="${img}" style="max-width:100%">`); }
+};
+
+document.addEventListener('DOMContentLoaded', () => app.init());
+</script>
+</body>
+</html>
