@@ -134,10 +134,18 @@
 
             <hr>
 
-            <!-- LISTA -->
+            <!-- LISTA COM FILTRO NOVO -->
             <div class="input-group">
-                <h3>📋 Colaboradores</h3>
-                <div class="table-responsive" style="max-height: 300px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <h3>📋 Colaboradores</h3>
+                    <div style="display: flex; align-items: center; gap: 5px;">
+                        <label style="margin: 0; font-size: 0.9rem;">Filtrar Unidade:</label>
+                        <select id="filter-employees-unit" onchange="app.carregarListaFuncionarios()" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc;">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive" style="max-height: 300px; margin-top: 10px;">
                     <table id="employees-table">
                         <thead><tr><th>ID</th><th>Nome</th><th>Unidade</th><th>Carga Horária</th><th>Ações</th></tr></thead>
                         <tbody id="employees-tbody"></tbody>
@@ -158,7 +166,6 @@
                 </div>
                 <div class="actions-row">
                     <button onclick="app.exportarRelatorioDetalhado()" class="btn-success">📥 Lista Detalhada (Ponto a Ponto)</button>
-                    <!-- NOVO BOTÃO DE CÁLCULO -->
                     <button onclick="app.exportarRelatorioFechamento()" class="btn-purple">📊 Relatório de Fechamento (Saldos e Faltas)</button>
                 </div>
             </div>
@@ -184,7 +191,7 @@
 
 <script>
 /**
- * MARANATIME 8.0 - CÁLCULO AUTOMÁTICO DE HORAS E FALTAS
+ * MARANATIME 8.1 - GESTÃO COM FILTRO DE COLABORADORES
  */
 const DB_NAME = "MaranaTime_Gestao_DB";
 const DB_VERSION = 1;
@@ -206,9 +213,14 @@ const app = {
         btnRegistrar: document.getElementById('btn-registrar'),
         modalLogin: document.getElementById('modal-login'),
         modalEdit: document.getElementById('modal-edit'),
+        
+        // Filtros Relatório
         dateFilter: document.getElementById('admin-month-filter'),
         unitFilter: document.getElementById('admin-unit-filter'),
-        searchFilter: document.getElementById('admin-search-filter')
+        searchFilter: document.getElementById('admin-search-filter'),
+        
+        // Filtro Lista Colaboradores (NOVO)
+        employeesUnitFilter: document.getElementById('filter-employees-unit')
     },
 
     init: async function() {
@@ -241,10 +253,9 @@ const app = {
 
     // --- LÓGICA DE RELATÓRIO DE FECHAMENTO (CÁLCULO) ---
     exportarRelatorioFechamento: async function() {
-        const mesFiltro = this.els.dateFilter.value; // Ex: "2023-10"
+        const mesFiltro = this.els.dateFilter.value; 
         if(!mesFiltro) return alert("Selecione um mês.");
 
-        // 1. Buscar todos os pontos do mês
         const tx = this.db.transaction(['pontos'], 'readonly');
         const req = tx.objectStore('pontos').index('mesAno').getAll(mesFiltro);
 
@@ -252,63 +263,44 @@ const app = {
             const registros = req.result;
             if(!registros.length) return alert("Sem registros neste mês.");
 
-            // 2. Calcular dias úteis no mês (aprox seg-sex)
             const [ano, mes] = mesFiltro.split('-');
             const diasUteisMes = this.contarDiasUteis(parseInt(ano), parseInt(mes));
 
-            // 3. Agrupar por Colaborador
-            const resumo = {}; // { id: { nome, unidade, carga, diasPresentes: Set, horasTrabalhadas: 0 } }
-
-            // Inicializa com todos os cadastrados (para mostrar quem teve 0 horas)
+            const resumo = {};
             this.funcionariosCache.forEach(f => {
                 resumo[f.id] = {
                     nome: f.nome,
                     unidade: f.unidade,
                     cargaSemanal: parseFloat(f.horasSemanais || 44),
                     diasPresentes: new Set(),
-                    minutosTrabalhados: 0,
-                    pontosPorDia: {} // { "2023-10-01": [hora1, hora2...] }
+                    pontosPorDia: {}
                 };
             });
 
-            // Processa os registros
             registros.forEach(r => {
                 if(resumo[r.id]) {
                     const dia = r.data;
                     resumo[r.id].diasPresentes.add(dia);
-                    
                     if(!resumo[r.id].pontosPorDia[dia]) resumo[r.id].pontosPorDia[dia] = [];
-                    
-                    // Converte hora HH:MM:SS para minutos
                     const [h, m] = r.hora.split(':').map(Number);
-                    const minutos = h * 60 + m;
-                    resumo[r.id].pontosPorDia[dia].push(minutos);
+                    resumo[r.id].pontosPorDia[dia].push(h * 60 + m);
                 }
             });
 
-            // Calcular Horas Trabalhadas (Lógica de Pares)
             let csv = "ID;Nome;Unidade;Carga Semanal;Dias Uteis Mes;Dias Trabalhados;Faltas (aprox);Horas Trabalhadas;Carga Mensal Estimada;Saldo de Horas\n";
 
             Object.keys(resumo).forEach(id => {
                 const func = resumo[id];
                 let minutosTotais = 0;
-
-                // Calcula horas de cada dia
                 Object.values(func.pontosPorDia).forEach(batidas => {
-                    batidas.sort((a,b) => a - b); // Ordena: Entrada, Almoço, Volta, Saída
-                    
-                    // Pega pares: (Saída - Entrada) + (Saída2 - Entrada2)
+                    batidas.sort((a,b) => a - b);
                     for(let i = 0; i < batidas.length - 1; i += 2) {
                         minutosTotais += (batidas[i+1] - batidas[i]);
                     }
                 });
 
                 const horasTrabalhadas = (minutosTotais / 60).toFixed(2);
-                
-                // Carga Mensal Estimada (Carga Semanal / 6 * 30) - Padrão CLT simplificado
-                // Ou (Carga Semanal * 4.33)
                 const cargaMensal = ((func.cargaSemanal / 6) * 30).toFixed(2);
-                
                 const saldo = (horasTrabalhadas - cargaMensal).toFixed(2);
                 const diasTrabalhados = func.diasPresentes.size;
                 const faltasEstimadas = Math.max(0, diasUteisMes - diasTrabalhados);
@@ -325,7 +317,7 @@ const app = {
         const diasNoMes = new Date(ano, mes, 0).getDate();
         for(let i=1; i<=diasNoMes; i++) {
             const dia = new Date(ano, mes-1, i).getDay();
-            if(dia !== 0 && dia !== 6) diasUteis++; // Exclui Dom(0) e Sab(6)
+            if(dia !== 0 && dia !== 6) diasUteis++; 
         }
         return diasUteis;
     },
@@ -338,7 +330,6 @@ const app = {
     },
 
     exportarRelatorioDetalhado: function() {
-        // Exporta a lista crua (código antigo)
         const mesFiltro = this.els.dateFilter.value;
         const tx = this.db.transaction(['pontos'], 'readonly');
         const req = tx.objectStore('pontos').index('mesAno').getAll(mesFiltro);
@@ -351,7 +342,7 @@ const app = {
         };
     },
 
-    // --- CÂMERA E IA (Igual à versão anterior) ---
+    // --- CÂMERA E IA ---
     carregarModelosIA: async function() {
         this.els.status.innerText = "Baixando IA...";
         const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
@@ -428,18 +419,56 @@ const app = {
         };
     },
 
+    // --- GESTÃO DE COLABORADORES (COM FILTRO) ---
     carregarListaFuncionarios: function() {
         const tx = this.db.transaction(['users_bio'], 'readonly');
         const req = tx.objectStore('users_bio').getAll();
+        
         req.onsuccess = () => {
-            const users = req.result;
+            let users = req.result;
             const tbody = document.getElementById('employees-tbody');
+            const filterUnit = this.els.employeesUnitFilter.value;
+
+            // Atualiza dropdown de filtro (sem perder a seleção atual)
+            this.atualizarDropdownFiltroColaboradores(users);
+
+            // Aplica filtro
+            if (filterUnit) {
+                users = users.filter(u => u.unidade === filterUnit);
+            }
+
             tbody.innerHTML = '';
-            if(!users.length) return tbody.innerHTML = '<tr><td colspan="5">Vazio</td></tr>';
+            if(users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum colaborador encontrado.</td></tr>';
+                return;
+            }
+            
             users.forEach(u => {
-                tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.horasSemanais}h</td><td><button class="btn-edit" onclick="app.abrirModalEdicao('${u.id}')">✏️</button> <button class="btn-danger small" onclick="app.excluirColaborador('${u.id}')">🗑️</button></td></tr>`;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.horasSemanais}h</td><td><button class="btn-edit" onclick="app.abrirModalEdicao('${u.id}')">✏️</button> <button class="btn-danger small" onclick="app.excluirColaborador('${u.id}')">🗑️</button></td>`;
+                tbody.appendChild(tr);
             });
         };
+    },
+
+    atualizarDropdownFiltroColaboradores: function(users) {
+        const select = this.els.employeesUnitFilter;
+        const currentVal = select.value;
+        
+        const unidades = [...new Set(users.map(u => u.unidade))];
+        
+        select.innerHTML = '<option value="">Todas</option>';
+        unidades.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u;
+            opt.innerText = u;
+            select.appendChild(opt);
+        });
+
+        // Restaura seleção se ainda existir
+        if (unidades.includes(currentVal)) {
+            select.value = currentVal;
+        }
     },
 
     excluirColaborador: function(id) {
@@ -450,7 +479,6 @@ const app = {
         }
     },
 
-    // --- GESTÃO DE CACHE/EDIÇÃO ---
     abrirModalEdicao: function(id) {
         const user = this.funcionariosCache.find(u => u.id == id);
         if(!user) return;
@@ -460,6 +488,7 @@ const app = {
         document.getElementById('edit-user-hours').value = user.horasSemanais || '';
         this.els.modalEdit.classList.add('active');
     },
+
     salvarEdicao: function() {
         const id = document.getElementById('edit-user-id-hidden').value;
         const userOriginal = this.funcionariosCache.find(u => u.id == id);
@@ -479,12 +508,13 @@ const app = {
             this.carregarListaFuncionarios();
         };
     },
+
     carregarFuncionariosCache: function() {
         const tx = this.db.transaction(['users_bio'], 'readonly');
         const req = tx.objectStore('users_bio').getAll();
         req.onsuccess = () => {
             this.funcionariosCache = req.result.map(u => ({ ...u, descriptor: new Float32Array(u.descriptor) }));
-            this.atualizarFiltroUnidades();
+            this.atualizarFiltroUnidadesRelatorio();
         };
     },
 
@@ -552,7 +582,7 @@ const app = {
             dados.forEach(r => tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td><td><img src="${r.foto}" class="mini-photo" onclick="app.verFoto('${r.foto}')"></td></tr>`);
         };
     },
-    atualizarFiltroUnidades: function() {
+    atualizarFiltroUnidadesRelatorio: function() {
         const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade).filter(u => u))];
         const select = this.els.unitFilter;
         select.innerHTML = '<option value="">Todas</option>';
