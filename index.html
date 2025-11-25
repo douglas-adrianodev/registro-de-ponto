@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     
     <style>
-        /* --- ESTILOS GERAIS (DARK TECH THEME) --- */
+        /* --- ESTILOS GERAIS (DARK TECH THEME RESTAURADO) --- */
         :root {
             /* Paleta Dark Mode Profissional */
             --bg: #0f172a;         /* Fundo da Página (Slate 900) */
@@ -25,6 +25,7 @@
             --success: #10b981;       /* Verde Neon */
             --warning: #f59e0b; 
             --danger: #ef4444; 
+            --neon-green: #39ff14;    /* Verde Neon do Relógio */
             
             --glow: 0 0 20px rgba(14, 165, 233, 0.3); /* Brilho Neon Suave */
         }
@@ -35,7 +36,7 @@
             height: 100%; width: 100%; 
             background-color: var(--bg); 
             color: var(--text); 
-            overflow: hidden; /* Kiosk Mode */
+            overflow: hidden; 
         }
 
         .app-container { 
@@ -44,6 +45,41 @@
             margin: 0 auto; 
             display: flex; flex-direction: column; 
             padding: 15px;
+            position: relative; /* Para posicionar o relógio absoluto */
+        }
+        
+        /* --- RELÓGIO DIGITAL NEON (NOVO) --- */
+        .system-clock {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+            z-index: 100;
+            pointer-events: none;
+            font-family: 'Courier New', monospace; /* Fonte estilo terminal/digital */
+        }
+
+        .digital-time {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--neon-green);
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6);
+            line-height: 1;
+        }
+
+        .digital-date {
+            font-size: 0.85rem;
+            color: var(--neon-green);
+            opacity: 0.8;
+            text-transform: uppercase;
+            margin-top: 2px;
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.4);
+        }
+
+        /* Ajuste para Mobile */
+        @media(max-width: 600px) {
+            .system-clock { top: 10px; right: 10px; transform: scale(0.7); transform-origin: top right; }
+            .digital-time { font-size: 1.5rem; }
         }
         
         /* Header & Nav */
@@ -54,7 +90,7 @@
             margin: 0; 
             text-transform: uppercase; 
             letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); /* Efeito Neon no Título */
+            text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); 
         }
         .logo-area p { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.5px; }
         
@@ -96,12 +132,6 @@
         #view-ponto.active { justify-content: center; align-items: center; }
         #view-admin.active { overflow-y: auto; display: block; padding-bottom: 20px; }
 
-        /* Scrollbar Personalizada */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
         /* Components */
         .card { 
             background: var(--card-bg); padding: 25px; border-radius: 20px; 
@@ -121,6 +151,7 @@
             position: relative; width: 300px; height: 300px; 
             background: #000; border-radius: 50%; overflow: hidden; 
             -webkit-mask-image: -webkit-radial-gradient(white, black);
+            mask-image: radial-gradient(white, black);
             border: 4px solid #000;
         }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.9; }
@@ -135,10 +166,7 @@
             box-shadow: inset 0 0 30px rgba(0,0,0,0.8); 
             pointer-events: none; z-index: 5;
         }
-        .face-mold::after {
-            content: "Encaixe o Rosto"; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
-            color: rgba(255,255,255,0.5); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px;
-        }
+
         .scanner-laser {
             position: absolute; top: 0; left: 0; width: 100%; height: 2px; 
             background: var(--primary); box-shadow: 0 0 20px var(--primary), 0 0 10px white; 
@@ -160,14 +188,17 @@
         }
         input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); background: #475569; }
         
+        /* Estilo especial para o Display de Nome */
         #employee-name-display {
-            background-color: rgba(14, 165, 233, 0.1);
+            background-color: rgba(14, 165, 233, 0.15);
             color: var(--primary);
             border-color: var(--primary);
             font-weight: bold;
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
+            text-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        input[readonly] { cursor: default; opacity: 0.8; }
+        input[readonly] { cursor: default; opacity: 1; } 
 
         /* Botões */
         button { cursor: pointer; border: none; border-radius: 12px; font-weight: 600; transition: 0.2s; font-size: 1rem; width: 100%; padding: 14px; }
@@ -236,6 +267,12 @@
         .alert-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--text); }
         .alert-msg { color: var(--text-muted); margin-bottom: 25px; display: block; line-height: 1.6; font-size: 1rem; }
 
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
         hr { border: 0; border-top: 1px solid var(--border); margin: 25px 0; opacity: 0.5; }
         
         @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -247,6 +284,12 @@
 <body>
 
 <div class="app-container">
+    <!-- RELÓGIO DIGITAL -->
+    <div class="system-clock">
+        <div class="digital-time" id="digital-time">00:00:00</div>
+        <div class="digital-date" id="digital-date">---, -- ---</div>
+    </div>
+
     <header class="main-header">
         <div class="logo-area">
             <h1>☁️ MaranaTime</h1>
@@ -273,7 +316,7 @@
                     <canvas id="ai-overlay"></canvas>
                     
                     <!-- Elementos Visuais Futuristas -->
-                    <div class="face-mold"></div> <!-- Molde do rosto -->
+                    <div class="face-mold"></div> <!-- Molde do rosto SEM TEXTO -->
                     <div class="scanner-laser"></div> <!-- Laser de escaneamento -->
                     
                     <!-- Mensagens -->
@@ -368,7 +411,7 @@
             <div class="input-group">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="font-size: 1.1rem; margin:0;">Base de Colaboradores</h3>
-                    <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 150px; padding: 8px;">
+                    <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 140px; padding: 8px;">
                         <option value="">Todas</option>
                     </select>
                 </div>
@@ -422,12 +465,12 @@
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg">Tem certeza?</span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
 
 <div id="modal-justification" class="modal-overlay">
-    <div class="modal-card" style="border: 2px solid #f59e0b;">
+    <div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;">
         <h3 style="color: #b45309;">⚠️ Ponto Externo</h3>
         <p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p>
         <div class="input-group">
-            <label>Justificativa Obrigatória:</label>
-            <textarea id="justification-text" rows="3" placeholder="Ex: Visita técnica, Home Office..." style="width: 100%; border-radius: 12px; padding: 12px; border: 1px solid #ccc; color: #333;"></textarea>
+            <label style="color: #78350f;">Justificativa Obrigatória:</label>
+            <textarea id="justification-text" rows="3" placeholder="Ex: Visita técnica, Home Office..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea>
         </div>
         <div class="modal-actions">
             <button id="btn-send-justification" class="btn-primary">Enviar</button>
@@ -535,7 +578,11 @@
             unitFilter: document.getElementById('admin-unit-filter'),
             employeesUnitFilter: document.getElementById('filter-employees-unit'),
             historyUnitFilter: document.getElementById('filter-history-unit'),
-            listaLocais: document.getElementById('lista-locais')
+            listaLocais: document.getElementById('lista-locais'),
+            
+            // RELOGIO
+            digitalTime: document.getElementById('digital-time'),
+            digitalDate: document.getElementById('digital-date')
         },
 
         init: async function() {
@@ -554,10 +601,21 @@
             
             const hoje = new Date();
             this.els.dateFilter.value = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            
+            this.iniciarRelogio();
             await this.carregarModelosIA();
             this.iniciarCamera('main');
 
             document.getElementById('btn-send-justification').onclick = () => this.enviarJustificativa();
+        },
+
+        // --- RELÓGIO DIGITAL ---
+        iniciarRelogio: function() {
+            setInterval(() => {
+                const now = new Date();
+                this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR');
+                this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase();
+            }, 1000);
         },
 
         // --- GEOCODING ---
