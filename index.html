@@ -47,31 +47,14 @@
             position: relative; 
         }
         
-        /* Relógio */
-        .system-clock { 
-            position: absolute; top: 15px; right: 15px; 
-            text-align: right; z-index: 100; pointer-events: none; 
-            font-family: 'Courier New', monospace; 
-        }
-        .digital-time { 
-            font-size: 2rem; font-weight: bold; color: var(--success); 
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6); line-height: 1; 
-        }
-        .digital-date { 
-            font-size: 0.85rem; color: var(--success); opacity: 0.8; 
-            text-transform: uppercase; margin-top: 2px; 
-            text-shadow: 0 0 5px rgba(57, 255, 20, 0.4); 
-        }
-        @media(max-width: 600px) { 
-            .system-clock { top: 10px; right: 10px; transform: scale(0.7); transform-origin: top right; } 
-            .digital-time { font-size: 1.5rem; } 
-        }
-        
         /* Header & Nav */
         .main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
         .logo-area h1 { 
-            color: var(--primary); font-size: 1.8rem; margin: 0; 
-            text-transform: uppercase; letter-spacing: 2px; 
+            color: var(--primary); 
+            font-size: 1.8rem; 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
             text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); 
         }
         .logo-area p { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.5px; }
@@ -85,8 +68,10 @@
             background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border);
         }
         .status-item.online { 
-            background: rgba(16, 185, 129, 0.2); color: #34d399; 
-            border-color: var(--success); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.2); 
+            color: #34d399; 
+            border-color: var(--success);
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
         }
         
         .nav-bar { 
@@ -102,7 +87,8 @@
         .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
         .nav-btn.active { 
             background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            color: white; box-shadow: var(--glow); 
+            color: white; 
+            box-shadow: var(--glow); 
         }
 
         /* Sections */
@@ -157,14 +143,25 @@
         .input-group { margin-bottom: 20px; width: 100%; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         input, select, textarea { 
-            width: 100%; padding: 14px; border: 1px solid var(--border); border-radius: 12px; 
-            font-size: 1rem; background: var(--input-bg); color: white; transition: 0.3s;
+            width: 100%; padding: 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 12px; 
+            font-size: 1rem; 
+            background: var(--input-bg); 
+            color: white;
+            transition: 0.3s;
         }
         input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); background: #475569; }
         
+        /* Estilo especial para o Display de Nome */
         #employee-name-display {
-            background-color: rgba(14, 165, 233, 0.15); color: var(--primary); border-color: var(--primary);
-            font-weight: bold; text-shadow: 0 0 10px rgba(14, 165, 233, 0.5); text-transform: uppercase; letter-spacing: 1px;
+            background-color: rgba(14, 165, 233, 0.15);
+            color: var(--primary);
+            border-color: var(--primary);
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         input[readonly] { cursor: default; opacity: 1; } 
 
@@ -182,13 +179,21 @@
         .btn-edit { background: #d97706; color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; width: auto; margin-right: 5px;}
 
         /* Admin Styles */
-        .filters-area { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 1px solid var(--border); }
+        .filters-area { 
+            background: rgba(255,255,255,0.03); 
+            padding: 20px; border-radius: 16px; margin-bottom: 20px; 
+            border: 1px solid var(--border); 
+        }
         .filter-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
         .filter-item { flex: 1; min-width: 150px; }
         .actions-row { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
         .form-row { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
         
-        .table-responsive { overflow-x: auto; margin-top: 15px; max-height: 400px; overflow-y: auto; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+        /* Tabelas Dark */
+        .table-responsive { 
+            overflow-x: auto; margin-top: 15px; max-height: 400px; overflow-y: auto; 
+            border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+        }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
         th { background: #1e293b; position: sticky; top: 0; z-index: 10; font-weight: 700; color: var(--text); border-bottom: 2px solid var(--border); }
@@ -196,7 +201,10 @@
         td { color: #cbd5e1; }
 
         /* Lista de Locais */
-        .local-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .local-item { 
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; 
+            padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; 
+        }
         .local-info b { color: var(--success); }
 
         /* Modais */
@@ -205,6 +213,8 @@
         .modal-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         .modal-card h3 { color: var(--text); margin-top: 0; }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        
+        /* Estilo de Erro */
         .modal-card.error-style { background-color: #450a0a; border: 2px solid #ef4444; }
         .modal-card.error-style .alert-title { color: #fca5a5; }
         .modal-card.error-style .alert-msg { color: #fecaca; }
@@ -221,6 +231,32 @@
 
         .alert-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--text); }
         .alert-msg { color: var(--text-muted); margin-bottom: 25px; display: block; line-height: 1.6; font-size: 1rem; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Relógio */
+        .system-clock { 
+            position: absolute; top: 15px; right: 15px; 
+            text-align: right; z-index: 100; pointer-events: none; 
+            font-family: 'Courier New', monospace; 
+        }
+        .digital-time { 
+            font-size: 2rem; font-weight: bold; color: var(--success); 
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6); line-height: 1; 
+        }
+        .digital-date { 
+            font-size: 0.85rem; color: var(--success); opacity: 0.8; 
+            text-transform: uppercase; margin-top: 2px; 
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.4); 
+        }
+        @media(max-width: 600px) { 
+            .system-clock { top: 10px; right: 10px; transform: scale(0.7); transform-origin: top right; } 
+            .digital-time { font-size: 1.5rem; } 
+        }
 
         hr { border: 0; border-top: 1px solid var(--border); margin: 25px 0; opacity: 0.5; }
         
@@ -255,15 +291,20 @@
         <button onclick="window.app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Gestão</button>
     </nav>
 
-    <!-- ABA 1: FUNCIONÁRIO -->
+    <!-- ABA 1: FUNCIONÁRIO (DESIGN FUTURISTA DARK) -->
     <section id="view-ponto" class="view-section active">
         <div class="card">
+            <!-- CÂMERA REDONDA COM MOLDE -->
             <div class="camera-wrapper">
                 <div class="camera-container">
                     <video id="video-feed" autoplay playsinline muted></video>
                     <canvas id="ai-overlay"></canvas>
-                    <div class="face-mold"></div>
-                    <div class="scanner-laser"></div>
+                    
+                    <!-- Elementos Visuais Futuristas -->
+                    <div class="face-mold"></div> <!-- Molde do rosto SEM TEXTO -->
+                    <div class="scanner-laser"></div> <!-- Laser de escaneamento -->
+                    
+                    <!-- Mensagens -->
                     <div id="success-message">
                         <div style="font-size: 2.5rem;">✅</div>
                         <div id="success-text">Confirmado!</div>
@@ -275,9 +316,11 @@
                 </div>
             </div>
 
+            <!-- CAMPO NOME (EXIBIÇÃO AUTOMÁTICA) -->
             <div class="input-group">
                 <label>👤 Colaborador Identificado</label>
                 <input type="text" id="employee-name-display" placeholder="AGUARDANDO RECONHECIMENTO..." readonly style="text-align: center; font-size: 1.2rem; font-weight: bold; letter-spacing: 1px;">
+                <!-- Hidden input to store actual ID for logic -->
                 <input type="hidden" id="employee-id">
             </div>
 
@@ -305,6 +348,7 @@
             <div class="input-group" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
                 <h3 style="color: var(--primary); margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">👤 Novo Cadastro</h3>
                 
+                <!-- Câmera Pequena no Admin -->
                 <div class="camera-container" style="height: 160px; width: 160px; margin: 0 auto 15px auto; border-radius: 16px; border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);"> 
                     <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
                 </div>
@@ -328,7 +372,7 @@
 
             <!-- GESTÃO DE LOCAIS -->
             <div class="input-group" style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                <h3 style="color: #34d399; margin: 0; font-size: 1.1rem;">📍 Cerca Virtual (150m)</h3>
+                <h3 style="color: #34d399; margin: 0; font-size: 1.1rem;">📍 Cerca Virtual (300m)</h3>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
                     <div><label>Nome</label><input type="text" id="loc-name" placeholder="Ex: Matriz"></div>
@@ -347,7 +391,9 @@
                 </div>
                 
                 <h4 style="margin: 20px 0 10px 0; font-size: 0.9rem; color: #34d399; text-transform: uppercase; letter-spacing: 1px;">Locais Ativos:</h4>
-                <div id="lista-locais" style="max-height: 150px; overflow-y: auto; padding-right: 5px;"></div>
+                <div id="lista-locais" style="max-height: 150px; overflow-y: auto; padding-right: 5px;">
+                    <!-- Lista JS -->
+                </div>
             </div>
 
             <hr>
@@ -410,11 +456,43 @@
 <div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar na Nuvem</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
 <div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg">Mensagem aqui</span><button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg">Tem certeza?</span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
-<div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;"><h3 style="color: #b45309;">⚠️ Ponto Externo</h3><p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p><div class="input-group"><label style="color: #78350f;">Justificativa Obrigatória:</label><textarea id="justification-text" rows="3" placeholder="Ex: Visita técnica, Home Office..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea></div><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Local</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>Latitude</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Longitude</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
+
+<div id="modal-justification" class="modal-overlay">
+    <div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;">
+        <h3 style="color: #b45309;">⚠️ Ponto Externo</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p>
+        
+        <!-- DEBUG (MOSTRAR DISTANCIA) -->
+        <p id="distancia-debug" style="font-size: 0.75rem; color: #78350f; font-weight: bold; margin-bottom: 10px;"></p>
+        
+        <div class="input-group">
+            <label style="color: #78350f;">Justificativa Obrigatória:</label>
+            <textarea id="justification-text" rows="3" placeholder="Ex: Visita técnica, Home Office..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea>
+        </div>
+        <div class="modal-actions">
+            <button id="btn-send-justification" class="btn-primary">Enviar</button>
+            <button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-edit-local" class="modal-overlay">
+    <div class="modal-card">
+        <h3>📍 Editar Local</h3>
+        <input type="hidden" id="edit-loc-id-hidden">
+        <div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div>
+        <div class="input-group"><label>Latitude</label><input type="text" id="edit-loc-lat"></div>
+        <div class="input-group"><label>Longitude</label><input type="text" id="edit-loc-lon"></div>
+        <div class="modal-actions">
+            <button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button>
+            <button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-danger">Cancelar</button>
+        </div>
+    </div>
+</div>
 
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
+<!-- CONFIGURAÇÃO FIREBASE - MÓDULO -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -497,9 +575,9 @@
             listaLocais: document.getElementById('lista-locais'),
             digitalTime: document.getElementById('digital-time'),
             digitalDate: document.getElementById('digital-date'),
-            // NOVOS SELECTS
             newUserUnit: document.getElementById('new-user-unit'),
-            editUserUnit: document.getElementById('edit-user-unit')
+            editUserUnit: document.getElementById('edit-user-unit'),
+            distanciaDebug: document.getElementById('distancia-debug') // Novo elemento
         },
 
         init: async function() {
@@ -508,7 +586,7 @@
                 await signInAnonymously(auth);
                 this.els.statusDB.innerText = "Nuvem: Conectada 🟢";
                 this.els.statusDB.classList.add('online');
-                this.sincronizarLocais(); // Carrega Locais PRIMEIRO para preencher selects
+                this.sincronizarLocais(); 
                 this.sincronizarFuncionarios();
             } catch (error) {
                 this.els.statusDB.innerText = "Nuvem: Erro 🔴";
@@ -548,8 +626,6 @@
                 this.mostrarAlerta(`Endereço: ${dataCep.logradouro}, ${num}`, "Sucesso");
             } catch(e) { this.mostrarAlerta(e.message, "Erro de Localização"); }
         },
-
-        // SINC LOCAIS + POPULAR SELECTS
         sincronizarLocais: function() {
             const q = query(collection(db, PLACES_COLLECTION));
             onSnapshot(q, (querySnapshot) => {
@@ -563,20 +639,14 @@
                     div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>Lat: ${parseFloat(local.lat).toFixed(4)}, Lon: ${parseFloat(local.lng).toFixed(4)}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`;
                     this.els.listaLocais.appendChild(div);
                 });
-                this.atualizarOpcoesUnidades(); // ATUALIZA OS SELECTS
+                this.atualizarOpcoesUnidades(); 
             });
         },
-
-        // NOVO: Popula os selects de cadastro e edição com os locais
         atualizarOpcoesUnidades: function() {
             const optionsHTML = '<option value="">Selecione...</option>' + 
                 this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
-            
             this.els.newUserUnit.innerHTML = optionsHTML;
             this.els.editUserUnit.innerHTML = optionsHTML;
-            
-            // Atualiza também os filtros de admin para serem consistentes com os locais
-            // Mas mantém a opção "Todas"
             const filterOptions = '<option value="">Todas</option>' + 
                 this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
             this.els.unitFilter.innerHTML = filterOptions;
@@ -584,7 +654,6 @@
             this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + 
                 this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
         },
-
         salvarLocal: async function() {
             const nome = document.getElementById('loc-name').value;
             const lat = parseFloat(document.getElementById('loc-lat').value);
@@ -615,14 +684,30 @@
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
         
-        // VERIFICAÇÃO 150m
+        // VERIFICAÇÃO 300m + DEBUG
         verificarLocalizacao: function(lat, lng) { 
-            const TOLERANCIA = 150; // AUMENTADO PARA 150m
+            const TOLERANCIA = 300; // 300m
+            console.log(`Minha posição: ${lat}, ${lng}`);
+            let menorDistancia = Infinity;
+            let localMaisProximo = "";
+
             for (let local of this.locaisCache) { 
-                const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); 
-                if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; 
+                // Ensure numbers
+                const localLat = parseFloat(local.lat);
+                const localLng = parseFloat(local.lng);
+                const dist = this.getDistanceFromLatLonInKm(lat, lng, localLat, localLng); 
+                
+                console.log(`Distância para ${local.nome}: ${dist.toFixed(2)}m`);
+                
+                if (dist < menorDistancia) {
+                    menorDistancia = dist;
+                    localMaisProximo = local.nome;
+                }
+
+                if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome, debug: dist }; 
             } 
-            return { autorizado: false, nome: "EXTERNO" }; 
+            // Se falhou, retorna dados de debug para a interface
+            return { autorizado: false, nome: "EXTERNO", debug: { dist: menorDistancia, local: localMaisProximo } }; 
         },
 
         // --- SINC FUNCIONARIOS ---
@@ -644,6 +729,7 @@
                     this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                     console.log("IA Atualizada com", labeledDescriptors.length, "faces.");
                 }
+                this.atualizarFiltrosUnidade();
                 if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios();
             });
         },
@@ -667,23 +753,26 @@
         },
 
         iniciarRegistroPonto: function(func, automatico = false) {
-            if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; }
-            // High Accuracy e Timeout de 10s para garantir que pegue
+            if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false, "Sem GPS"); return; }
+            
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
                     const statusLocal = this.verificarLocalizacao(lat, lng);
-                    this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado);
+                    
+                    // Passa dados de debug para o modal
+                    const debugInfo = statusLocal.autorizado ? null : statusLocal.debug;
+                    this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado, debugInfo);
                 },
                 (err) => {
                     console.warn("Erro GPS:", err);
-                    this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false);
+                    this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false, "Erro GPS");
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         },
-        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) {
+        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado, debugInfo) {
             const tipo = document.getElementById('punch-type').value;
             const agora = new Date();
             this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico };
@@ -692,6 +781,16 @@
             } else {
                 this.ultimoRegistro = Date.now() + 60000; 
                 document.getElementById('justification-text').value = "";
+                
+                // MOSTRA DIAGNÓSTICO DE DISTÂNCIA PARA O USUÁRIO
+                let msgDebug = "";
+                if (debugInfo && debugInfo.dist) {
+                    msgDebug = `Distância detectada: ${debugInfo.dist.toFixed(0)}m de ${debugInfo.local}`;
+                } else if (debugInfo) {
+                    msgDebug = debugInfo; // Erro de GPS
+                }
+                this.els.distanciaDebug.innerText = msgDebug;
+
                 this.els.modalJustification.classList.add('active');
             }
         },
