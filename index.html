@@ -43,7 +43,7 @@
         video { width: 100%; height: 100%; object-fit: cover; }
         #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
 
-        /* Feedback Visual (Sucesso/Erro) */
+        /* Feedback Visual */
         #success-message, #error-message {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             padding: 20px; border-radius: 12px; text-align: center; z-index: 20; width: 80%; 
@@ -86,7 +86,28 @@
         .modal-card { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         
-        /* Custom Alert/Confirm Styles */
+        /* --- NOVO ESTILO DE ERRO PARA JANELA --- */
+        .modal-card.error-style {
+            background-color: #fee2e2;
+            border: 2px solid #ef4444;
+        }
+        .modal-card.error-style .alert-title {
+            color: #b91c1c;
+        }
+        .modal-card.error-style .alert-msg {
+            color: #7f1d1d;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .modal-card.error-style button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+        }
+        .modal-card.error-style button:hover {
+            background-color: #dc2626;
+        }
+
         .alert-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--primary); }
         .alert-msg { color: #333; margin-bottom: 20px; display: block; }
 
@@ -122,15 +143,15 @@
                 <video id="video-feed" autoplay playsinline muted></video>
                 <canvas id="ai-overlay"></canvas>
                 
-                <!-- Mensagem Sucesso -->
+                <!-- Mensagem Sucesso (Overlay) -->
                 <div id="success-message">
                     <div style="font-size: 3rem;">✅</div>
                     <div id="success-text">Ponto Registrado!</div>
                 </div>
-                <!-- Mensagem Erro -->
+                <!-- Mensagem Erro (Overlay) -->
                 <div id="error-message">
                     <div style="font-size: 3rem;">⚠️</div>
-                    <div id="error-text">Erro!</div>
+                    <div id="error-text">Duplicado!</div>
                 </div>
             </div>
             <div class="input-group">
@@ -261,7 +282,6 @@
     let APP_ID = 'default';
 
     if (typeof __firebase_config !== 'undefined') {
-        // MODO PREVIEW
         firebaseConfig = JSON.parse(__firebase_config);
         APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
@@ -350,8 +370,18 @@
             this.iniciarCamera('main');
         },
 
-        // --- SISTEMA DE ALERTAS CUSTOMIZADOS (Remove a info do GitHub) ---
-        mostrarAlerta: function(msg, titulo = "Aviso") {
+        // --- SISTEMA DE ALERTAS (COM SUPORTE A ESTILO DE ERRO) ---
+        mostrarAlerta: function(msg, titulo = "Aviso", tipo = "normal") {
+            const card = this.els.modalAlert.querySelector('.modal-card');
+            
+            // Reseta estilo
+            card.classList.remove('error-style');
+            
+            // Aplica estilo de erro se solicitado
+            if (tipo === "error") {
+                card.classList.add('error-style');
+            }
+
             document.getElementById('alert-title').innerText = titulo;
             document.getElementById('alert-msg').innerText = msg;
             this.els.modalAlert.classList.add('active');
@@ -364,7 +394,6 @@
             this.confirmCallback = callback;
             this.els.modalConfirm.classList.add('active');
             
-            // Remove listeners antigos para evitar duplicação
             const btnYes = document.getElementById('confirm-yes');
             const newBtn = btnYes.cloneNode(true);
             btnYes.parentNode.replaceChild(newBtn, btnYes);
@@ -442,39 +471,49 @@
         },
 
         iniciarDeteccaoContinua: function() {
-            setInterval(async () => {
-                if (!this.modelosCarregados || this.els.videoMain.paused || this.els.videoMain.srcObject === null || !this.faceMatcher || document.getElementById('view-ponto').style.display === 'none') return;
+            // OTIMIZAÇÃO DE VELOCIDADE
+            const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
 
-                const detections = await faceapi.detectAllFaces(this.els.videoMain, new faceapi.TinyFaceDetectorOptions())
-                    .withFaceLandmarks()
-                    .withFaceDescriptors();
+            const loop = async () => {
+                if (this.modelosCarregados && 
+                    !this.els.videoMain.paused && 
+                    this.els.videoMain.srcObject !== null && 
+                    this.faceMatcher && 
+                    document.getElementById('view-ponto').style.display !== 'none') {
 
-                const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true);
-                const resizedDetections = faceapi.resizeResults(detections, dims);
-                
-                const ctx = this.els.overlay.getContext('2d');
-                ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height);
+                    try {
+                        const detections = await faceapi.detectAllFaces(this.els.videoMain, options)
+                            .withFaceLandmarks()
+                            .withFaceDescriptors();
 
-                resizedDetections.forEach(detection => {
-                    const match = this.faceMatcher.findBestMatch(detection.descriptor);
-                    const box = detection.detection.box;
-                    
-                    if (match.label !== 'unknown') {
-                        const label = match.label; 
-                        const drawBox = new faceapi.draw.DrawBox(box, { label: label, boxColor: '#00ff00' });
-                        drawBox.draw(this.els.overlay);
-                        this.processarReconhecimento(label);
-                    } else {
-                        const drawBox = new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' });
-                        drawBox.draw(this.els.overlay);
-                    }
-                });
-            }, 500);
+                        const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true);
+                        const resized = faceapi.resizeResults(detections, dims);
+                        
+                        const ctx = this.els.overlay.getContext('2d');
+                        ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height);
+
+                        resized.forEach(detection => {
+                            const match = this.faceMatcher.findBestMatch(detection.descriptor);
+                            const box = detection.detection.box;
+                            
+                            if (match.label !== 'unknown') {
+                                const label = match.label;
+                                new faceapi.draw.DrawBox(box, { label: label, boxColor: '#00ff00' }).draw(this.els.overlay);
+                                this.processarReconhecimento(label);
+                            } else {
+                                new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay);
+                            }
+                        });
+                    } catch (err) { }
+                }
+                requestAnimationFrame(loop);
+            };
+            loop();
         },
 
         processarReconhecimento: function(id) {
             const agora = Date.now();
-            if (agora - this.ultimoRegistro < 10000) return; // Cooldown 10s
+            if (agora - this.ultimoRegistro < 10000) return; 
 
             this.els.employeeIdInput.value = id;
             const func = this.funcionariosCache.find(u => u.id == id);
@@ -509,7 +548,7 @@
             const dataHoje = agora.toLocaleDateString('pt-BR');
             const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
             
-            // Verifica duplicidade
+            // VERIFICA DUPLICIDADE
             try {
                 const q = query(collection(db, LOGS_COLLECTION), 
                     where("id", "==", func.id),
@@ -517,9 +556,16 @@
                     where("tipo", "==", tipo)
                 );
                 const querySnapshot = await getDocs(q);
+                
                 if (!querySnapshot.empty) {
-                    if (!automatico) this.mostrarErro(`⚠️ ${tipo} já registrado hoje!`);
-                    return;
+                    // Se for modo MANUAL, abre a janela vermelha grande
+                    if (!automatico) {
+                        this.mostrarAlerta("Período de registro duplicado. Este ponto já foi batido hoje.", "⚠️ Atenção", "error");
+                    } else {
+                        // Se for AUTO, apenas mostra o overlay rápido para não travar o fluxo
+                        this.mostrarErro(`⚠️ ${tipo} duplicado!`);
+                    }
+                    return; // Interrompe o registro
                 }
             } catch (err) { console.error(err); }
 
