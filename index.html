@@ -80,33 +80,18 @@
         th { background: #e2e8f0; position: sticky; top: 0; z-index: 10; font-weight: 700; color: var(--primary); }
         .mini-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid white; }
 
-        /* Modais (Padrão e Customizados) */
+        /* Modais */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; animation: fadeUp 0.2s; }
         .modal-card { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         
-        /* --- NOVO ESTILO DE ERRO PARA JANELA --- */
-        .modal-card.error-style {
-            background-color: #fee2e2;
-            border: 2px solid #ef4444;
-        }
-        .modal-card.error-style .alert-title {
-            color: #b91c1c;
-        }
-        .modal-card.error-style .alert-msg {
-            color: #7f1d1d;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-        .modal-card.error-style button {
-            background-color: #ef4444;
-            color: white;
-            border: none;
-        }
-        .modal-card.error-style button:hover {
-            background-color: #dc2626;
-        }
+        /* Estilo de Erro */
+        .modal-card.error-style { background-color: #fee2e2; border: 2px solid #ef4444; }
+        .modal-card.error-style .alert-title { color: #b91c1c; }
+        .modal-card.error-style .alert-msg { color: #7f1d1d; font-weight: bold; font-size: 1.1rem; }
+        .modal-card.error-style button { background-color: #ef4444; color: white; border: none; }
+        .modal-card.error-style button:hover { background-color: #dc2626; }
 
         .alert-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--primary); }
         .alert-msg { color: #333; margin-bottom: 20px; display: block; }
@@ -167,7 +152,6 @@
                     <option value="Fim Expediente">🔴 Fim Expediente</option>
                 </select>
             </div>
-            <!-- BOTÃO REMOVIDO CONFORME SOLICITADO -->
         </div>
     </section>
 
@@ -228,8 +212,14 @@
                 </div>
             </div>
 
+            <!-- HISTÓRICO COM FILTRO NOVO E CORRIGIDO -->
             <div class="logs-area">
-                <h3 style="font-size: 1rem;">Histórico Recente</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <h3 style="font-size: 1rem; margin: 0;">Histórico Recente (Mês Atual)</h3>
+                    <select id="filter-history-unit" onchange="window.app.carregarHistoricoRecente()" style="padding: 5px; border-radius: 4px; font-size: 0.8rem;">
+                        <option value="">Todas Unidades</option>
+                    </select>
+                </div>
                 <div class="table-responsive">
                     <table id="logs-table">
                         <thead><tr><th>Data</th><th>Hora</th><th>ID</th><th>Nome</th><th>Unid</th><th>Tipo</th></tr></thead>
@@ -245,7 +235,7 @@
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login Admin</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><input type="text" id="edit-user-unit"></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar na Nuvem</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
 
-<!-- NOVO: MODAIS DE ALERTA E CONFIRMAÇÃO PERSONALIZADOS -->
+<!-- MODAIS DE ALERTA -->
 <div id="custom-alert" class="modal-overlay">
     <div class="modal-card" style="text-align: center;">
         <span class="alert-title" id="alert-title">Aviso</span>
@@ -273,21 +263,19 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // --- LÓGICA DE SELEÇÃO DE AMBIENTE ---
+    // --- SELEÇÃO DE AMBIENTE ---
     let firebaseConfig;
     let USERS_COLLECTION;
     let LOGS_COLLECTION;
     let APP_ID = 'default';
 
     if (typeof __firebase_config !== 'undefined') {
-        // MODO PREVIEW
         firebaseConfig = JSON.parse(__firebase_config);
         APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
         LOGS_COLLECTION = `artifacts/${APP_ID}/public/data/logs`;
         console.log("Modo Preview Ativado");
     } else {
-        // MODO PRODUÇÃO (GitHub)
         firebaseConfig = {
             apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ",
             authDomain: "maranatime.firebaseapp.com",
@@ -332,7 +320,6 @@
             canvas: document.getElementById('capture-canvas'),
             statusIA: document.getElementById('ia-status'),
             statusDB: document.getElementById('db-status'),
-            // BOTÃO REMOVIDO
             employeeIdInput: document.getElementById('employee-id'),
             successMessage: document.getElementById('success-message'),
             successText: document.getElementById('success-text'),
@@ -346,7 +333,8 @@
             
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
-            employeesUnitFilter: document.getElementById('filter-employees-unit')
+            employeesUnitFilter: document.getElementById('filter-employees-unit'),
+            historyUnitFilter: document.getElementById('filter-history-unit')
         },
 
         init: async function() {
@@ -369,43 +357,26 @@
             this.iniciarCamera('main');
         },
 
-        // --- SISTEMA DE ALERTAS (COM SUPORTE A ESTILO DE ERRO) ---
+        // --- ALERTAS ---
         mostrarAlerta: function(msg, titulo = "Aviso", tipo = "normal") {
             const card = this.els.modalAlert.querySelector('.modal-card');
-            
-            // Reseta estilo
             card.classList.remove('error-style');
-            
-            // Aplica estilo de erro se solicitado
-            if (tipo === "error") {
-                card.classList.add('error-style');
-            }
-
+            if (tipo === "error") card.classList.add('error-style');
             document.getElementById('alert-title').innerText = titulo;
             document.getElementById('alert-msg').innerText = msg;
             this.els.modalAlert.classList.add('active');
         },
-        fecharAlert: function() {
-            this.els.modalAlert.classList.remove('active');
-        },
+        fecharAlert: function() { this.els.modalAlert.classList.remove('active'); },
         mostrarConfirmacao: function(msg, callback) {
             document.getElementById('confirm-msg').innerText = msg;
             this.confirmCallback = callback;
             this.els.modalConfirm.classList.add('active');
-            
             const btnYes = document.getElementById('confirm-yes');
             const newBtn = btnYes.cloneNode(true);
             btnYes.parentNode.replaceChild(newBtn, btnYes);
-            
-            newBtn.addEventListener('click', () => {
-                if (this.confirmCallback) this.confirmCallback();
-                this.fecharConfirm();
-            });
+            newBtn.addEventListener('click', () => { if (this.confirmCallback) this.confirmCallback(); this.fecharConfirm(); });
         },
-        fecharConfirm: function() {
-            this.els.modalConfirm.classList.remove('active');
-            this.confirmCallback = null;
-        },
+        fecharConfirm: function() { this.els.modalConfirm.classList.remove('active'); this.confirmCallback = null; },
 
         // --- SINCRONIZAÇÃO ---
         sincronizarFuncionarios: function() {
@@ -413,28 +384,53 @@
             onSnapshot(q, (querySnapshot) => {
                 this.funcionariosCache = [];
                 const labeledDescriptors = [];
-
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     if (data.descriptor) {
                         const values = Object.values(data.descriptor);
-                        const floatArray = new Float32Array(values);
-                        data.descriptor = floatArray;
-                        labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [floatArray]));
+                        data.descriptor = new Float32Array(values);
+                        labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor]));
                     }
                     this.funcionariosCache.push({ docId: doc.id, ...data });
                 });
-
                 if (labeledDescriptors.length > 0) {
                     this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                     console.log("IA Atualizada com", labeledDescriptors.length, "faces.");
                 }
-
                 this.atualizarFiltrosUnidade();
                 if(document.getElementById('view-admin').style.display === 'block') {
                     this.renderizarListaFuncionarios();
                 }
             });
+        },
+
+        // --- NOVA FUNÇÃO: HISTÓRICO RECENTE ---
+        carregarHistoricoRecente: async function() {
+            const hoje = new Date();
+            const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            const tbody = document.getElementById('logs-tbody');
+            tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+
+            try {
+                const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual));
+                const snapshot = await getDocs(q);
+                let dados = []; 
+                snapshot.forEach(doc => dados.push(doc.data()));
+                
+                const filterUnit = this.els.historyUnitFilter.value;
+                if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit);
+                
+                dados.sort((a,b) => b.timestamp - a.timestamp);
+                tbody.innerHTML = '';
+                if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; }
+                
+                dados.slice(0, 50).forEach(r => {
+                    tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`;
+                });
+            } catch(e) {
+                console.error(e);
+                tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>';
+            }
         },
 
         // --- IA E CÂMERA ---
@@ -470,35 +466,21 @@
         },
 
         iniciarDeteccaoContinua: function() {
-            // OTIMIZAÇÃO DE VELOCIDADE
             const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-
             const loop = async () => {
-                if (this.modelosCarregados && 
-                    !this.els.videoMain.paused && 
-                    this.els.videoMain.srcObject !== null && 
-                    this.faceMatcher && 
-                    document.getElementById('view-ponto').style.display !== 'none') {
-
+                if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') {
                     try {
-                        const detections = await faceapi.detectAllFaces(this.els.videoMain, options)
-                            .withFaceLandmarks()
-                            .withFaceDescriptors();
-
+                        const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors();
                         const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true);
                         const resized = faceapi.resizeResults(detections, dims);
-                        
                         const ctx = this.els.overlay.getContext('2d');
                         ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height);
-
                         resized.forEach(detection => {
                             const match = this.faceMatcher.findBestMatch(detection.descriptor);
                             const box = detection.detection.box;
-                            
                             if (match.label !== 'unknown') {
-                                const label = match.label;
-                                new faceapi.draw.DrawBox(box, { label: label, boxColor: '#00ff00' }).draw(this.els.overlay);
-                                this.processarReconhecimento(label);
+                                new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay);
+                                this.processarReconhecimento(match.label);
                             } else {
                                 new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay);
                             }
@@ -513,31 +495,11 @@
         processarReconhecimento: function(id) {
             const agora = Date.now();
             if (agora - this.ultimoRegistro < 10000) return; 
-
             this.els.employeeIdInput.value = id;
             const func = this.funcionariosCache.find(u => u.id == id);
             if (func) {
                 this.ultimoRegistro = agora; 
                 this.registrarPontoNuvem(func, true); 
-            }
-        },
-
-        validarPonto: async function() {
-            const idDigitado = document.getElementById('employee-id').value;
-            if (!idDigitado) return this.mostrarAlerta("Digite o ID.");
-
-            const func = this.funcionariosCache.find(u => u.id == idDigitado);
-            if (!func) return this.mostrarAlerta("ID não encontrado.");
-
-            const detection = await faceapi.detectSingleFace(this.els.videoMain, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-            if (!detection) return this.mostrarAlerta("Aproxime o rosto.");
-
-            const distance = faceapi.euclideanDistance(detection.descriptor, func.descriptor);
-            
-            if (distance < 0.5) {
-                this.registrarPontoNuvem(func);
-            } else {
-                this.mostrarAlerta(`Acesso Negado. Rosto não confere com ${func.nome}`);
             }
         },
 
@@ -547,24 +509,13 @@
             const dataHoje = agora.toLocaleDateString('pt-BR');
             const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
             
-            // VERIFICA DUPLICIDADE
             try {
-                const q = query(collection(db, LOGS_COLLECTION), 
-                    where("id", "==", func.id),
-                    where("data", "==", dataHoje),
-                    where("tipo", "==", tipo)
-                );
+                const q = query(collection(db, LOGS_COLLECTION), where("id", "==", func.id), where("data", "==", dataHoje), where("tipo", "==", tipo));
                 const querySnapshot = await getDocs(q);
-                
                 if (!querySnapshot.empty) {
-                    // Se for modo MANUAL, abre a janela vermelha grande
-                    if (!automatico) {
-                        this.mostrarAlerta("Período de registro duplicado. Este ponto já foi batido hoje.", "⚠️ Atenção", "error");
-                    } else {
-                        // Se for AUTO, apenas mostra o overlay rápido para não travar o fluxo
-                        this.mostrarErro(`⚠️ ${tipo} duplicado!`);
-                    }
-                    return; // Interrompe o registro
+                    if (!automatico) this.mostrarAlerta("Período de registro duplicado.", "⚠️ Atenção", "error");
+                    else this.mostrarErro(`⚠️ ${tipo} duplicado!`);
+                    return;
                 }
             } catch (err) { console.error(err); }
 
@@ -576,30 +527,21 @@
 
             try {
                 await addDoc(collection(db, LOGS_COLLECTION), {
-                    timestamp: agora.getTime(),
-                    id: func.id,
-                    nome: func.nome,
-                    unidade: func.unidade,
-                    tipo: tipo,
-                    data: dataHoje,
-                    hora: agora.toLocaleTimeString('pt-BR'),
-                    mesAno: mesAno,
-                    foto: foto,
-                    modo: automatico ? "Auto IA" : "Manual"
+                    timestamp: agora.getTime(), id: func.id, nome: func.nome, unidade: func.unidade, tipo: tipo,
+                    data: dataHoje, hora: agora.toLocaleTimeString('pt-BR'), mesAno: mesAno, foto: foto, modo: automatico ? "Auto IA" : "Manual"
                 });
                 this.mostrarSucesso(`Ponto Registrado!\n${func.nome} - ${tipo}`);
                 document.getElementById('employee-id').value = '';
+                if(this.adminLogado) this.carregarHistoricoRecente();
             } catch (e) { console.error(e); }
         },
 
         mostrarSucesso: function(texto) {
-            this.els.successText.innerText = texto;
-            this.els.successMessage.style.display = "block";
+            this.els.successText.innerText = texto; this.els.successMessage.style.display = "block";
             setTimeout(() => { this.els.successMessage.style.display = "none"; }, 3000);
         },
         mostrarErro: function(texto) {
-            this.els.errorText.innerText = texto;
-            this.els.errorMessage.style.display = "block";
+            this.els.errorText.innerText = texto; this.els.errorMessage.style.display = "block";
             setTimeout(() => { this.els.errorMessage.style.display = "none"; }, 3000);
         },
 
@@ -610,22 +552,15 @@
             const nome = document.getElementById('new-user-name').value;
             const unidade = document.getElementById('new-user-unit').value;
             const horas = document.getElementById('new-user-hours').value;
-
             if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha todos os campos.");
             if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID já existe!");
-
             const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
             if (!detection) return this.mostrarAlerta("Rosto não detectado!");
-
             const descriptorObj = { ...detection.descriptor }; 
-            
             try {
-                await addDoc(collection(db, USERS_COLLECTION), {
-                    id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj
-                });
+                await addDoc(collection(db, USERS_COLLECTION), { id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj });
                 this.mostrarAlerta("Cadastrado com Sucesso!", "Sucesso");
-                document.getElementById('new-user-id').value = '';
-                document.getElementById('new-user-name').value = '';
+                document.getElementById('new-user-id').value = ''; document.getElementById('new-user-name').value = '';
             } catch (e) { this.mostrarAlerta("Erro ao salvar: " + e.message, "Erro"); }
         },
 
@@ -684,7 +619,6 @@
             const mesExtenso = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
             return mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1);
         },
-
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML) {
             const janela = window.open('', '_blank');
             const dataHoje = new Date().toLocaleDateString('pt-BR');
@@ -742,14 +676,20 @@
         atualizarFiltrosUnidade: function() {
             const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))];
             const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join('');
-            this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts;
+            this.els.unitFilter.innerHTML = opts; 
+            this.els.employeesUnitFilter.innerHTML = opts;
+            this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join('');
         },
         switchTab: function(tab) {
             if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; }
             if(tab !== 'admin') this.adminLogado = false; 
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
             document.getElementById(`view-${tab}`).classList.add('active');
-            if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); } else { this.iniciarCamera('main'); }
+            if (tab === 'admin') { 
+                this.iniciarCamera('admin'); 
+                this.renderizarListaFuncionarios(); 
+                this.carregarHistoricoRecente();
+            } else { this.iniciarCamera('main'); }
         },
         verificarLogin: function() {
             if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) {
