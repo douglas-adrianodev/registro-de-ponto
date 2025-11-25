@@ -43,12 +43,14 @@
         video { width: 100%; height: 100%; object-fit: cover; }
         #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; }
 
-        /* Feedback Visual de Sucesso */
-        #success-message {
+        /* Feedback Visual (Sucesso/Erro) */
+        #success-message, #error-message {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(34, 197, 94, 0.95); color: white; padding: 20px; border-radius: 12px;
-            text-align: center; z-index: 20; width: 80%; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            padding: 20px; border-radius: 12px; text-align: center; z-index: 20; width: 80%; 
+            font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.3); animation: fadeUp 0.3s;
         }
+        #success-message { background: rgba(34, 197, 94, 0.95); color: white; }
+        #error-message { background: rgba(239, 68, 68, 0.95); color: white; }
 
         .input-group { margin-bottom: 10px; width: 100%; }
         label { display: block; margin-bottom: 2px; font-weight: 600; font-size: 0.85rem; }
@@ -78,13 +80,18 @@
         th { background: #e2e8f0; position: sticky; top: 0; z-index: 10; font-weight: 700; color: var(--primary); }
         .mini-photo { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid white; }
 
-        /* Modals */
+        /* Modais (Padrão e Customizados) */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-overlay.active { display: flex; }
-        .modal-card { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; }
+        .modal-overlay.active { display: flex; animation: fadeUp 0.2s; }
+        .modal-card { background: white; padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
         
+        /* Custom Alert/Confirm Styles */
+        .alert-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--primary); }
+        .alert-msg { color: #333; margin-bottom: 20px; display: block; }
+
         hr { border: 0; border-top: 1px solid var(--border); margin: 15px 0; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @media(max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -110,19 +117,28 @@
     <!-- ABA 1: FUNCIONÁRIO -->
     <section id="view-ponto" class="view-section active">
         <div class="card">
-            <h2 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 5px;">Reconhecimento Automático</h2>
+            <h2 style="color: var(--primary); font-size: 1.2rem; margin-bottom: 5px;">Reconhecimento Facial</h2>
             <div class="camera-container">
                 <video id="video-feed" autoplay playsinline muted></video>
                 <canvas id="ai-overlay"></canvas>
-                <!-- Mensagem de Sucesso Sobreposta -->
+                
+                <!-- Mensagem Sucesso -->
                 <div id="success-message">
                     <div style="font-size: 3rem;">✅</div>
                     <div id="success-text">Ponto Registrado!</div>
                 </div>
+                <!-- Mensagem Erro -->
+                <div id="error-message">
+                    <div style="font-size: 3rem;">⚠️</div>
+                    <div id="error-text">Erro!</div>
+                </div>
             </div>
-            
             <div class="input-group">
-                <label>📌 Tipo de Registro</label>
+                <label>🆔 ID / Matrícula</label>
+                <input type="number" id="employee-id" placeholder="Digite ID">
+            </div>
+            <div class="input-group">
+                <label>📌 Ação</label>
                 <select id="punch-type">
                     <option value="Entrada">🟢 Entrada</option>
                     <option value="Saída Almoço">🍽️ Saída Almoço</option>
@@ -130,15 +146,9 @@
                     <option value="Fim Expediente">🔴 Fim Expediente</option>
                 </select>
             </div>
-
-            <div class="input-group">
-                <label>🆔 ID Identificado</label>
-                <input type="number" id="employee-id" placeholder="Aproxime o rosto..." readonly style="background: #f3f4f6;">
-            </div>
-            
-            <p style="font-size: 0.8rem; color: #666; text-align: center;">
-                O sistema reconhecerá você e baterá o ponto automaticamente.
-            </p>
+            <button onclick="window.app.validarPonto()" id="btn-registrar" class="btn-primary" disabled>
+                📸 Verificar Rosto e Bater Ponto
+            </button>
         </div>
     </section>
 
@@ -215,6 +225,27 @@
 <!-- MODAIS -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login Admin</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><input type="text" id="edit-user-unit"></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar na Nuvem</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
+
+<!-- NOVO: MODAIS DE ALERTA E CONFIRMAÇÃO PERSONALIZADOS -->
+<div id="custom-alert" class="modal-overlay">
+    <div class="modal-card" style="text-align: center;">
+        <span class="alert-title" id="alert-title">Aviso</span>
+        <span class="alert-msg" id="alert-msg">Mensagem aqui</span>
+        <button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button>
+    </div>
+</div>
+
+<div id="custom-confirm" class="modal-overlay">
+    <div class="modal-card" style="text-align: center;">
+        <span class="alert-title">Confirmação</span>
+        <span class="alert-msg" id="confirm-msg">Tem certeza?</span>
+        <div class="modal-actions">
+            <button id="confirm-yes" class="btn-danger">Sim</button>
+            <button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button>
+        </div>
+    </div>
+</div>
+
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
 <!-- CONFIGURAÇÃO FIREBASE - MÓDULO -->
@@ -230,12 +261,14 @@
     let APP_ID = 'default';
 
     if (typeof __firebase_config !== 'undefined') {
+        // MODO PREVIEW
         firebaseConfig = JSON.parse(__firebase_config);
         APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
         LOGS_COLLECTION = `artifacts/${APP_ID}/public/data/logs`;
         console.log("Modo Preview Ativado");
     } else {
+        // MODO PRODUÇÃO (GitHub)
         firebaseConfig = {
             apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ",
             authDomain: "maranatime.firebaseapp.com",
@@ -270,7 +303,8 @@
         modelosCarregados: false,
         streamAtiva: null,
         faceMatcher: null,
-        ultimoRegistro: 0, // Cooldown para não bater ponto 1000 vezes
+        ultimoRegistro: 0,
+        confirmCallback: null,
 
         els: {
             videoMain: document.getElementById('video-feed'),
@@ -283,9 +317,14 @@
             employeeIdInput: document.getElementById('employee-id'),
             successMessage: document.getElementById('success-message'),
             successText: document.getElementById('success-text'),
+            errorMessage: document.getElementById('error-message'),
+            errorText: document.getElementById('error-text'),
             
             modalLogin: document.getElementById('modal-login'),
             modalEdit: document.getElementById('modal-edit'),
+            modalAlert: document.getElementById('custom-alert'),
+            modalConfirm: document.getElementById('custom-confirm'),
+            
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
             employeesUnitFilter: document.getElementById('filter-employees-unit')
@@ -301,7 +340,7 @@
             } catch (error) {
                 console.error("Erro Auth:", error);
                 this.els.statusDB.innerText = "Nuvem: Erro 🔴";
-                alert("Erro ao conectar na nuvem: " + error.message);
+                this.mostrarAlerta("Erro ao conectar na nuvem: " + error.message, "Erro");
                 return;
             }
             
@@ -311,7 +350,36 @@
             this.iniciarCamera('main');
         },
 
-        // --- SINCRONIZAÇÃO E CRIAÇÃO DO RECONHECEDOR (FACE MATCHER) ---
+        // --- SISTEMA DE ALERTAS CUSTOMIZADOS (Remove a info do GitHub) ---
+        mostrarAlerta: function(msg, titulo = "Aviso") {
+            document.getElementById('alert-title').innerText = titulo;
+            document.getElementById('alert-msg').innerText = msg;
+            this.els.modalAlert.classList.add('active');
+        },
+        fecharAlert: function() {
+            this.els.modalAlert.classList.remove('active');
+        },
+        mostrarConfirmacao: function(msg, callback) {
+            document.getElementById('confirm-msg').innerText = msg;
+            this.confirmCallback = callback;
+            this.els.modalConfirm.classList.add('active');
+            
+            // Remove listeners antigos para evitar duplicação
+            const btnYes = document.getElementById('confirm-yes');
+            const newBtn = btnYes.cloneNode(true);
+            btnYes.parentNode.replaceChild(newBtn, btnYes);
+            
+            newBtn.addEventListener('click', () => {
+                if (this.confirmCallback) this.confirmCallback();
+                this.fecharConfirm();
+            });
+        },
+        fecharConfirm: function() {
+            this.els.modalConfirm.classList.remove('active');
+            this.confirmCallback = null;
+        },
+
+        // --- SINCRONIZAÇÃO ---
         sincronizarFuncionarios: function() {
             const q = query(collection(db, USERS_COLLECTION));
             onSnapshot(q, (querySnapshot) => {
@@ -324,17 +392,13 @@
                         const values = Object.values(data.descriptor);
                         const floatArray = new Float32Array(values);
                         data.descriptor = floatArray;
-                        
-                        // Cria o descritor rotulado para o FaceMatcher
-                        // Label = ID (usado para identificar quem é)
                         labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [floatArray]));
                     }
                     this.funcionariosCache.push({ docId: doc.id, ...data });
                 });
 
-                // Cria o "Cérebro" de comparação
                 if (labeledDescriptors.length > 0) {
-                    this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5); // 0.5 é a tolerância (menor = mais rigoroso)
+                    this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                     console.log("IA Atualizada com", labeledDescriptors.length, "faces.");
                 }
 
@@ -345,7 +409,7 @@
             });
         },
 
-        // --- IA E CÂMERA AUTOMÁTICA ---
+        // --- IA E CÂMERA ---
         carregarModelosIA: async function() {
             this.els.statusIA.innerText = "IA: Baixando...";
             try {
@@ -353,7 +417,7 @@
                     faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
                     faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
                     faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'),
-                    faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models') // Mais preciso para cadastro
+                    faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')
                 ]);
                 this.modelosCarregados = true;
                 this.els.statusIA.innerText = "IA: Online 🟢";
@@ -377,26 +441,17 @@
             } catch (e) { console.error("Erro Cam", e); }
         },
 
-        // --- LOOP DE RECONHECIMENTO AUTOMÁTICO ---
         iniciarDeteccaoContinua: function() {
             setInterval(async () => {
-                // Só roda se estiver na tela principal, modelos carregados e tiver base de dados
-                if (!this.modelosCarregados || 
-                    this.els.videoMain.paused || 
-                    this.els.videoMain.srcObject === null || 
-                    !this.faceMatcher ||
-                    document.getElementById('view-ponto').style.display === 'none') return;
+                if (!this.modelosCarregados || this.els.videoMain.paused || this.els.videoMain.srcObject === null || !this.faceMatcher || document.getElementById('view-ponto').style.display === 'none') return;
 
-                // 1. Detecta todos os rostos na tela
                 const detections = await faceapi.detectAllFaces(this.els.videoMain, new faceapi.TinyFaceDetectorOptions())
                     .withFaceLandmarks()
                     .withFaceDescriptors();
 
-                // 2. Redimensiona para o canvas
                 const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true);
                 const resizedDetections = faceapi.resizeResults(detections, dims);
-
-                // 3. Desenha e Reconhece
+                
                 const ctx = this.els.overlay.getContext('2d');
                 ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height);
 
@@ -404,44 +459,70 @@
                     const match = this.faceMatcher.findBestMatch(detection.descriptor);
                     const box = detection.detection.box;
                     
-                    // Se encontrou alguém conhecido (não é 'unknown')
                     if (match.label !== 'unknown') {
-                        const label = match.label; // ID do usuário
+                        const label = match.label; 
                         const drawBox = new faceapi.draw.DrawBox(box, { label: label, boxColor: '#00ff00' });
                         drawBox.draw(this.els.overlay);
-                        
-                        // Ação Automática
                         this.processarReconhecimento(label);
                     } else {
                         const drawBox = new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' });
                         drawBox.draw(this.els.overlay);
                     }
                 });
-            }, 500); // Verifica a cada meio segundo
+            }, 500);
         },
 
-        // --- PROCESSAR PONTO AUTOMÁTICO ---
         processarReconhecimento: function(id) {
-            // Cooldown de 60 segundos para não registrar várias vezes
             const agora = Date.now();
-            if (agora - this.ultimoRegistro < 60000) return;
+            if (agora - this.ultimoRegistro < 10000) return; // Cooldown 10s
 
-            // Preenche o campo visualmente
             this.els.employeeIdInput.value = id;
-            
             const func = this.funcionariosCache.find(u => u.id == id);
             if (func) {
-                this.ultimoRegistro = agora; // Ativa cooldown
-                this.registrarPontoNuvem(func, true); // true = automático
+                this.ultimoRegistro = agora; 
+                this.registrarPontoNuvem(func, true); 
+            }
+        },
+
+        validarPonto: async function() {
+            const idDigitado = document.getElementById('employee-id').value;
+            if (!idDigitado) return this.mostrarAlerta("Digite o ID.");
+
+            const func = this.funcionariosCache.find(u => u.id == idDigitado);
+            if (!func) return this.mostrarAlerta("ID não encontrado.");
+
+            const detection = await faceapi.detectSingleFace(this.els.videoMain, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            if (!detection) return this.mostrarAlerta("Aproxime o rosto.");
+
+            const distance = faceapi.euclideanDistance(detection.descriptor, func.descriptor);
+            
+            if (distance < 0.5) {
+                this.registrarPontoNuvem(func);
+            } else {
+                this.mostrarAlerta(`Acesso Negado. Rosto não confere com ${func.nome}`);
             }
         },
 
         registrarPontoNuvem: async function(func, automatico = false) {
             const tipo = document.getElementById('punch-type').value;
             const agora = new Date();
+            const dataHoje = agora.toLocaleDateString('pt-BR');
             const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
             
-            // Captura foto
+            // Verifica duplicidade
+            try {
+                const q = query(collection(db, LOGS_COLLECTION), 
+                    where("id", "==", func.id),
+                    where("data", "==", dataHoje),
+                    where("tipo", "==", tipo)
+                );
+                const querySnapshot = await getDocs(q);
+                if (!querySnapshot.empty) {
+                    if (!automatico) this.mostrarErro(`⚠️ ${tipo} já registrado hoje!`);
+                    return;
+                }
+            } catch (err) { console.error(err); }
+
             const ctx = this.els.canvas.getContext('2d');
             this.els.canvas.width = this.els.videoMain.videoWidth;
             this.els.canvas.height = this.els.videoMain.videoHeight;
@@ -455,61 +536,55 @@
                     nome: func.nome,
                     unidade: func.unidade,
                     tipo: tipo,
-                    data: agora.toLocaleDateString('pt-BR'),
+                    data: dataHoje,
                     hora: agora.toLocaleTimeString('pt-BR'),
                     mesAno: mesAno,
                     foto: foto,
                     modo: automatico ? "Auto IA" : "Manual"
                 });
-                
-                // Feedback Visual
-                this.els.successText.innerText = `Ponto Registrado!\n${func.nome} - ${tipo}`;
-                this.els.successMessage.style.display = "block";
-                
-                setTimeout(() => {
-                    this.els.successMessage.style.display = "none";
-                    this.els.employeeIdInput.value = "";
-                }, 3000);
+                this.mostrarSucesso(`Ponto Registrado!\n${func.nome} - ${tipo}`);
+                document.getElementById('employee-id').value = '';
+            } catch (e) { console.error(e); }
+        },
 
-            } catch (e) {
-                console.error(e); // Silencioso no automático para não travar
-            }
+        mostrarSucesso: function(texto) {
+            this.els.successText.innerText = texto;
+            this.els.successMessage.style.display = "block";
+            setTimeout(() => { this.els.successMessage.style.display = "none"; }, 3000);
+        },
+        mostrarErro: function(texto) {
+            this.els.errorText.innerText = texto;
+            this.els.errorMessage.style.display = "block";
+            setTimeout(() => { this.els.errorMessage.style.display = "none"; }, 3000);
         },
 
         // --- CADASTRO ---
         cadastrarBiometria: async function() {
-            if (!this.modelosCarregados) return alert("Aguarde a IA...");
+            if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA...");
             const id = document.getElementById('new-user-id').value;
             const nome = document.getElementById('new-user-name').value;
             const unidade = document.getElementById('new-user-unit').value;
             const horas = document.getElementById('new-user-hours').value;
 
-            if (!id || !nome || !unidade) return alert("Preencha todos os campos.");
-            if (this.funcionariosCache.find(u => u.id == id)) return alert("ID já existe!");
+            if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha todos os campos.");
+            if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID já existe!");
 
-            // Usa SSD MobileNet (mais preciso mas mais lento) para cadastro
             const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-            if (!detection) return alert("Rosto não detectado!");
+            if (!detection) return this.mostrarAlerta("Rosto não detectado!");
 
             const descriptorObj = { ...detection.descriptor }; 
             
             try {
                 await addDoc(collection(db, USERS_COLLECTION), {
-                    id: id,
-                    nome: nome,
-                    unidade: unidade,
-                    horasSemanais: horas,
-                    descriptor: descriptorObj
+                    id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj
                 });
-                alert("Cadastrado na Nuvem com Sucesso!");
+                this.mostrarAlerta("Cadastrado com Sucesso!", "Sucesso");
                 document.getElementById('new-user-id').value = '';
                 document.getElementById('new-user-name').value = '';
-            } catch (e) {
-                alert("Erro ao salvar: " + e.message);
-            }
+            } catch (e) { this.mostrarAlerta("Erro ao salvar: " + e.message, "Erro"); }
         },
 
-        // --- GESTÃO & FILTROS ---
+        // --- GESTÃO ---
         renderizarListaFuncionarios: function() {
             const tbody = document.getElementById('employees-tbody');
             const filterUnit = this.els.employeesUnitFilter.value;
@@ -523,7 +598,9 @@
             });
         },
         excluirUsuario: async function(docId) {
-            if(confirm("Excluir permanentemente?")) { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); alert("Excluído."); } catch (e) { alert(e.message); } }
+            this.mostrarConfirmacao("Excluir permanentemente?", async () => {
+                try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.mostrarAlerta("Excluído.", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
+            });
         },
         abrirEdicao: function(id) {
             const user = this.funcionariosCache.find(u => u.id == id);
@@ -536,11 +613,33 @@
         },
         salvarEdicao: async function() {
             const docId = document.getElementById('edit-user-id-hidden').value;
-            try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, horasSemanais: document.getElementById('edit-user-hours').value }); alert("Atualizado!"); this.els.modalEdit.classList.remove('active'); } catch (e) { alert(e.message); }
+            try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, horasSemanais: document.getElementById('edit-user-hours').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
         },
-        
-        // --- RELATÓRIOS E AUXILIARES ---
-        // (Mantidos da versão anterior, focando no automático)
+        carregarTabelaPontos: async function() {
+            const mes = this.els.dateFilter.value;
+            if(!mes) return this.mostrarAlerta("Escolha o mês.");
+            const tbody = document.getElementById('logs-tbody');
+            tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes));
+            const snapshot = await getDocs(q);
+            let dados = []; snapshot.forEach(doc => dados.push(doc.data()));
+            const unid = document.getElementById('admin-unit-filter').value;
+            if(unid) dados = dados.filter(d => d.unidade === unid);
+            dados.sort((a,b) => b.timestamp - a.timestamp);
+            tbody.innerHTML = '';
+            if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; }
+            dados.forEach(r => tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`);
+        },
+
+        // --- RELATÓRIOS ---
+        mesPorExtenso: function(anoMesStr) {
+            if (!anoMesStr) return "";
+            const [ano, mes] = anoMesStr.split('-');
+            const dataObj = new Date(parseInt(ano), parseInt(mes) - 1, 1);
+            const mesExtenso = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+            return mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1);
+        },
+
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML) {
             const janela = window.open('', '_blank');
             const dataHoje = new Date().toLocaleDateString('pt-BR');
@@ -548,19 +647,52 @@
             janela.document.write(conteudo); janela.document.close();
         },
         imprimirRelatorioDetalhado: async function() {
-            const mes = this.els.dateFilter.value;
+            const mesVal = this.els.dateFilter.value;
+            const mesExtenso = this.mesPorExtenso(mesVal);
             const unid = document.getElementById('admin-unit-filter').value;
-            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes));
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesVal));
             const snapshot = await getDocs(q);
             let dados = []; snapshot.forEach(doc => dados.push(doc.data()));
             if(unid) dados = dados.filter(d => d.unidade === unid);
             dados.sort((a,b) => a.timestamp - b.timestamp);
-            if(dados.length === 0) return alert("Sem dados.");
+            if(dados.length === 0) return this.mostrarAlerta("Sem dados.");
             let linhasHTML = dados.map(r => `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`).join('');
-            this.gerarRelatorioImpresso(`Extrato - ${mes}`, ["Data", "Hora", "ID", "Nome", "Unidade", "Tipo"], linhasHTML);
+            this.gerarRelatorioImpresso(`Extrato Detalhado - ${mesExtenso}`, ["Data", "Hora", "ID", "Nome", "Unidade", "Tipo"], linhasHTML);
         },
-        imprimirRelatorioFechamento: async function() { alert("Use o detalhado para conferência diária."); },
-        carregarTabelaPontos: async function() { alert("Use a impressão para ver os dados."); },
+        imprimirRelatorioFechamento: async function() {
+            const mesVal = this.els.dateFilter.value;
+            const mesExtenso = this.mesPorExtenso(mesVal);
+            if(!mesVal) return this.mostrarAlerta("Selecione um mês.");
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesVal));
+            const snapshot = await getDocs(q);
+            const registros = []; snapshot.forEach(doc => registros.push(doc.data()));
+            if(registros.length === 0) return this.mostrarAlerta("Sem dados.");
+            const resumo = {};
+            this.funcionariosCache.forEach(f => { resumo[f.id] = { nome: f.nome, unidade: f.unidade, carga: parseFloat(f.horasSemanais || 44), dias: new Set(), pontos: {} }; });
+            registros.forEach(r => {
+                if(resumo[r.id]) {
+                    resumo[r.id].dias.add(r.data);
+                    if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = [];
+                    const [h, m] = r.hora.split(':').map(Number);
+                    resumo[r.id].pontos[r.data].push(h * 60 + m);
+                }
+            });
+            let linhasHTML = "";
+            Object.keys(resumo).forEach(id => {
+                const f = resumo[id];
+                let minTotais = 0;
+                Object.values(f.pontos).forEach(batidas => {
+                    batidas.sort((a,b) => a - b);
+                    for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]);
+                });
+                const horasTrab = (minTotais / 60).toFixed(2);
+                const cargaMensal = ((f.carga / 6) * 30).toFixed(2);
+                const saldo = (horasTrab - cargaMensal).toFixed(2);
+                const corSaldo = saldo < 0 ? "red" : "green";
+                linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.carga}h</td><td>${f.dias.size}</td><td>${horasTrab}h</td><td>${cargaMensal}h</td><td style="color:${corSaldo}">${saldo}h</td></tr>`;
+            });
+            this.gerarRelatorioImpresso(`Fechamento Mensal - ${mesExtenso}`, ["ID", "Nome", "Unidade", "Meta", "Dias", "Trab", "Esperado", "Saldo"], linhasHTML);
+        },
 
         atualizarFiltrosUnidade: function() {
             const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))];
@@ -577,7 +709,7 @@
         verificarLogin: function() {
             if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) {
                 this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin');
-            } else { alert("Senha incorreta"); }
+            } else { this.mostrarAlerta("Senha incorreta", "Erro"); }
         },
         fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
         logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
