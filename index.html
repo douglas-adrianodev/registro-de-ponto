@@ -2,122 +2,152 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <!-- Viewport configurada para prevenir zoom acidental em inputs no mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MaranaTime Cloud - Sistema Integrado</title>
     <!-- Face API -->
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     
     <style>
-        /* --- ESTILOS GERAIS (DARK TECH THEME RESTAURADO) --- */
+        /* --- ESTILOS GERAIS (RESPONSIVE DARK TECH THEME) --- */
         :root {
-            /* Paleta Dark Mode Profissional */
-            --bg: #0f172a;         /* Fundo da Página (Slate 900) */
-            --card-bg: #1e293b;    /* Fundo dos Cards (Slate 800) */
-            --input-bg: #334155;   /* Fundo dos Inputs */
-            --text: #f1f5f9;       /* Texto Principal (Branco Suave) */
-            --text-muted: #94a3b8; /* Texto Secundário (Cinza) */
-            --border: #334155;     /* Bordas Sutis */
+            /* Paleta */
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --input-bg: #334155;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
             
-            /* Cores de Destaque (Neon/Tech) */
-            --primary: #0ea5e9;       /* Cyan */
+            /* Cores */
+            --primary: #0ea5e9;
             --primary-dark: #0284c7;
-            --secondary: #6366f1;     /* Indigo */
-            --success: #10b981;       /* Verde Neon */
-            --warning: #f59e0b; 
-            --danger: #ef4444; 
+            --secondary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             
-            --glow: 0 0 20px rgba(14, 165, 233, 0.3); /* Brilho Neon Suave */
+            --glow: 0 0 20px rgba(14, 165, 233, 0.3);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
         html, body { 
             height: 100%; width: 100%; 
             background-color: var(--bg); 
             color: var(--text); 
-            overflow: hidden; 
+            overflow: hidden; /* Mantém app fixo */
+            font-size: 16px; /* Base para rem */
         }
 
         .app-container { 
             height: 100%; width: 100%; 
-            max-width: 1200px; 
+            max-width: 1400px; /* Limite para telas ultrawide */
             margin: 0 auto; 
             display: flex; flex-direction: column; 
-            padding: 15px;
-            position: relative; 
+            padding: 10px;
+            position: relative;
         }
         
-        /* Header & Nav */
-        .main-header { text-align: center; margin-bottom: 15px; flex-shrink: 0; }
+        /* --- HEADER RESPONSIVO --- */
+        .main-header { 
+            text-align: center; 
+            margin-bottom: 10px; 
+            flex-shrink: 0; 
+            position: relative;
+            z-index: 10;
+        }
         .logo-area h1 { 
             color: var(--primary); 
-            font-size: 1.8rem; 
+            font-size: clamp(1.2rem, 4vw, 1.8rem); /* Escala fluida do texto */
             margin: 0; 
             text-transform: uppercase; 
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); 
         }
-        .logo-area p { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.5px; }
-        
         .status-bar { 
-            font-size: 0.75rem; font-weight: 600; margin-top: 8px; 
-            display: flex; justify-content: center; gap: 10px; 
+            font-size: 0.7rem; font-weight: 600; margin-top: 5px; 
+            display: flex; justify-content: center; gap: 8px; 
         }
         .status-item { 
-            padding: 4px 12px; border-radius: 20px; 
+            padding: 2px 8px; border-radius: 12px; 
             background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border);
+            white-space: nowrap;
         }
         .status-item.online { 
-            background: rgba(16, 185, 129, 0.2); 
-            color: #34d399; 
-            border-color: var(--success);
-            box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+            background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: var(--success);
         }
         
+        /* --- NAVEGAÇÃO --- */
         .nav-bar { 
-            display: flex; gap: 10px; margin-bottom: 15px; 
-            background: var(--card-bg); padding: 6px; border-radius: 16px; 
+            display: flex; gap: 8px; margin-bottom: 10px; 
+            background: var(--card-bg); padding: 5px; border-radius: 12px; 
             flex-shrink: 0; border: 1px solid var(--border); 
         }
         .nav-btn { 
-            flex: 1; padding: 12px; border: none; background: transparent; 
+            flex: 1; padding: 10px; border: none; background: transparent; 
             cursor: pointer; font-weight: 600; color: var(--text-muted); 
-            border-radius: 12px; transition: 0.3s; font-size: 0.95rem; 
+            border-radius: 8px; transition: 0.2s; font-size: 0.9rem; 
+            white-space: nowrap;
         }
-        .nav-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
         .nav-btn.active { 
             background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            color: white; 
-            box-shadow: var(--glow); 
+            color: white; box-shadow: var(--glow); 
         }
 
-        /* Sections */
-        .view-section { display: none; flex: 1; overflow: hidden; position: relative; }
-        .view-section.active { display: flex; flex-direction: column; }
-        #view-ponto.active { justify-content: center; align-items: center; }
-        #view-admin.active { overflow-y: auto; display: block; padding-bottom: 20px; }
+        /* --- ÁREAS DE CONTEÚDO (SCROLLÁVEIS) --- */
+        .view-section { 
+            display: none; 
+            flex: 1; 
+            overflow-y: auto; /* Scroll vertical se necessário */
+            overflow-x: hidden;
+            position: relative; 
+            padding-bottom: 20px; /* Espaço extra no fim */
+            -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
+        }
+        .view-section.active { 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        /* Centralização da tela de ponto */
+        #view-ponto.active { 
+            align-items: center; 
+            justify-content: center; /* Centraliza verticalmente se houver espaço */
+        }
+        /* Em telas muito pequenas (paisagem), alinha ao topo para não cortar */
+        @media (max-height: 600px) {
+            #view-ponto.active { justify-content: flex-start; padding-top: 10px; }
+        }
 
-        /* Components */
+        /* --- CARDS ADAPTÁVEIS --- */
         .card { 
-            background: var(--card-bg); padding: 25px; border-radius: 20px; 
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3), 0 10px 10px -5px rgba(0,0,0,0.2); 
-            border: 1px solid var(--border); width: 100%; max-width: 500px; 
+            background: var(--card-bg); padding: 20px; border-radius: 16px; 
+            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); 
+            border: 1px solid var(--border); 
+            width: 100%; 
+            max-width: 500px; /* Limite em Desktop */
             display: flex; flex-direction: column; align-items: center; 
         }
         #view-admin .card { max-width: 100%; display: block; }
         
-        /* --- CÂMERA FUTURISTA (DARK) --- */
+        /* --- CÂMERA RESPONSIVA --- */
         .camera-wrapper {
-            position: relative; margin-bottom: 25px; padding: 6px; border-radius: 50%;
+            position: relative; margin-bottom: 20px; padding: 5px; border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            box-shadow: 0 0 30px rgba(14, 165, 233, 0.3);
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
+            /* Tamanho responsivo: nunca maior que 300px, nunca maior que 65% da largura da tela */
+            width: min(300px, 65vw); 
+            height: min(300px, 65vw);
+            flex-shrink: 0; /* Impede achatamento */
         }
         .camera-container { 
-            position: relative; width: 300px; height: 300px; 
+            position: relative; 
+            width: 100%; height: 100%; 
             background: #000; border-radius: 50%; overflow: hidden; 
             -webkit-mask-image: -webkit-radial-gradient(white, black);
             mask-image: radial-gradient(white, black);
-            border: 4px solid #000;
+            border: 3px solid #000;
         }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.9; }
         #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transform: scaleX(-1); }
@@ -125,212 +155,192 @@
         /* Elementos Visuais */
         .face-mold {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 170px; height: 230px; 
+            width: 60%; height: 75%; /* Relativo ao pai */
             border: 2px dashed rgba(255, 255, 255, 0.3);
             border-radius: 55% 55% 45% 45%; 
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.8); 
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8); 
             pointer-events: none; z-index: 5;
         }
 
         .scanner-laser {
             position: absolute; top: 0; left: 0; width: 100%; height: 2px; 
-            background: var(--primary); box-shadow: 0 0 20px var(--primary), 0 0 10px white; 
+            background: var(--primary); box-shadow: 0 0 15px var(--primary); 
             opacity: 0.8; animation: scanDown 2s ease-in-out infinite; z-index: 6; pointer-events: none;
         }
         @keyframes scanDown { 0%,100% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-        /* Inputs Dark */
-        .input-group { margin-bottom: 20px; width: 100%; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        input, select, textarea { 
-            width: 100%; padding: 14px; 
-            border: 1px solid var(--border); 
-            border-radius: 12px; 
-            font-size: 1rem; 
-            background: var(--input-bg); 
-            color: white;
-            transition: 0.3s;
-        }
-        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2); background: #475569; }
+        /* --- INPUTS E BOTÕES --- */
+        .input-group { margin-bottom: 15px; width: 100%; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* Estilo especial para o Display de Nome */
-        #employee-name-display {
-            background-color: rgba(14, 165, 233, 0.15);
-            color: var(--primary);
-            border-color: var(--primary);
-            font-weight: bold;
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        input, select, textarea { 
+            width: 100%; padding: 12px; 
+            border: 1px solid var(--border); border-radius: 10px; 
+            font-size: 1rem; background: var(--input-bg); color: white;
+            transition: 0.3s;
+            appearance: none; /* Remove estilo nativo mobile */
         }
-        input[readonly] { cursor: default; opacity: 1; } 
-
-        /* Botões */
-        button { cursor: pointer; border: none; border-radius: 12px; font-weight: 600; transition: 0.2s; font-size: 1rem; width: 100%; padding: 14px; }
-        button:hover { opacity: 0.9; transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
-        .btn-primary { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5); }
-        .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); width: auto; }
-        .btn-secondary:hover { background: var(--input-bg); border-color: var(--text-muted); }
+        input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
+        
+        #employee-name-display {
+            background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary);
+            font-weight: bold; text-shadow: 0 0 10px rgba(14, 165, 233, 0.3); text-transform: uppercase;
+        }
+        
+        button { 
+            cursor: pointer; border: none; border-radius: 10px; font-weight: 600; 
+            transition: 0.2s; font-size: 1rem; width: 100%; padding: 12px; 
+            display: flex; justify-content: center; align-items: center; gap: 5px;
+        }
+        button:active { transform: scale(0.98); }
+        
+        .btn-primary { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
+        .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); width: auto; min-width: 100px;}
         .btn-success { background: #059669; color: white; width: auto; }
         .btn-danger { background: #dc2626; color: white; width: auto; }
-        .btn-danger.small { font-size: 0.8rem; padding: 6px 12px; }
         .btn-purple { background: #7c3aed; color: white; width: auto; }
-        .btn-edit { background: #d97706; color: white; padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; width: auto; margin-right: 5px;}
+        .btn-edit { background: #d97706; color: white; padding: 5px 10px; font-size: 0.8rem; width: auto; margin-right: 5px;}
+        .btn-danger.small { font-size: 0.8rem; padding: 5px 10px; }
 
-        /* Admin Styles */
-        .filters-area { 
-            background: rgba(255,255,255,0.03); 
-            padding: 20px; border-radius: 16px; margin-bottom: 20px; 
-            border: 1px solid var(--border); 
+        /* --- ADMIN RESPONSIVO (GRID SYSTEM) --- */
+        .filters-area, .input-group.admin-panel { 
+            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; 
+            margin-bottom: 15px; border: 1px solid var(--border); 
         }
-        .filter-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; }
-        .filter-item { flex: 1; min-width: 150px; }
-        .actions-row { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .form-row { display: grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
         
-        /* Tabelas Dark */
-        .table-responsive { 
-            overflow-x: auto; margin-top: 15px; max-height: 400px; overflow-y: auto; 
-            border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+        /* Grid Flexível */
+        .filter-row, .actions-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+        .filter-item { flex: 1 1 150px; /* Cresce, Encolhe, Base 150px */ }
+        
+        /* Grid de Formulário Inteligente */
+        .form-row { 
+            display: grid; 
+            gap: 10px; 
+            margin-top: 10px; 
+            /* Desktop: 4 colunas, Tablet: 2, Mobile: 1 */
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            align-items: end;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
-        th { background: #1e293b; position: sticky; top: 0; z-index: 10; font-weight: 700; color: var(--text); border-bottom: 2px solid var(--border); }
-        tr:hover { background-color: rgba(255,255,255,0.03); }
+        
+        /* Tabela Responsiva */
+        .table-responsive { 
+            overflow-x: auto; margin-top: 10px; max-height: 350px; overflow-y: auto; 
+            border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; /* Força scroll horizontal se necessário */ }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
+        th { background: #1e293b; position: sticky; top: 0; z-index: 10; color: var(--text); }
         td { color: #cbd5e1; }
 
-        /* Lista de Locais */
-        .local-item { 
-            background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; 
-            padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; 
+        /* --- RELÓGIO DIGITAL RESPONSIVO --- */
+        .system-clock { 
+            position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; 
+            pointer-events: none; font-family: monospace; 
         }
-        .local-info b { color: var(--success); }
-
-        /* Modais */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
-        .modal-card { background: var(--card-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
-        .modal-card h3 { color: var(--text); margin-top: 0; }
-        .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 25px; }
+        .digital-time { 
+            font-size: 1.5rem; font-weight: bold; color: var(--success); 
+            text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); line-height: 1; 
+        }
+        .digital-date { 
+            font-size: 0.7rem; color: var(--success); opacity: 0.8; text-transform: uppercase; 
+        }
         
-        /* Estilo de Erro */
-        .modal-card.error-style { background-color: #450a0a; border: 2px solid #ef4444; }
-        .modal-card.error-style .alert-title { color: #fca5a5; }
-        .modal-card.error-style .alert-msg { color: #fecaca; }
-        .modal-card.error-style button { background-color: #dc2626; color: white; }
+        /* Ajustes Específicos Mobile (< 600px) */
+        @media(max-width: 600px) {
+            .app-container { padding: 5px; }
+            .logo-area h1 { font-size: 1.2rem; text-align: left; margin-left: 5px; }
+            .logo-area p { display: none; } /* Esconde subtítulo no mobile pra economizar espaço */
+            .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0 5px; }
+            .status-bar { display: none; } /* Esconde status no mobile */
+            
+            .system-clock { position: static; text-align: right; } /* Relógio entra no fluxo do header */
+            .digital-time { font-size: 1.2rem; }
+            
+            .nav-btn { padding: 8px; font-size: 0.8rem; }
+            
+            .card { padding: 15px; border-radius: 12px; }
+            
+            /* Força botões full width em mobile */
+            .btn-secondary, .btn-success, .btn-purple, .btn-danger { width: 100%; margin-bottom: 5px; }
+            .actions-row { flex-direction: column; gap: 5px; }
+        }
 
-        /* Feedback dentro da câmera */
+        /* --- MODAIS --- */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 15px; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
+        .modal-card { background: var(--card-bg); padding: 20px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
+        .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+
+        /* Feedback */
         #success-message, #error-message {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            padding: 15px 30px; border-radius: 50px; text-align: center; z-index: 20; width: auto; min-width: 200px;
-            font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            padding: 10px 20px; border-radius: 50px; text-align: center; z-index: 20; width: auto; white-space: nowrap;
+            font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.4s;
         }
         #success-message { background: rgba(16, 185, 129, 0.95); color: white; border: 2px solid #34d399; }
         #error-message { background: rgba(220, 38, 38, 0.95); color: white; border: 2px solid #f87171; }
 
-        .alert-title { font-size: 1.4rem; font-weight: bold; margin-bottom: 10px; display: block; color: var(--text); }
-        .alert-msg { color: var(--text-muted); margin-bottom: 25px; display: block; line-height: 1.6; font-size: 1rem; }
+        /* Classes Auxiliares */
+        .alert-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; display: block; color: var(--text); }
+        .alert-msg { color: var(--text-muted); margin-bottom: 15px; display: block; }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* Relógio */
-        .system-clock { 
-            position: absolute; top: 15px; right: 15px; 
-            text-align: right; z-index: 100; pointer-events: none; 
-            font-family: 'Courier New', monospace; 
-        }
-        .digital-time { 
-            font-size: 2rem; font-weight: bold; color: var(--success); 
-            text-shadow: 0 0 10px rgba(57, 255, 20, 0.6); line-height: 1; 
-        }
-        .digital-date { 
-            font-size: 0.85rem; color: var(--success); opacity: 0.8; 
-            text-transform: uppercase; margin-top: 2px; 
-            text-shadow: 0 0 5px rgba(57, 255, 20, 0.4); 
-        }
-        @media(max-width: 600px) { 
-            .system-clock { top: 10px; right: 10px; transform: scale(0.7); transform-origin: top right; } 
-            .digital-time { font-size: 1.5rem; } 
-        }
-
-        hr { border: 0; border-top: 1px solid var(--border); margin: 25px 0; opacity: 0.5; }
-        
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        @media(max-width: 768px) { .form-row { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <!-- RELÓGIO DIGITAL -->
-    <div class="system-clock">
-        <div class="digital-time" id="digital-time">00:00:00</div>
-        <div class="digital-date" id="digital-date">---, -- ---</div>
-    </div>
-
     <header class="main-header">
         <div class="logo-area">
-            <h1>☁️ MaranaTime</h1>
-            <p>Sistema de Ponto Biométrico</p>
+            <h1> MaranaTime</h1>
+            <p>Sistema Integrado</p>
         </div>
-        <div class="status-bar">
-            <span id="ia-status" class="status-item">IA: Carregando...</span>
-            <span id="db-status" class="status-item">Nuvem: Conectando...</span>
+        <!-- Relógio movido para dentro do header para melhor controle mobile -->
+        <div class="system-clock">
+            <div class="digital-time" id="digital-time">00:00:00</div>
+            <div class="digital-date" id="digital-date">---</div>
         </div>
     </header>
+    
+    <!-- Barra de status apenas Desktop -->
+    <div class="status-bar">
+        <span id="ia-status" class="status-item">IA: ...</span>
+        <span id="db-status" class="status-item">Nuvem: ...</span>
+    </div>
 
     <nav class="nav-bar">
         <button onclick="window.app.switchTab('ponto')" id="btn-ponto" class="nav-btn active">🕒 Ponto</button>
         <button onclick="window.app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Gestão</button>
     </nav>
 
-    <!-- ABA 1: FUNCIONÁRIO (DESIGN FUTURISTA DARK) -->
+    <!-- ABA 1: FUNCIONÁRIO -->
     <section id="view-ponto" class="view-section active">
         <div class="card">
-            <!-- CÂMERA REDONDA COM MOLDE -->
             <div class="camera-wrapper">
                 <div class="camera-container">
                     <video id="video-feed" autoplay playsinline muted></video>
                     <canvas id="ai-overlay"></canvas>
-                    
-                    <!-- Elementos Visuais Futuristas -->
-                    <div class="face-mold"></div> <!-- Molde do rosto SEM TEXTO -->
-                    <div class="scanner-laser"></div> <!-- Laser de escaneamento -->
-                    
-                    <!-- Mensagens -->
-                    <div id="success-message">
-                        <div style="font-size: 2.5rem;">✅</div>
-                        <div id="success-text">Confirmado!</div>
-                    </div>
-                    <div id="error-message">
-                        <div style="font-size: 2.5rem;">⚠️</div>
-                        <div id="error-text">Erro!</div>
-                    </div>
+                    <div class="face-mold"></div>
+                    <div class="scanner-laser"></div>
+                    <div id="success-message">✅ <span id="success-text">OK</span></div>
+                    <div id="error-message">⚠️ <span id="error-text">Erro</span></div>
                 </div>
             </div>
 
-            <!-- CAMPO NOME (EXIBIÇÃO AUTOMÁTICA) -->
             <div class="input-group">
-                <label>👤 Colaborador Identificado</label>
-                <input type="text" id="employee-name-display" placeholder="AGUARDANDO RECONHECIMENTO..." readonly style="text-align: center; font-size: 1.2rem; font-weight: bold; letter-spacing: 1px;">
-                <!-- Hidden input to store actual ID for logic -->
+                <label>👤 Colaborador</label>
+                <input type="text" id="employee-name-display" placeholder="Aguardando..." readonly style="text-align: center; font-weight: bold; letter-spacing: 1px;">
                 <input type="hidden" id="employee-id">
             </div>
 
             <div class="input-group">
-                <label>📌 Selecione a Ação</label>
+                <label>📌 Ação</label>
                 <select id="punch-type" style="text-align: center; font-weight: 500;">
-                    <option value="Entrada">🟢 Registrar Entrada</option>
-                    <option value="Saída Almoço">🍽️ Saída para Almoço</option>
-                    <option value="Volta Almoço">🔙 Retorno do Almoço</option>
-                    <option value="Fim Expediente">🔴 Encerrar Expediente</option>
+                    <option value="Entrada">🟢 Entrada</option>
+                    <option value="Saída Almoço">🍽️ Saída Almoço</option>
+                    <option value="Volta Almoço">🔙 Volta Almoço</option>
+                    <option value="Fim Expediente">🔴 Fim Expediente</option>
                 </select>
             </div>
         </div>
@@ -345,64 +355,44 @@
             </div>
 
             <!-- CADASTRO COLABORADOR -->
-            <div class="input-group" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
-                <h3 style="color: var(--primary); margin: 0 0 15px 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">👤 Novo Cadastro</h3>
-                
-                <!-- Câmera Pequena no Admin -->
-                <div class="camera-container" style="height: 160px; width: 160px; margin: 0 auto 15px auto; border-radius: 16px; border: 2px solid var(--primary); box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);"> 
+            <div class="input-group admin-panel" style="background: rgba(255,255,255,0.05);">
+                <h3 style="color: var(--primary); margin: 0 0 10px 0; font-size: 1rem;">👤 Cadastro</h3>
+                <div class="camera-container" style="height: 150px; width: 150px; margin: 0 auto 10px auto; border-radius: 12px; border: 2px solid var(--primary); box-shadow: none;"> 
                     <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
                 </div>
-                
                 <div class="form-row">
                     <div><label>ID</label><input type="number" id="new-user-id"></div>
                     <div><label>Nome</label><input type="text" id="new-user-name"></div>
-                    <!-- MUDANÇA: Select no Cadastro -->
-                    <div>
-                        <label>Unidade</label>
-                        <select id="new-user-unit">
-                            <option value="">Selecione...</option>
-                        </select>
-                    </div>
+                    <div><label>Unidade</label><select id="new-user-unit"><option value="">Selecione...</option></select></div>
                     <div><label>Hrs/Sem</label><input type="number" id="new-user-hours" value="44"></div>
                 </div>
-                <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 15px;">📸 Capturar e Salvar</button>
+                <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar</button>
             </div>
-
-            <hr>
 
             <!-- GESTÃO DE LOCAIS -->
-            <div class="input-group" style="background: rgba(16, 185, 129, 0.1); padding: 20px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.3);">
-                <h3 style="color: #34d399; margin: 0; font-size: 1.1rem;">📍 Cerca Virtual (300m)</h3>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px;">
-                    <div><label>Nome</label><input type="text" id="loc-name" placeholder="Ex: Matriz"></div>
-                    <div><label>CEP</label><input type="text" id="loc-cep" placeholder="00000-000"></div>
-                    <div><label>Nº</label><input type="text" id="loc-num" placeholder="123"></div>
+            <div class="input-group admin-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                <h3 style="color: #34d399; margin: 0; font-size: 1rem;">📍 Cerca Virtual</h3>
+                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div><label>Nome</label><input type="text" id="loc-name" placeholder="Matriz"></div>
+                    <div><label>CEP</label><input type="text" id="loc-cep"></div>
+                    <div><label>Nº</label><input type="text" id="loc-num"></div>
                 </div>
-
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <input type="text" id="loc-lat" readonly style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem;" placeholder="Latitude">
-                    <input type="text" id="loc-lon" readonly style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.9rem;" placeholder="Longitude">
+                <div style="display: flex; gap: 5px; margin-top: 5px;">
+                    <input type="text" id="loc-lat" readonly style="background: rgba(0,0,0,0.2); font-size: 0.8rem;" placeholder="Lat">
+                    <input type="text" id="loc-lon" readonly style="background: rgba(0,0,0,0.2); font-size: 0.8rem;" placeholder="Lon">
                 </div>
-
-                <div style="margin-top: 15px; display: flex; gap: 10px;">
-                    <button onclick="window.app.buscarCoordenadas()" class="btn-secondary" style="font-size: 0.9rem;">🔍 Buscar Endereço</button>
-                    <button onclick="window.app.salvarLocal()" class="btn-success" style="font-size: 0.9rem;">Salvar Local</button>
+                <div class="actions-row">
+                    <button onclick="window.app.buscarCoordenadas()" class="btn-secondary">🔍 Buscar</button>
+                    <button onclick="window.app.salvarLocal()" class="btn-success">Salvar</button>
                 </div>
-                
-                <h4 style="margin: 20px 0 10px 0; font-size: 0.9rem; color: #34d399; text-transform: uppercase; letter-spacing: 1px;">Locais Ativos:</h4>
-                <div id="lista-locais" style="max-height: 150px; overflow-y: auto; padding-right: 5px;">
-                    <!-- Lista JS -->
-                </div>
+                <div id="lista-locais" style="max-height: 150px; overflow-y: auto; margin-top: 10px;"></div>
             </div>
-
-            <hr>
 
             <!-- LISTA DE FUNCIONÁRIOS -->
             <div class="input-group">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="font-size: 1.1rem; margin:0;">Base de Colaboradores</h3>
-                    <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 140px; padding: 8px;">
+                    <h3 style="font-size: 1rem; margin:0;">Colaboradores</h3>
+                    <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 130px; padding: 6px;">
                         <option value="">Todas</option>
                     </select>
                 </div>
@@ -414,28 +404,26 @@
                 </div>
             </div>
 
-            <hr>
-
             <!-- RELATÓRIOS -->
             <div class="filters-area">
-                <label style="font-weight:bold; display:block; margin-bottom:15px; color: var(--primary);">Relatórios Oficiais:</label>
+                <label style="font-weight:bold; display:block; margin-bottom:10px;">Relatórios:</label>
                 <div class="filter-row">
                     <div class="filter-item"><input type="month" id="admin-month-filter"></div>
                     <div class="filter-item"><select id="admin-unit-filter"><option value="">Todas</option></select></div>
-                    <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary">Atualizar Tela</button></div>
+                    <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary">Atualizar</button></div>
                 </div>
                 <div class="actions-row">
-                    <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Ponto Detalhado</button>
-                    <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">🖨️ Fechamento e Saldos</button>
+                    <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Detalhado</button>
+                    <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">🖨️ Fechamento</button>
                 </div>
             </div>
 
             <!-- HISTÓRICO -->
             <div class="logs-area">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="font-size: 1.1rem; margin: 0;">Histórico (Mês Atual)</h3>
-                    <select id="filter-history-unit" onchange="window.app.carregarHistoricoRecente()" style="width: 150px; padding: 8px;">
-                        <option value="">Todas Unidades</option>
+                    <h3 style="font-size: 1rem; margin: 0;">Histórico (Mês)</h3>
+                    <select id="filter-history-unit" onchange="window.app.carregarHistoricoRecente()" style="width: 130px; padding: 6px;">
+                        <option value="">Todas</option>
                     </select>
                 </div>
                 <div class="table-responsive">
@@ -449,46 +437,13 @@
     </section>
 </div>
 
-<!-- MODAIS -->
+<!-- MODAIS (Estrutura Mantida) -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login Admin</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div>
-<div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">Selecione...</option></select></div>
-<div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar na Nuvem</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
-<div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg">Mensagem aqui</span><button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button></div></div>
+<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">Selecione...</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
+<div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg">Mensagem</span><button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg">Tem certeza?</span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
-
-<div id="modal-justification" class="modal-overlay">
-    <div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;">
-        <h3 style="color: #b45309;">⚠️ Ponto Externo</h3>
-        <p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p>
-        
-        <!-- DEBUG (MOSTRAR DISTANCIA) -->
-        <p id="distancia-debug" style="font-size: 0.75rem; color: #78350f; font-weight: bold; margin-bottom: 10px;"></p>
-        
-        <div class="input-group">
-            <label style="color: #78350f;">Justificativa Obrigatória:</label>
-            <textarea id="justification-text" rows="3" placeholder="Ex: Visita técnica, Home Office..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea>
-        </div>
-        <div class="modal-actions">
-            <button id="btn-send-justification" class="btn-primary">Enviar</button>
-            <button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-edit-local" class="modal-overlay">
-    <div class="modal-card">
-        <h3>📍 Editar Local</h3>
-        <input type="hidden" id="edit-loc-id-hidden">
-        <div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div>
-        <div class="input-group"><label>Latitude</label><input type="text" id="edit-loc-lat"></div>
-        <div class="input-group"><label>Longitude</label><input type="text" id="edit-loc-lon"></div>
-        <div class="modal-actions">
-            <button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button>
-            <button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-danger">Cancelar</button>
-        </div>
-    </div>
-</div>
+<div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;"><h3 style="color: #b45309;">⚠️ Ponto Externo</h3><p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p><div class="input-group"><label style="color: #78350f;">Justificativa Obrigatória:</label><textarea id="justification-text" rows="3" placeholder="Visita técnica..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea></div><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
+<div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Local</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
 
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
@@ -537,7 +492,7 @@
     };
 
     const app = {
-        adminConfig: { user: "admin", pass: "123" },
+        adminConfig: { user: "ARILSON", pass: "010203" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -576,8 +531,7 @@
             digitalTime: document.getElementById('digital-time'),
             digitalDate: document.getElementById('digital-date'),
             newUserUnit: document.getElementById('new-user-unit'),
-            editUserUnit: document.getElementById('edit-user-unit'),
-            distanciaDebug: document.getElementById('distancia-debug') // Novo elemento
+            editUserUnit: document.getElementById('edit-user-unit')
         },
 
         init: async function() {
@@ -623,7 +577,7 @@
                 if(dataGeo.length === 0) throw new Error("Endereço não localizado.");
                 document.getElementById('loc-lat').value = dataGeo[0].lat;
                 document.getElementById('loc-lon').value = dataGeo[0].lon;
-                this.mostrarAlerta(`Endereço: ${dataCep.logradouro}, ${num}`, "Sucesso");
+                this.mostrarAlerta(`Endereço OK: ${dataCep.logradouro}`, "Sucesso");
             } catch(e) { this.mostrarAlerta(e.message, "Erro de Localização"); }
         },
         sincronizarLocais: function() {
@@ -683,34 +637,9 @@
         },
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
-        
-        // VERIFICAÇÃO 300m + DEBUG
-        verificarLocalizacao: function(lat, lng) { 
-            const TOLERANCIA = 300; // 300m
-            console.log(`Minha posição: ${lat}, ${lng}`);
-            let menorDistancia = Infinity;
-            let localMaisProximo = "";
+        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
 
-            for (let local of this.locaisCache) { 
-                // Ensure numbers
-                const localLat = parseFloat(local.lat);
-                const localLng = parseFloat(local.lng);
-                const dist = this.getDistanceFromLatLonInKm(lat, lng, localLat, localLng); 
-                
-                console.log(`Distância para ${local.nome}: ${dist.toFixed(2)}m`);
-                
-                if (dist < menorDistancia) {
-                    menorDistancia = dist;
-                    localMaisProximo = local.nome;
-                }
-
-                if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome, debug: dist }; 
-            } 
-            // Se falhou, retorna dados de debug para a interface
-            return { autorizado: false, nome: "EXTERNO", debug: { dist: menorDistancia, local: localMaisProximo } }; 
-        },
-
-        // --- SINC FUNCIONARIOS ---
+        // --- SINC FUNC ---
         sincronizarFuncionarios: function() {
             const q = query(collection(db, USERS_COLLECTION));
             onSnapshot(q, (querySnapshot) => {
@@ -727,7 +656,7 @@
                 });
                 if (labeledDescriptors.length > 0) {
                     this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
-                    console.log("IA Atualizada com", labeledDescriptors.length, "faces.");
+                    console.log("IA Atualizada:", labeledDescriptors.length);
                 }
                 this.atualizarFiltrosUnidade();
                 if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios();
@@ -753,26 +682,22 @@
         },
 
         iniciarRegistroPonto: function(func, automatico = false) {
-            if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false, "Sem GPS"); return; }
-            
+            if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; }
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const lat = pos.coords.latitude;
                     const lng = pos.coords.longitude;
                     const statusLocal = this.verificarLocalizacao(lat, lng);
-                    
-                    // Passa dados de debug para o modal
-                    const debugInfo = statusLocal.autorizado ? null : statusLocal.debug;
-                    this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado, debugInfo);
+                    this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado);
                 },
                 (err) => {
                     console.warn("Erro GPS:", err);
-                    this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false, "Erro GPS");
+                    this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false);
                 },
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
             );
         },
-        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado, debugInfo) {
+        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) {
             const tipo = document.getElementById('punch-type').value;
             const agora = new Date();
             this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico };
@@ -781,16 +706,6 @@
             } else {
                 this.ultimoRegistro = Date.now() + 60000; 
                 document.getElementById('justification-text').value = "";
-                
-                // MOSTRA DIAGNÓSTICO DE DISTÂNCIA PARA O USUÁRIO
-                let msgDebug = "";
-                if (debugInfo && debugInfo.dist) {
-                    msgDebug = `Distância detectada: ${debugInfo.dist.toFixed(0)}m de ${debugInfo.local}`;
-                } else if (debugInfo) {
-                    msgDebug = debugInfo; // Erro de GPS
-                }
-                this.els.distanciaDebug.innerText = msgDebug;
-
                 this.els.modalJustification.classList.add('active');
             }
         },
@@ -817,7 +732,7 @@
                 const querySnapshot = await getDocs(q);
                 if (!querySnapshot.empty) {
                     if (!automatico) this.mostrarAlerta("Período duplicado.", "⚠️ Atenção", "error");
-                    else this.mostrarErro(`⚠️ ${tipo} duplicado!`);
+                    else this.mostrarErro(` ${tipo} duplicado!`);
                     this.els.employeeNameDisplay.value = "";
                     this.processando = false; 
                     return;
@@ -874,7 +789,7 @@
         carregarHistoricoRecente: async function() { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; try { const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const filterUnit = this.els.historyUnitFilter.value; if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.slice(0, 50).forEach(r => { tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`; }); } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>'; } },
         mesPorExtenso: function(anoMesStr) { if (!anoMesStr) return ""; const [ano, mes] = anoMesStr.split('-'); const dataObj = new Date(parseInt(ano), parseInt(mes) - 1, 1); const mesExtenso = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); return mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1); },
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.logo-text{font-size:24pt;font-weight:bold;color:#1e3a8a;display:block;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:9pt;border-top:1px solid #ccc;padding-top:10px;}</style></head><body><div class="header"><h1>${COMPANY_INFO.nome}</h1><p>${COMPANY_INFO.endereco}</p><p>${COMPANY_INFO.contato}</p><p>${COMPANY_INFO.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><div class="footer">${COMPANY_INFO.nome}</div><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
-        
+        atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts; this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); },
         switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
         fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
