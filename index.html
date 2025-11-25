@@ -106,8 +106,8 @@
 <div class="app-container">
     <header class="main-header">
         <div class="logo-area">
-            <h1>☁️ MaranaTime Cloud</h1>
-            <p>Sistema Integrado - 16 Filiais</p>
+            <h1> Marana Time </h1>
+            <p>Sistema Integrado Entre Filiais</p>
         </div>
         <div class="status-bar">
             <span id="ia-status" class="status-item">IA: Carregando...</span>
@@ -297,14 +297,14 @@
     // --- DADOS DO PAPEL TIMBRADO ---
     const COMPANY_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
+        endereco: "SEDE:Rua Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
         contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
         cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
     };
 
     // --- LÓGICA DA APLICAÇÃO ---
     const app = {
-        adminConfig: { user: "admin", pass: "123" },
+        adminConfig: { user: "ARILSON", pass: "010203" },
         adminLogado: false,
         funcionariosCache: [],
         modelosCarregados: false,
@@ -622,7 +622,7 @@
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML) {
             const janela = window.open('', '_blank');
             const dataHoje = new Date().toLocaleDateString('pt-BR');
-            const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.logo-text{font-size:24pt;font-weight:bold;color:#1e3a8a;display:block;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:9pt;border-top:1px solid #ccc;padding-top:10px;}</style></head><body><div class="header"><span class="logo-text">Maranathá</span><h1>${COMPANY_INFO.nome}</h1><p>${COMPANY_INFO.endereco}</p><p>${COMPANY_INFO.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><div class="footer">${COMPANY_INFO.nome}</div><script>window.onload=function(){window.print()}<\/script></body></html>`;
+            const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.logo-text{font-size:24pt;font-weight:bold;color:#1e3a8a;display:block;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:9pt;border-top:1px solid #ccc;padding-top:10px;}</style></head><body><div class="header"><span class="logo-text">RELATÓRIO DE PONTO</span><h1>${COMPANY_INFO.nome}</h1><p>${COMPANY_INFO.endereco}</p><p>${COMPANY_INFO.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><div class="footer">${COMPANY_INFO.nome}</div><script>window.onload=function(){window.print()}<\/script></body></html>`;
             janela.document.write(conteudo); janela.document.close();
         },
         imprimirRelatorioDetalhado: async function() {
