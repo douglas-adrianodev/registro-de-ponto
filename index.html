@@ -167,9 +167,7 @@
                     <option value="Fim Expediente">🔴 Fim Expediente</option>
                 </select>
             </div>
-            <button onclick="window.app.validarPonto()" id="btn-registrar" class="btn-primary" disabled>
-                📸 Verificar Rosto e Bater Ponto
-            </button>
+            <!-- BOTÃO REMOVIDO CONFORME SOLICITADO -->
         </div>
     </section>
 
@@ -282,6 +280,7 @@
     let APP_ID = 'default';
 
     if (typeof __firebase_config !== 'undefined') {
+        // MODO PREVIEW
         firebaseConfig = JSON.parse(__firebase_config);
         APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
@@ -333,7 +332,7 @@
             canvas: document.getElementById('capture-canvas'),
             statusIA: document.getElementById('ia-status'),
             statusDB: document.getElementById('db-status'),
-            btnRegistrar: document.getElementById('btn-registrar'),
+            // BOTÃO REMOVIDO
             employeeIdInput: document.getElementById('employee-id'),
             successMessage: document.getElementById('success-message'),
             successText: document.getElementById('success-text'),
