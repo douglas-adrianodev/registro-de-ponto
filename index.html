@@ -2,198 +2,71 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport configurada para prevenir zoom acidental em inputs no mobile -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaranaTime Cloud - Sistema Integrado</title>
+    <title>MaranaTime </title>
     <!-- Face API -->
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
         /* --- ESTILOS GERAIS (RESPONSIVE DARK TECH THEME) --- */
         :root {
-            /* Paleta */
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --input-bg: #334155;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #334155;
-            
-            /* Cores */
-            --primary: #0ea5e9;
-            --primary-dark: #0284c7;
-            --secondary: #6366f1;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            
+            --bg: #0f172a; --card-bg: #1e293b; --input-bg: #334155;
+            --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
+            --primary: #0ea5e9; --primary-dark: #0284c7; --secondary: #6366f1;
+            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
             --glow: 0 0 20px rgba(14, 165, 233, 0.3);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
         
-        html, body { 
-            height: 100%; width: 100%; 
-            background-color: var(--bg); 
-            color: var(--text); 
-            overflow: hidden; /* Mantém app fixo */
-            font-size: 16px; /* Base para rem */
-        }
+        html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-size: 16px; }
 
-        .app-container { 
-            height: 100%; width: 100%; 
-            max-width: 1400px; /* Limite para telas ultrawide */
-            margin: 0 auto; 
-            display: flex; flex-direction: column; 
-            padding: 10px;
-            position: relative;
-        }
+        .app-container { height: 100%; width: 100%; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; padding: 10px; position: relative; }
         
-        /* --- HEADER RESPONSIVO --- */
-        .main-header { 
-            text-align: center; 
-            margin-bottom: 10px; 
-            flex-shrink: 0; 
-            position: relative;
-            z-index: 10;
-        }
-        .logo-area h1 { 
-            color: var(--primary); 
-            font-size: clamp(1.2rem, 4vw, 1.8rem); /* Escala fluida do texto */
-            margin: 0; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); 
-        }
-        .status-bar { 
-            font-size: 0.7rem; font-weight: 600; margin-top: 5px; 
-            display: flex; justify-content: center; gap: 8px; 
-        }
-        .status-item { 
-            padding: 2px 8px; border-radius: 12px; 
-            background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border);
-            white-space: nowrap;
-        }
-        .status-item.online { 
-            background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: var(--success);
-        }
+        /* Header */
+        .main-header { text-align: center; margin-bottom: 10px; flex-shrink: 0; position: relative; z-index: 10; }
+        .logo-area h1 { color: var(--primary); font-size: clamp(1.2rem, 4vw, 1.8rem); margin: 0; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); }
+        .status-bar { font-size: 0.7rem; font-weight: 600; margin-top: 5px; display: flex; justify-content: center; gap: 8px; }
+        .status-item { padding: 2px 8px; border-radius: 12px; background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; }
+        .status-item.online { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: var(--success); }
         
-        /* --- NAVEGAÇÃO --- */
-        .nav-bar { 
-            display: flex; gap: 8px; margin-bottom: 10px; 
-            background: var(--card-bg); padding: 5px; border-radius: 12px; 
-            flex-shrink: 0; border: 1px solid var(--border); 
-        }
-        .nav-btn { 
-            flex: 1; padding: 10px; border: none; background: transparent; 
-            cursor: pointer; font-weight: 600; color: var(--text-muted); 
-            border-radius: 8px; transition: 0.2s; font-size: 0.9rem; 
-            white-space: nowrap;
-        }
-        .nav-btn.active { 
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            color: white; box-shadow: var(--glow); 
-        }
+        /* Nav */
+        .nav-bar { display: flex; gap: 8px; margin-bottom: 10px; background: var(--card-bg); padding: 5px; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--border); }
+        .nav-btn { flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 8px; transition: 0.2s; font-size: 0.9rem; white-space: nowrap; }
+        .nav-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: var(--glow); }
 
-        /* --- ÁREAS DE CONTEÚDO (SCROLLÁVEIS) --- */
-        .view-section { 
-            display: none; 
-            flex: 1; 
-            overflow-y: auto; /* Scroll vertical se necessário */
-            overflow-x: hidden;
-            position: relative; 
-            padding-bottom: 20px; /* Espaço extra no fim */
-            -webkit-overflow-scrolling: touch; /* Scroll suave no iOS */
-        }
-        .view-section.active { 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        /* Centralização da tela de ponto */
-        #view-ponto.active { 
-            align-items: center; 
-            justify-content: center; /* Centraliza verticalmente se houver espaço */
-        }
-        /* Em telas muito pequenas (paisagem), alinha ao topo para não cortar */
-        @media (max-height: 600px) {
-            #view-ponto.active { justify-content: flex-start; padding-top: 10px; }
-        }
+        /* Content */
+        .view-section { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        .view-section.active { display: flex; flex-direction: column; }
+        #view-ponto.active { align-items: center; justify-content: center; }
+        @media (max-height: 600px) { #view-ponto.active { justify-content: flex-start; padding-top: 10px; } }
 
-        /* --- CARDS ADAPTÁVEIS --- */
-        .card { 
-            background: var(--card-bg); padding: 20px; border-radius: 16px; 
-            box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); 
-            border: 1px solid var(--border); 
-            width: 100%; 
-            max-width: 500px; /* Limite em Desktop */
-            display: flex; flex-direction: column; align-items: center; 
-        }
+        /* Cards */
+        .card { background: var(--card-bg); padding: 20px; border-radius: 16px; box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3); border: 1px solid var(--border); width: 100%; max-width: 500px; display: flex; flex-direction: column; align-items: center; }
         #view-admin .card { max-width: 100%; display: block; }
         
-        /* --- CÂMERA RESPONSIVA --- */
-        .camera-wrapper {
-            position: relative; margin-bottom: 20px; padding: 5px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.2);
-            /* Tamanho responsivo: nunca maior que 300px, nunca maior que 65% da largura da tela */
-            width: min(300px, 65vw); 
-            height: min(300px, 65vw);
-            flex-shrink: 0; /* Impede achatamento */
-        }
-        .camera-container { 
-            position: relative; 
-            width: 100%; height: 100%; 
-            background: #000; border-radius: 50%; overflow: hidden; 
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-            mask-image: radial-gradient(white, black);
-            border: 3px solid #000;
-        }
+        /* Camera */
+        .camera-wrapper { position: relative; margin-bottom: 20px; padding: 5px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 0 20px rgba(14, 165, 233, 0.2); width: min(300px, 65vw); height: min(300px, 65vw); flex-shrink: 0; }
+        .camera-container { position: relative; width: 100%; height: 100%; background: #000; border-radius: 50%; overflow: hidden; -webkit-mask-image: -webkit-radial-gradient(white, black); mask-image: radial-gradient(white, black); border: 3px solid #000; }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.9; }
         #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transform: scaleX(-1); }
-
-        /* Elementos Visuais */
-        .face-mold {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 60%; height: 75%; /* Relativo ao pai */
-            border: 2px dashed rgba(255, 255, 255, 0.3);
-            border-radius: 55% 55% 45% 45%; 
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.8); 
-            pointer-events: none; z-index: 5;
-        }
-
-        .scanner-laser {
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px; 
-            background: var(--primary); box-shadow: 0 0 15px var(--primary); 
-            opacity: 0.8; animation: scanDown 2s ease-in-out infinite; z-index: 6; pointer-events: none;
-        }
+        .face-mold { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 75%; border: 2px dashed rgba(255, 255, 255, 0.3); border-radius: 55% 55% 45% 45%; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); pointer-events: none; z-index: 5; }
+        .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--primary); box-shadow: 0 0 15px var(--primary); opacity: 0.8; animation: scanDown 2s ease-in-out infinite; z-index: 6; pointer-events: none; }
         @keyframes scanDown { 0%,100% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
 
-        /* --- INPUTS E BOTÕES --- */
+        /* Inputs */
         .input-group { margin-bottom: 15px; width: 100%; }
         label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        input, select, textarea { 
-            width: 100%; padding: 12px; 
-            border: 1px solid var(--border); border-radius: 10px; 
-            font-size: 1rem; background: var(--input-bg); color: white;
-            transition: 0.3s;
-            appearance: none; /* Remove estilo nativo mobile */
-        }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--input-bg); color: white; transition: 0.3s; appearance: none; }
         input:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2); }
-        
-        #employee-name-display {
-            background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary);
-            font-weight: bold; text-shadow: 0 0 10px rgba(14, 165, 233, 0.3); text-transform: uppercase;
-        }
-        
-        button { 
-            cursor: pointer; border: none; border-radius: 10px; font-weight: 600; 
-            transition: 0.2s; font-size: 1rem; width: 100%; padding: 12px; 
-            display: flex; justify-content: center; align-items: center; gap: 5px;
-        }
-        button:active { transform: scale(0.98); }
-        
+        #employee-name-display { background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary); font-weight: bold; text-shadow: 0 0 10px rgba(14, 165, 233, 0.3); text-transform: uppercase; }
+        input[readonly] { cursor: default; opacity: 1; }
+
+        /* Buttons */
+        button { cursor: pointer; border: none; border-radius: 10px; font-weight: 600; transition: 0.2s; font-size: 1rem; width: 100%; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
         .btn-primary { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
         .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); width: auto; min-width: 100px;}
         .btn-success { background: #059669; color: white; width: auto; }
@@ -202,119 +75,66 @@
         .btn-edit { background: #d97706; color: white; padding: 5px 10px; font-size: 0.8rem; width: auto; margin-right: 5px;}
         .btn-danger.small { font-size: 0.8rem; padding: 5px 10px; }
 
-        /* --- ADMIN RESPONSIVO (GRID SYSTEM) --- */
-        .filters-area, .input-group.admin-panel { 
-            background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; 
-            margin-bottom: 15px; border: 1px solid var(--border); 
-        }
-        
-        /* Grid Flexível */
+        /* Admin Grid */
+        .filters-area, .input-group.admin-panel { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
         .filter-row, .actions-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-        .filter-item { flex: 1 1 150px; /* Cresce, Encolhe, Base 150px */ }
+        .filter-item { flex: 1 1 150px; }
+        .form-row { display: grid; gap: 10px; margin-top: 10px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); align-items: end; }
         
-        /* Grid de Formulário Inteligente */
-        .form-row { 
-            display: grid; 
-            gap: 10px; 
-            margin-top: 10px; 
-            /* Desktop: 4 colunas, Tablet: 2, Mobile: 1 */
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            align-items: end;
-        }
-        
-        /* Tabela Responsiva */
-        .table-responsive { 
-            overflow-x: auto; margin-top: 10px; max-height: 350px; overflow-y: auto; 
-            border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2);
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; /* Força scroll horizontal se necessário */ }
+        /* Tabela */
+        .table-responsive { overflow-x: auto; margin-top: 10px; max-height: 350px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 600px; }
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
         th { background: #1e293b; position: sticky; top: 0; z-index: 10; color: var(--text); }
         td { color: #cbd5e1; }
+        .local-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .local-info b { color: var(--success); }
 
-        /* --- RELÓGIO DIGITAL RESPONSIVO --- */
-        .system-clock { 
-            position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; 
-            pointer-events: none; font-family: monospace; 
-        }
-        .digital-time { 
-            font-size: 1.5rem; font-weight: bold; color: var(--success); 
-            text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); line-height: 1; 
-        }
-        .digital-date { 
-            font-size: 0.7rem; color: var(--success); opacity: 0.8; text-transform: uppercase; 
-        }
-        
-        /* Ajustes Específicos Mobile (< 600px) */
-        @media(max-width: 600px) {
-            .app-container { padding: 5px; }
-            .logo-area h1 { font-size: 1.2rem; text-align: left; margin-left: 5px; }
-            .logo-area p { display: none; } /* Esconde subtítulo no mobile pra economizar espaço */
-            .main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0 5px; }
-            .status-bar { display: none; } /* Esconde status no mobile */
-            
-            .system-clock { position: static; text-align: right; } /* Relógio entra no fluxo do header */
-            .digital-time { font-size: 1.2rem; }
-            
-            .nav-btn { padding: 8px; font-size: 0.8rem; }
-            
-            .card { padding: 15px; border-radius: 12px; }
-            
-            /* Força botões full width em mobile */
-            .btn-secondary, .btn-success, .btn-purple, .btn-danger { width: 100%; margin-bottom: 5px; }
-            .actions-row { flex-direction: column; gap: 5px; }
-        }
+        /* Clock */
+        .system-clock { position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; pointer-events: none; font-family: monospace; }
+        .digital-time { font-size: 1.5rem; font-weight: bold; color: var(--success); text-shadow: 0 0 8px rgba(57, 255, 20, 0.5); line-height: 1; }
+        .digital-date { font-size: 0.7rem; color: var(--success); opacity: 0.8; text-transform: uppercase; }
 
-        /* --- MODAIS --- */
+        /* Modals & Feedback */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 15px; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
         .modal-card { background: var(--card-bg); padding: 20px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-
-        /* Feedback */
-        #success-message, #error-message {
-            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            padding: 10px 20px; border-radius: 50px; text-align: center; z-index: 20; width: auto; white-space: nowrap;
-            font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.4s;
-        }
+        
+        #success-message, #error-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 10px 20px; border-radius: 50px; text-align: center; z-index: 20; width: auto; white-space: nowrap; font-weight: bold; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: popIn 0.4s; }
         #success-message { background: rgba(16, 185, 129, 0.95); color: white; border: 2px solid #34d399; }
         #error-message { background: rgba(220, 38, 38, 0.95); color: white; border: 2px solid #f87171; }
-
-        /* Classes Auxiliares */
         .alert-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; display: block; color: var(--text); }
         .alert-msg { color: var(--text-muted); margin-bottom: 15px; display: block; }
 
+        /* KPI Cards */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .kpi-card { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
+        .kpi-value { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .kpi-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .chart-container { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 15px; border: 1px solid var(--border); height: 300px; position: relative; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        @media(max-width: 600px) { .system-clock { top: 10px; right: 10px; transform: scale(0.7); transform-origin: top right; } .digital-time { font-size: 1.2rem; } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
+    <div class="system-clock"><div class="digital-time" id="digital-time">00:00:00</div><div class="digital-date" id="digital-date">---</div></div>
+
     <header class="main-header">
-        <div class="logo-area">
-            <h1> MaranaTime</h1>
-            <p>Sistema Integrado</p>
-        </div>
-        <!-- Relógio movido para dentro do header para melhor controle mobile -->
-        <div class="system-clock">
-            <div class="digital-time" id="digital-time">00:00:00</div>
-            <div class="digital-date" id="digital-date">---</div>
-        </div>
+        <div class="logo-area"><h1> MaranaTime</h1><p>Versão Beta +</p></div>
+        <div class="status-bar"><span id="ia-status" class="status-item">IA: ...</span><span id="db-status" class="status-item">Nuvem: ...</span></div>
     </header>
-    
-    <!-- Barra de status apenas Desktop -->
-    <div class="status-bar">
-        <span id="ia-status" class="status-item">IA: ...</span>
-        <span id="db-status" class="status-item">Nuvem: ...</span>
-    </div>
 
     <nav class="nav-bar">
         <button onclick="window.app.switchTab('ponto')" id="btn-ponto" class="nav-btn active">🕒 Ponto</button>
         <button onclick="window.app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Gestão</button>
     </nav>
 
-    <!-- ABA 1: FUNCIONÁRIO -->
+    <!-- ABA 1: PONTO -->
     <section id="view-ponto" class="view-section active">
         <div class="card">
             <div class="camera-wrapper">
@@ -327,26 +147,24 @@
                     <div id="error-message">⚠️ <span id="error-text">Erro</span></div>
                 </div>
             </div>
-
             <div class="input-group">
-                <label>👤 Colaborador</label>
-                <input type="text" id="employee-name-display" placeholder="Aguardando..." readonly style="text-align: center; font-weight: bold; letter-spacing: 1px;">
+                <label>👤 Colaborador Identificado</label>
+                <input type="text" id="employee-name-display" placeholder="Aguardando..." readonly style="text-align: center;">
                 <input type="hidden" id="employee-id">
             </div>
-
             <div class="input-group">
                 <label>📌 Ação</label>
-                <select id="punch-type" style="text-align: center; font-weight: 500;">
-                    <option value="Entrada">🟢 Entrada</option>
-                    <option value="Saída Almoço">🍽️ Saída Almoço</option>
-                    <option value="Volta Almoço">🔙 Volta Almoço</option>
-                    <option value="Fim Expediente">🔴 Fim Expediente</option>
+                <select id="punch-type" style="text-align: center;">
+                    <option value="Entrada">🟢 Registrar Entrada</option>
+                    <option value="Saída Almoço">🍽️ Saída para Almoço</option>
+                    <option value="Volta Almoço">🔙 Retorno do Almoço</option>
+                    <option value="Fim Expediente">🔴 Encerrar Expediente</option>
                 </select>
             </div>
         </div>
     </section>
 
-    <!-- ABA 2: ADMINISTRAÇÃO -->
+    <!-- ABA 2: GESTÃO -->
     <section id="view-admin" class="view-section">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -354,28 +172,85 @@
                 <button onclick="window.app.logoutAdmin()" class="btn-danger small">🔒 Sair</button>
             </div>
 
-            <!-- CADASTRO COLABORADOR -->
-            <div class="input-group admin-panel" style="background: rgba(255,255,255,0.05);">
-                <h3 style="color: var(--primary); margin: 0 0 10px 0; font-size: 1rem;">👤 Cadastro</h3>
-                <div class="camera-container" style="height: 150px; width: 150px; margin: 0 auto 10px auto; border-radius: 12px; border: 2px solid var(--primary); box-shadow: none;"> 
-                    <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
+            <!-- DASHBOARD ANALYTICS -->
+            <div class="filters-area" style="border-color: var(--primary);">
+                <label style="font-weight: bold; color: var(--primary);">📊 Painel de Indicadores Individuais</label>
+                <div class="filter-row" style="margin-top: 10px;">
+                     <div class="filter-item">
+                        <label>Selecione o Colaborador:</label>
+                        <select id="dashboard-employee-select" onchange="window.app.atualizarDashboard()"><option value="">Selecione...</option></select>
+                    </div>
+                     <div class="filter-item">
+                        <label>Mês de Referência:</label>
+                        <input type="month" id="dashboard-month" onchange="window.app.atualizarDashboard()">
+                    </div>
                 </div>
+
+                <!-- CARDS KPI -->
+                <div class="dashboard-grid" style="margin-top: 20px;">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Saldo de Horas</div>
+                        <div class="kpi-value" id="kpi-balance">--</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Dias Trabalhados</div>
+                        <div class="kpi-value" id="kpi-days">0</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Pontualidade</div>
+                        <div class="kpi-value" id="kpi-punctuality">--%</div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO -->
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- CADASTRO -->
+            <div class="input-group admin-panel">
+                <h3 style="color: var(--primary); font-size: 1rem;">👤 Novo Cadastro</h3>
                 <div class="form-row">
                     <div><label>ID</label><input type="number" id="new-user-id"></div>
                     <div><label>Nome</label><input type="text" id="new-user-name"></div>
-                    <div><label>Unidade</label><select id="new-user-unit"><option value="">Selecione...</option></select></div>
+                    <div><label>Unidade</label><select id="new-user-unit"><option value="">...</option></select></div>
+                </div>
+                <!-- NOVOS CAMPOS DE ESCALA -->
+                <div class="form-row">
+                     <div>
+                        <label>Regime de Trabalho</label>
+                        <select id="new-user-scale">
+                            <option value="comum">Comum (Diário)</option>
+                            <option value="12x36">Escala 12x36</option>
+                        </select>
+                    </div>
                     <div><label>Hrs/Sem</label><input type="number" id="new-user-hours" value="44"></div>
                 </div>
-                <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar</button>
+                
+                <div class="form-row" style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                    <div><label>Entrada (Prevista)</label><input type="time" id="new-user-start"></div>
+                    <div><label>Pausa (Minutos)</label><input type="number" id="new-user-break" placeholder="60"></div>
+                    <div><label>Saída (Prevista)</label><input type="time" id="new-user-end"></div>
+                </div>
+                <!-- Camera Admin -->
+                 <div class="camera-container" style="height: 120px; width: 120px; margin: 10px auto 0; border: 2px solid var(--primary);"> 
+                    <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
+                </div>
+                <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar Cadastro</button>
             </div>
 
             <!-- GESTÃO DE LOCAIS -->
-            <div class="input-group admin-panel" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
-                <h3 style="color: #34d399; margin: 0; font-size: 1rem;">📍 Cerca Virtual</h3>
+            <div class="input-group admin-panel">
+                <h3 style="color: #34d399; font-size: 1rem;">📍 Cerca Virtual</h3>
                 <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <div><label>Nome</label><input type="text" id="loc-name" placeholder="Matriz"></div>
+                    <div><label>Nome</label><input type="text" id="loc-name"></div>
                     <div><label>CEP</label><input type="text" id="loc-cep"></div>
                     <div><label>Nº</label><input type="text" id="loc-num"></div>
+                </div>
+                <div class="form-row">
+                    <div><label>CNPJ</label><input type="text" id="loc-cnpj"></div>
+                    <div style="grid-column: span 2;"><label>Endereço Completo</label><input type="text" id="loc-address"></div>
                 </div>
                 <div style="display: flex; gap: 5px; margin-top: 5px;">
                     <input type="text" id="loc-lat" readonly style="background: rgba(0,0,0,0.2); font-size: 0.8rem;" placeholder="Lat">
@@ -385,7 +260,7 @@
                     <button onclick="window.app.buscarCoordenadas()" class="btn-secondary">🔍 Buscar</button>
                     <button onclick="window.app.salvarLocal()" class="btn-success">Salvar</button>
                 </div>
-                <div id="lista-locais" style="max-height: 150px; overflow-y: auto; margin-top: 10px;"></div>
+                <div id="lista-locais" style="max-height: 100px; overflow-y: auto; margin-top: 10px;"></div>
             </div>
 
             <!-- LISTA DE FUNCIONÁRIOS -->
@@ -398,7 +273,7 @@
                 </div>
                 <div class="table-responsive">
                     <table id="employees-table">
-                        <thead><tr><th>ID</th><th>Nome</th><th>Unid.</th><th>Hrs</th><th>Ações</th></tr></thead>
+                        <thead><tr><th>ID</th><th>Nome</th><th>Unid.</th><th>Escala</th><th>Ações</th></tr></thead>
                         <tbody id="employees-tbody"></tbody>
                     </table>
                 </div>
@@ -406,29 +281,24 @@
 
             <!-- RELATÓRIOS -->
             <div class="filters-area">
-                <label style="font-weight:bold; display:block; margin-bottom:10px;">Relatórios:</label>
-                <div class="filter-row">
-                    <div class="filter-item"><input type="month" id="admin-month-filter"></div>
-                    <div class="filter-item"><select id="admin-unit-filter"><option value="">Todas</option></select></div>
-                    <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary">Atualizar</button></div>
+                <label style="font-weight:bold; color: var(--primary);">Relatórios de Fechamento:</label>
+                <div class="filter-row" style="margin-top:10px;">
+                    <div class="filter-item"><label>Mês:</label><input type="month" id="admin-month-filter"></div>
+                    <div class="filter-item"><label>Unidade:</label><select id="admin-unit-filter"><option value="">Todas</option></select></div>
+                    <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary" style="margin-top:23px;">Atualizar Lista</button></div>
                 </div>
                 <div class="actions-row">
-                    <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Detalhado</button>
-                    <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">🖨️ Fechamento</button>
+                    <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado</button>
+                    <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">📊 Fechamento da Unidade</button>
                 </div>
             </div>
 
-            <!-- HISTÓRICO -->
+            <!-- HISTÓRICO COM JUSTIFICATIVA -->
             <div class="logs-area">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="font-size: 1rem; margin: 0;">Histórico (Mês)</h3>
-                    <select id="filter-history-unit" onchange="window.app.carregarHistoricoRecente()" style="width: 130px; padding: 6px;">
-                        <option value="">Todas</option>
-                    </select>
-                </div>
+                <h3 style="font-size: 1rem; margin-bottom: 10px;">Acompanhamento Diário (Mês Atual)</h3>
                 <div class="table-responsive">
                     <table id="logs-table">
-                        <thead><tr><th>Data</th><th>Hora</th><th>ID</th><th>Nome</th><th>Local</th><th>Tipo</th></tr></thead>
+                        <thead><tr><th>Data</th><th>Hora</th><th>Colaborador</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
                         <tbody id="logs-tbody"></tbody>
                     </table>
                 </div>
@@ -437,17 +307,58 @@
     </section>
 </div>
 
-<!-- MODAIS (Estrutura Mantida) -->
+<!-- MODAIS -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login Admin</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">Selecione...</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
-<div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg">Mensagem</span><button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button></div></div>
-<div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg">Tem certeza?</span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
-<div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border: 2px solid #f59e0b; background-color: #fffbeb;"><h3 style="color: #b45309;">⚠️ Ponto Externo</h3><p style="font-size: 0.9rem; margin-bottom: 15px; color: #78350f;">Você está fora dos locais cadastrados.</p><div class="input-group"><label style="color: #78350f;">Justificativa Obrigatória:</label><textarea id="justification-text" rows="3" placeholder="Visita técnica..." style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #ccc; color: #333; background: white;"></textarea></div><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Local</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
 
+<!-- MODAL EDIÇÃO -->
+<div id="modal-edit" class="modal-overlay">
+    <div class="modal-card">
+        <h3>✏️ Editar</h3>
+        <input type="hidden" id="edit-user-id-hidden">
+        <div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div>
+        <div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">Selecione...</option></select></div>
+        <div class="input-group">
+            <label>Regime</label>
+            <select id="edit-user-scale">
+                <option value="comum">Comum</option>
+                <option value="12x36">12x36</option>
+            </select>
+        </div>
+        <div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
+        <div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div>
+    </div>
+</div>
+
+<div id="modal-admin-justify" class="modal-overlay">
+    <div class="modal-card">
+        <h3>📝 Abonar / Justificar</h3>
+        <p id="justify-target-info" style="color: var(--primary); font-size: 0.9rem; margin-bottom: 15px;"></p>
+        <input type="hidden" id="justify-log-id">
+        <div class="input-group">
+            <label>Tipo de Ação:</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button onclick="window.app.setJustifyMode('bonificar')" id="btn-mode-bonificar" class="btn-secondary">Bonificar</button>
+                <button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary">Justificar</button>
+            </div>
+        </div>
+        <div id="justify-text-area" style="display: none;">
+            <label>Descrição (Mín. 20 palavras):</label>
+            <textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()"></textarea>
+            <p id="word-count" style="font-size: 0.75rem; text-align: right; color: var(--text-muted);">0/20 palavras</p>
+        </div>
+        <div class="modal-actions">
+            <button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar</button>
+            <button onclick="window.app.fecharModalJustify()" class="btn-danger">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border: 2px solid #f59e0b; background:#fffbeb;"><h3 style="color:#b45309;">⚠️ Ponto Externo</h3><p style="font-size: 0.9rem; color:#78350f; margin-bottom:10px;">Você está fora dos locais cadastrados.</p><div class="input-group"><label style="color:#78350f;">Justificativa:</label><textarea id="justification-text" rows="3" style="background:white; color:black;"></textarea></div><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
+<div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary" style="width: 50%; margin: 0 auto; display: block;">OK</button></div></div>
+<div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align: center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
-<!-- CONFIGURAÇÃO FIREBASE - MÓDULO -->
+<!-- SCRIPT -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -486,13 +397,13 @@
 
     const COMPANY_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
+        endereco: "Sede-Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
         contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
-        cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
+        cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com.br"
     };
 
     const app = {
-        adminConfig: { user: "ARILSON", pass: "010203" },
+        adminConfig: { user: "Arilson", pass: "010203" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -503,52 +414,64 @@
         confirmCallback: null,
         pontoPendente: null,
         processando: false,
+        chartInstance: null,
+        justifyMode: null,
 
         els: {
             videoMain: document.getElementById('video-feed'),
             videoAdmin: document.getElementById('admin-video-feed'),
             overlay: document.getElementById('ai-overlay'),
             canvas: document.getElementById('capture-canvas'),
-            statusIA: document.getElementById('ia-status'),
             statusDB: document.getElementById('db-status'),
             employeeNameDisplay: document.getElementById('employee-name-display'),
             employeeIdHidden: document.getElementById('employee-id'),
             successMessage: document.getElementById('success-message'),
-            successText: document.getElementById('success-text'),
             errorMessage: document.getElementById('error-message'),
-            errorText: document.getElementById('error-text'),
             modalLogin: document.getElementById('modal-login'),
             modalEdit: document.getElementById('modal-edit'),
             modalAlert: document.getElementById('custom-alert'),
             modalConfirm: document.getElementById('custom-confirm'),
             modalJustification: document.getElementById('modal-justification'),
-            modalEditLocal: document.getElementById('modal-edit-local'),
+            modalAdminJustify: document.getElementById('modal-admin-justify'),
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
-            employeesUnitFilter: document.getElementById('filter-employees-unit'),
-            historyUnitFilter: document.getElementById('filter-history-unit'),
             listaLocais: document.getElementById('lista-locais'),
             digitalTime: document.getElementById('digital-time'),
             digitalDate: document.getElementById('digital-date'),
             newUserUnit: document.getElementById('new-user-unit'),
-            editUserUnit: document.getElementById('edit-user-unit')
+            editUserUnit: document.getElementById('edit-user-unit'),
+            dashEmployee: document.getElementById('dashboard-employee-select'),
+            dashMonth: document.getElementById('dashboard-month'),
+            kpiBalance: document.getElementById('kpi-balance'),
+            kpiDays: document.getElementById('kpi-days'),
+            kpiPunctuality: document.getElementById('kpi-punctuality'),
+            btnModeBonificar: document.getElementById('btn-mode-bonificar'),
+            btnModeJustificar: document.getElementById('btn-mode-justificar'),
+            areaJustificativa: document.getElementById('justify-text-area'),
+            txtJustificativa: document.getElementById('admin-justification-text'),
+            wordCount: document.getElementById('word-count'),
+            btnSaveJustify: document.getElementById('btn-save-justify'),
+            newUserScale: document.getElementById('new-user-scale'),
+            editUserScale: document.getElementById('edit-user-scale')
         },
 
         init: async function() {
-            this.els.statusDB.innerText = "Nuvem: Iniciando...";
+            this.els.statusDB.innerText = "Nuvem: ...";
             try {
                 await signInAnonymously(auth);
-                this.els.statusDB.innerText = "Nuvem: Conectada 🟢";
+                this.els.statusDB.innerText = "Nuvem: OK";
                 this.els.statusDB.classList.add('online');
                 this.sincronizarLocais(); 
                 this.sincronizarFuncionarios();
             } catch (error) {
-                this.els.statusDB.innerText = "Nuvem: Erro 🔴";
-                this.mostrarAlerta("Erro ao conectar na nuvem: " + error.message, "Erro");
+                this.mostrarAlerta("Erro conexão: " + error.message, "Erro");
                 return;
             }
             const hoje = new Date();
-            this.els.dateFilter.value = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            const mesStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            this.els.dateFilter.value = mesStr;
+            this.els.dashMonth.value = mesStr;
+
             this.iniciarRelogio();
             await this.carregarModelosIA();
             this.iniciarCamera('main');
@@ -566,19 +489,33 @@
         buscarCoordenadas: async function() {
             const cep = document.getElementById('loc-cep').value.replace(/\D/g, '');
             const num = document.getElementById('loc-num').value;
-            if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso");
+            if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.");
             try {
                 const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                 const dataCep = await resCep.json();
                 if(dataCep.erro) throw new Error("CEP não encontrado.");
+                document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`;
+                
                 const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`;
                 const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
                 const dataGeo = await resGeo.json();
                 if(dataGeo.length === 0) throw new Error("Endereço não localizado.");
                 document.getElementById('loc-lat').value = dataGeo[0].lat;
                 document.getElementById('loc-lon').value = dataGeo[0].lon;
-                this.mostrarAlerta(`Endereço OK: ${dataCep.logradouro}`, "Sucesso");
-            } catch(e) { this.mostrarAlerta(e.message, "Erro de Localização"); }
+                this.mostrarAlerta(`Endereço localizado!`, "Sucesso");
+            } catch(e) { this.mostrarAlerta(e.message, "Erro"); }
+        },
+        salvarLocal: async function() {
+            const nome = document.getElementById('loc-name').value;
+            const cnpj = document.getElementById('loc-cnpj').value;
+            const endereco = document.getElementById('loc-address').value;
+            const lat = parseFloat(document.getElementById('loc-lat').value);
+            const lng = parseFloat(document.getElementById('loc-lon').value);
+            if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados.");
+            try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); 
+                document.getElementById('loc-name').value = ""; document.getElementById('loc-cnpj').value = ""; document.getElementById('loc-address').value = "";
+                document.getElementById('loc-cep').value = ""; document.getElementById('loc-num').value = ""; document.getElementById('loc-lat').value = ""; document.getElementById('loc-lon').value = "";
+            } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
         },
         sincronizarLocais: function() {
             const q = query(collection(db, PLACES_COLLECTION));
@@ -590,61 +527,61 @@
                     this.locaisCache.push({ docId: doc.id, ...local });
                     const div = document.createElement('div');
                     div.className = 'local-item';
-                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>Lat: ${parseFloat(local.lat).toFixed(4)}, Lon: ${parseFloat(local.lng).toFixed(4)}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`;
+                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div>`;
                     this.els.listaLocais.appendChild(div);
                 });
                 this.atualizarOpcoesUnidades(); 
             });
         },
         atualizarOpcoesUnidades: function() {
-            const optionsHTML = '<option value="">Selecione...</option>' + 
-                this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
+            const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
             this.els.newUserUnit.innerHTML = optionsHTML;
             this.els.editUserUnit.innerHTML = optionsHTML;
-            const filterOptions = '<option value="">Todas</option>' + 
-                this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
+            const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
             this.els.unitFilter.innerHTML = filterOptions;
-            this.els.employeesUnitFilter.innerHTML = filterOptions;
-            this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + 
-                this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
         },
-        salvarLocal: async function() {
-            const nome = document.getElementById('loc-name').value;
-            const lat = parseFloat(document.getElementById('loc-lat').value);
-            const lng = parseFloat(document.getElementById('loc-lon').value);
-            if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Localize o endereço.");
-            try { await addDoc(collection(db, PLACES_COLLECTION), { nome, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); 
-                document.getElementById('loc-name').value = ""; document.getElementById('loc-lat').value = ""; document.getElementById('loc-lon').value = ""; document.getElementById('loc-cep').value = ""; document.getElementById('loc-num').value = "";
+
+        // --- CADASTRO ---
+        cadastrarBiometria: async function() {
+            if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA...");
+            const id = document.getElementById('new-user-id').value;
+            const nome = document.getElementById('new-user-name').value;
+            const unidade = document.getElementById('new-user-unit').value;
+            const scale = document.getElementById('new-user-scale').value; // NOVO CAMPO
+            const horas = document.getElementById('new-user-hours').value;
+            const entrada = document.getElementById('new-user-start').value;
+            const pausa = document.getElementById('new-user-break').value;
+            const saida = document.getElementById('new-user-end').value;
+
+            if (!id || !nome || !unidade || !entrada || !saida) return this.mostrarAlerta("Preencha campos e horários.");
+            if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!");
+            
+            const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+            if (!detection) return this.mostrarAlerta("Rosto não detectado!");
+            
+            const descriptorObj = { ...detection.descriptor }; 
+            try { 
+                await addDoc(collection(db, USERS_COLLECTION), { 
+                    id, nome, unidade, 
+                    scale, // Salva o tipo de escala
+                    horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida,
+                    horasSemanais: horas,
+                    descriptor: descriptorObj 
+                }); 
+                this.mostrarAlerta("Cadastrado!", "Sucesso"); 
+                document.getElementById('new-user-id').value = ''; 
+                document.getElementById('new-user-name').value = '';
             } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
         },
-        excluirLocal: async function(docId) { if(confirm("Remover?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
-        abrirEdicaoLocal: function(docId) {
-            const local = this.locaisCache.find(l => l.docId === docId);
-            if (!local) return;
-            document.getElementById('edit-loc-id-hidden').value = docId;
-            document.getElementById('edit-loc-name').value = local.nome;
-            document.getElementById('edit-loc-lat').value = local.lat;
-            document.getElementById('edit-loc-lon').value = local.lng;
-            this.els.modalEditLocal.classList.add('active');
-        },
-        salvarEdicaoLocal: async function() {
-            const docId = document.getElementById('edit-loc-id-hidden').value;
-            const nome = document.getElementById('edit-loc-name').value;
-            const lat = parseFloat(document.getElementById('edit-loc-lat').value);
-            const lng = parseFloat(document.getElementById('edit-loc-lon').value);
-            if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos.");
-            try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
-        },
-        getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
-        deg2rad: function(deg) { return deg * (Math.PI/180) },
-        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
 
-        // --- SINC FUNC ---
         sincronizarFuncionarios: function() {
             const q = query(collection(db, USERS_COLLECTION));
             onSnapshot(q, (querySnapshot) => {
                 this.funcionariosCache = [];
                 const labeledDescriptors = [];
+                const dashboardSelect = this.els.dashEmployee;
+                dashboardSelect.innerHTML = '<option value="">Selecione...</option>'; 
+
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
                     if (data.descriptor) {
@@ -653,142 +590,251 @@
                         labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor]));
                     }
                     this.funcionariosCache.push({ docId: doc.id, ...data });
+                    const opt = document.createElement('option');
+                    opt.value = data.id;
+                    opt.innerText = `${data.nome} (ID: ${data.id})`;
+                    dashboardSelect.appendChild(opt);
                 });
-                if (labeledDescriptors.length > 0) {
-                    this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
-                    console.log("IA Atualizada:", labeledDescriptors.length);
-                }
+                if (labeledDescriptors.length > 0) this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
                 this.atualizarFiltrosUnidade();
                 if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios();
             });
         },
 
-        // --- IA E DETECÇÃO ---
-        processarReconhecimento: function(id) {
-            if (this.processando) return; 
-            const agora = Date.now();
-            if (agora - this.ultimoRegistro < 10000) return; 
+        // --- DASHBOARD ---
+        atualizarDashboard: async function() {
+            const userId = this.els.dashEmployee.value;
+            const mesAno = this.els.dashMonth.value;
+            if (!userId || !mesAno) return;
+            const func = this.funcionariosCache.find(u => u.id == userId);
+            if (!func) return;
 
-            const func = this.funcionariosCache.find(u => u.id == id);
-            if (func) {
-                this.processando = true; 
-                const primeiroNome = func.nome.split(' ')[0];
-                this.els.employeeNameDisplay.value = primeiroNome;
-                this.els.employeeIdHidden.value = id;
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAno), where("id", "==", userId));
+            const snapshot = await getDocs(q);
+            const registros = [];
+            snapshot.forEach(doc => registros.push(doc.data()));
 
-                this.ultimoRegistro = agora; 
-                this.iniciarRegistroPonto(func, true); 
-            }
+            const pontosPorDia = {};
+            registros.forEach(r => {
+                if (!pontosPorDia[r.data]) pontosPorDia[r.data] = [];
+                const [h, m] = r.hora.split(':').map(Number);
+                pontosPorDia[r.data].push(h * 60 + m);
+            });
+
+            let minutosTotais = 0;
+            let diasTrabalhados = Object.keys(pontosPorDia).length;
+            let diasPontuais = 0;
+            const diasLabels = [];
+            const horasData = [];
+            const diasOrdenados = Object.keys(pontosPorDia).sort((a, b) => {
+                const [d1, m1, y1] = a.split('/'); const [d2, m2, y2] = b.split('/');
+                return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
+            });
+
+            diasOrdenados.forEach(dia => {
+                const batidas = pontosPorDia[dia].sort((a, b) => a - b);
+                let minutosDia = 0;
+                if (batidas.length > 0 && batidas[0] <= 485) diasPontuais++; // Exemplo 08:05
+                for (let i = 0; i < batidas.length - 1; i += 2) minutosDia += (batidas[i+1] - batidas[i]);
+                minutosTotais += minutosDia;
+                diasLabels.push(dia.substring(0, 5));
+                horasData.push((minutosDia / 60).toFixed(2));
+            });
+
+            const cargaSemanal = parseFloat(func.horasSemanais || 44);
+            const cargaMensal = (cargaSemanal / 6) * 30; 
+            const horasTrabalhadas = minutosTotais / 60;
+            const saldo = horasTrabalhadas - cargaMensal;
+            const taxaPontualidade = diasTrabalhados > 0 ? (diasPontuais / diasTrabalhados) * 100 : 0;
+
+            this.els.kpiDays.innerText = diasTrabalhados;
+            this.els.kpiPunctuality.innerText = taxaPontualidade.toFixed(0) + "%";
+            const saldoElem = this.els.kpiBalance;
+            saldoElem.innerText = saldo.toFixed(2) + "h";
+            saldoElem.style.color = saldo >= 0 ? "var(--success)" : "var(--danger)";
+            this.renderizarGrafico(diasLabels, horasData);
         },
 
-        iniciarRegistroPonto: function(func, automatico = false) {
-            if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; }
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const lat = pos.coords.latitude;
-                    const lng = pos.coords.longitude;
-                    const statusLocal = this.verificarLocalizacao(lat, lng);
-                    this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado);
-                },
-                (err) => {
-                    console.warn("Erro GPS:", err);
-                    this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false);
-                },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-            );
+        renderizarGrafico: function(labels, data) {
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            if (this.chartInstance) this.chartInstance.destroy();
+            this.chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: labels, datasets: [{ label: 'Horas', data: data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: '#0ea5e9', borderWidth: 1, borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } }
+            });
         },
-        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) {
-            const tipo = document.getElementById('punch-type').value;
-            const agora = new Date();
-            this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico };
-            if (autorizado) {
-                this.finalizarRegistro(null);
+
+        // --- SISTEMA DE JUSTIFICATIVA ADMIN ---
+        abrirJustificativaAdmin: function(docId, nome) {
+            document.getElementById('justify-log-id').value = docId;
+            document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`;
+            this.setJustifyMode(null);
+            document.getElementById('admin-justification-text').value = "";
+            this.els.modalAdminJustify.classList.add('active');
+        },
+        setJustifyMode: function(mode) {
+            this.justifyMode = mode;
+            this.els.btnModeBonificar.classList.remove('active');
+            this.els.btnModeJustificar.classList.remove('active');
+            if (mode === 'bonificar') {
+                this.els.btnModeBonificar.classList.add('active');
+                this.els.areaJustificativa.style.display = 'none';
+                this.els.btnSaveJustify.disabled = false; 
+            } else if (mode === 'justificar') {
+                this.els.btnModeJustificar.classList.add('active');
+                this.els.areaJustificativa.style.display = 'block';
+                this.els.btnSaveJustify.disabled = true; 
             } else {
-                this.ultimoRegistro = Date.now() + 60000; 
-                document.getElementById('justification-text').value = "";
-                this.els.modalJustification.classList.add('active');
+                this.els.areaJustificativa.style.display = 'none';
+                this.els.btnSaveJustify.disabled = true;
             }
         },
-        enviarJustificativa: function() {
-            const just = document.getElementById('justification-text').value;
-            if (!just || just.trim().length < 5) return alert("Por favor, justifique.");
-            this.els.modalJustification.classList.remove('active');
-            this.finalizarRegistro(just);
+        contarPalavras: function() {
+            const texto = this.els.txtJustificativa.value.trim();
+            const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0;
+            this.els.wordCount.innerText = `${palavras}/20 palavras`;
+            this.els.btnSaveJustify.disabled = (palavras < 20);
         },
-        cancelarPonto: function() { 
-            this.els.modalJustification.classList.remove('active'); 
-            this.pontoPendente = null; 
-            this.ultimoRegistro = 0; 
-            this.processando = false; 
-            this.els.employeeNameDisplay.value = "";
+        salvarJustificativaAdmin: async function() {
+            const docId = document.getElementById('justify-log-id').value;
+            const texto = this.els.txtJustificativa.value;
+            let updateData = {};
+            if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } 
+            else { updateData = { adminStatus: 'justificado', adminNote: texto }; }
+            try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); }
         },
-        finalizarRegistro: async function(justificativa = null) {
-            const { func, tipo, agora, lat, lng, localNome, automatico } = this.pontoPendente;
-            const dataHoje = agora.toLocaleDateString('pt-BR');
-            const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+        fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
 
-            try {
-                const q = query(collection(db, LOGS_COLLECTION), where("id", "==", func.id), where("data", "==", dataHoje), where("tipo", "==", tipo));
-                const querySnapshot = await getDocs(q);
-                if (!querySnapshot.empty) {
-                    if (!automatico) this.mostrarAlerta("Período duplicado.", "⚠️ Atenção", "error");
-                    else this.mostrarErro(` ${tipo} duplicado!`);
-                    this.els.employeeNameDisplay.value = "";
-                    this.processando = false; 
-                    return;
+        // --- RELATÓRIOS POR UNIDADE ---
+        imprimirRelatorioFechamento: async function() {
+            const mes = this.els.dateFilter.value;
+            const unidNome = document.getElementById('admin-unit-filter').value;
+            if(!mes) return this.mostrarAlerta("Selecione um mês.");
+
+            let unitInfo = COMPANY_INFO; 
+            if (unidNome && unidNome !== "") {
+                const local = this.locaisCache.find(l => l.nome === unidNome);
+                if (local) {
+                    unitInfo = {
+                        nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(),
+                        endereco: local.endereco || "Endereço não cadastrado",
+                        contato: "",
+                        cnpj_site: "CNPJ: " + (local.cnpj || "N/A")
+                    };
                 }
-            } catch (err) { console.error(err); }
-
-            const ctx = this.els.canvas.getContext('2d');
-            this.els.canvas.width = this.els.videoMain.videoWidth;
-            this.els.canvas.height = this.els.videoMain.videoHeight;
-            ctx.drawImage(this.els.videoMain, 0, 0);
-            const foto = this.els.canvas.toDataURL('image/jpeg', 0.3); 
-
-            try {
-                await addDoc(collection(db, LOGS_COLLECTION), {
-                    timestamp: agora.getTime(), id: func.id, nome: func.nome, unidade: func.unidade, tipo: tipo,
-                    data: dataHoje, hora: agora.toLocaleTimeString('pt-BR'), mesAno: mesAno, foto: foto, 
-                    modo: automatico ? "Auto IA" : "Manual",
-                    latitude: lat, longitude: lng,
-                    localizacaoNome: localNome, justificativa: justificativa 
-                });
-                this.mostrarSucesso(`Ponto Registrado!\n${localNome}`);
-                
-                setTimeout(() => {
-                    this.els.employeeNameDisplay.value = ""; 
-                    this.processando = false; 
-                }, 3000);
-                
-                if(this.adminLogado) this.carregarHistoricoRecente();
-            } catch (e) { 
-                console.error(e); 
-                this.processando = false; 
             }
-        },
 
-        // --- SISTEMA BÁSICO ---
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes));
+            const snapshot = await getDocs(q);
+            const registros = []; 
+            snapshot.forEach(doc => registros.push(doc.data()));
+            
+            const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros;
+            if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade.");
+
+            const resumo = {};
+            this.funcionariosCache.forEach(f => {
+                if (!unidNome || f.unidade === unidNome) {
+                    resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} };
+                }
+            });
+
+            registrosFiltrados.forEach(r => {
+                if(resumo[r.id]) {
+                    resumo[r.id].dias.add(r.data);
+                    if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = [];
+                    const [h, m] = r.hora.split(':').map(Number);
+                    resumo[r.id].pontos[r.data].push(h * 60 + m);
+                }
+            });
+
+            let linhasHTML = "";
+            Object.keys(resumo).forEach(id => {
+                const f = resumo[id];
+                let minTotais = 0;
+                Object.values(f.pontos).forEach(batidas => {
+                    batidas.sort((a,b) => a - b);
+                    for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]);
+                });
+                const horasTrab = (minTotais / 60).toFixed(2);
+                linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`;
+            });
+            this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo);
+        },
+        gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
+
+        // --- MANTER OUTRAS FUNÇÕES ESSENCIAIS ---
+        carregarTabelaPontos: async function() {
+            const mes = this.els.dateFilter.value;
+            if(!mes) return this.mostrarAlerta("Escolha o mês.");
+            const tbody = document.getElementById('logs-tbody');
+            tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
+            
+            const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes));
+            const snapshot = await getDocs(q);
+            let dados = []; snapshot.forEach(doc => dados.push({ docId: doc.id, ...doc.data() }));
+            
+            const unid = document.getElementById('admin-unit-filter').value;
+            if(unid) dados = dados.filter(d => d.unidade === unid);
+            dados.sort((a,b) => b.timestamp - a.timestamp);
+            
+            tbody.innerHTML = '';
+            if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; }
+            
+            dados.forEach(r => {
+                const func = this.funcionariosCache.find(u => u.id == r.id);
+                let classeIrregular = "";
+                let statusTexto = "OK";
+                
+                if (func && r.tipo === "Entrada" && func.horarioEntrada) {
+                    const [hP, mP] = func.horarioEntrada.split(':').map(Number);
+                    const [hR, mR] = r.hora.split(':').map(Number);
+                    const minutosPrevistos = hP * 60 + mP;
+                    const minutosReais = hR * 60 + mR;
+                    if (minutosReais > minutosPrevistos + 10) {
+                        classeIrregular = "irregular";
+                        statusTexto = "ATRASO";
+                    }
+                }
+                if (r.adminStatus === "bonificado") { classeIrregular = "abonado"; statusTexto = "ABONADO"; }
+                if (r.adminStatus === "justificado") { classeIrregular = "abonado"; statusTexto = "JUSTIFICADO"; }
+
+                tbody.innerHTML += `<tr class="${classeIrregular}">
+                    <td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td>
+                    <td>${statusTexto}</td>
+                    <td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td>
+                </tr>`;
+            });
+        },
+        
+        // ... (RESTANTE DAS FUNÇÕES MANTIDAS DA VERSÃO ANTERIOR PARA ECONOMIA DE ESPAÇO: inicarCamera, modelosIA, etc.)
+        iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
+        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número."); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado no mapa."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
+        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        renderizarListaFuncionarios: function() { const tbody = document.getElementById('employees-tbody'); const filterUnit = this.els.employeesUnitFilter.value; let lista = this.funcionariosCache; if (filterUnit) lista = lista.filter(u => u.unidade === filterUnit); tbody.innerHTML = ''; lista.forEach(u => { tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.scale || 'comum'}</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${u.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirUsuario('${u.docId}')">🗑️</button></td></tr>`; }); },
+        excluirUsuario: async function(docId) { if(confirm("Excluir?")) { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); } catch(e) { alert(e.message); } } },
+        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-hours').value = user.horasSemanais; document.getElementById('edit-user-scale').value = user.scale || 'comum'; this.els.modalEdit.classList.add('active'); },
+        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, horasSemanais: document.getElementById('edit-user-hours').value, scale: document.getElementById('edit-user-scale').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        carregarModelosIA: async function() { try { await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')]); this.modelosCarregados = true; this.iniciarDeteccaoContinua(); } catch (e) { console.error(e); } },
+        iniciarCamera: async function(tipo) { if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop()); try { const stream = await navigator.mediaDevices.getUserMedia({ video: {} }); this.streamAtiva = stream; if (tipo === 'main') { this.els.videoMain.srcObject = stream; this.els.videoAdmin.srcObject = null; } else { this.els.videoAdmin.srcObject = stream; this.els.videoMain.srcObject = null; } } catch (e) { console.error("Erro Cam", e); } },
+        iniciarDeteccaoContinua: function() { const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }); const loop = async () => { if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') { try { const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors(); const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true); const resized = faceapi.resizeResults(detections, dims); const ctx = this.els.overlay.getContext('2d'); ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height); resized.forEach(detection => { const match = this.faceMatcher.findBestMatch(detection.descriptor); const box = detection.detection.box; if (match.label !== 'unknown') { new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay); this.processarReconhecimento(match.label); } }); } catch (err) { } } requestAnimationFrame(loop); }; loop(); },
+        processarReconhecimento: function(id) { if (this.processando) return; const agora = Date.now(); if (agora - this.ultimoRegistro < 10000) return; const func = this.funcionariosCache.find(u => u.id == id); if (func) { this.processando = true; this.els.employeeNameDisplay.value = func.nome.split(' ')[0]; this.els.employeeIdHidden.value = id; this.ultimoRegistro = agora; this.iniciarRegistroPonto(func, true); } },
+        iniciarRegistroPonto: function(func, automatico = false) { if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; } navigator.geolocation.getCurrentPosition((pos) => { const lat = pos.coords.latitude; const lng = pos.coords.longitude; const statusLocal = this.verificarLocalizacao(lat, lng); this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado); }, (err) => { this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false); }, { enableHighAccuracy: true, timeout: 10000 }); },
+        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) { const tipo = document.getElementById('punch-type').value; const agora = new Date(); this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico }; if (autorizado) { this.finalizarRegistro(null); } else { this.ultimoRegistro = Date.now() + 60000; document.getElementById('justification-text').value = ""; this.els.modalJustification.classList.add('active'); } },
+        enviarJustificativa: function() { const just = document.getElementById('justification-text').value; if (!just || just.trim().length < 5) return alert("Por favor, justifique."); this.els.modalJustification.classList.remove('active'); this.finalizarRegistro(just); },
+        cancelarPonto: function() { this.els.modalJustification.classList.remove('active'); this.pontoPendente = null; this.ultimoRegistro = 0; this.processando = false; this.els.employeeNameDisplay.value = ""; },
+        finalizarRegistro: async function(justificativa = null) { const { func, tipo, agora, lat, lng, localNome, automatico } = this.pontoPendente; const dataHoje = agora.toLocaleDateString('pt-BR'); const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`; try { const q = query(collection(db, LOGS_COLLECTION), where("id", "==", func.id), where("data", "==", dataHoje), where("tipo", "==", tipo)); const querySnapshot = await getDocs(q); if (!querySnapshot.empty) { if (!automatico) this.mostrarAlerta("Período duplicado.", "⚠️ Atenção", "error"); else this.mostrarErro(`⚠️ ${tipo} duplicado!`); this.els.employeeNameDisplay.value = ""; this.processando = false; return; } } catch (err) { console.error(err); } const ctx = this.els.canvas.getContext('2d'); this.els.canvas.width = this.els.videoMain.videoWidth; this.els.canvas.height = this.els.videoMain.videoHeight; ctx.drawImage(this.els.videoMain, 0, 0); const foto = this.els.canvas.toDataURL('image/jpeg', 0.3); try { await addDoc(collection(db, LOGS_COLLECTION), { timestamp: agora.getTime(), id: func.id, nome: func.nome, unidade: func.unidade, tipo: tipo, data: dataHoje, hora: agora.toLocaleTimeString('pt-BR'), mesAno: mesAno, foto: foto, modo: automatico ? "Auto IA" : "Manual", latitude: lat, longitude: lng, localizacaoNome: localNome, justificativa: justificativa }); this.mostrarSucesso(`Ponto Registrado!\n${localNome}`); setTimeout(() => { this.els.employeeNameDisplay.value = ""; this.processando = false; }, 3000); if(this.adminLogado) this.carregarHistoricoRecente(); } catch (e) { console.error(e); this.processando = false; } },
         mostrarSucesso: function(texto) { this.els.successText.innerText = texto; this.els.successMessage.style.display = "block"; setTimeout(() => { this.els.successMessage.style.display = "none"; }, 3000); },
         mostrarErro: function(texto) { this.els.errorText.innerText = texto; this.els.errorMessage.style.display = "block"; setTimeout(() => { this.els.errorMessage.style.display = "none"; }, 3000); },
         mostrarAlerta: function(msg, titulo = "Aviso", tipo = "normal") { const card = this.els.modalAlert.querySelector('.modal-card'); card.classList.remove('error-style'); if (tipo === "error") card.classList.add('error-style'); document.getElementById('alert-title').innerText = titulo; document.getElementById('alert-msg').innerText = msg; this.els.modalAlert.classList.add('active'); },
         fecharAlert: function() { this.els.modalAlert.classList.remove('active'); },
-        mostrarConfirmacao: function(msg, callback) { document.getElementById('confirm-msg').innerText = msg; this.confirmCallback = callback; this.els.modalConfirm.classList.add('active'); const btnYes = document.getElementById('confirm-yes'); const newBtn = btnYes.cloneNode(true); btnYes.parentNode.replaceChild(newBtn, btnYes); newBtn.addEventListener('click', () => { if (this.confirmCallback) this.confirmCallback(); this.fecharConfirm(); }); },
-        fecharConfirm: function() { this.els.modalConfirm.classList.remove('active'); this.confirmCallback = null; },
-        carregarModelosIA: async function() { this.els.statusIA.innerText = "IA: Baixando..."; try { await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')]); this.modelosCarregados = true; this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); this.iniciarDeteccaoContinua(); } catch (e) { console.error(e); this.els.statusIA.innerText = "IA: Erro 🔴"; } },
-        iniciarCamera: async function(tipo) { if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop()); try { const stream = await navigator.mediaDevices.getUserMedia({ video: {} }); this.streamAtiva = stream; if (tipo === 'main') { this.els.videoMain.srcObject = stream; this.els.videoAdmin.srcObject = null; } else { this.els.videoAdmin.srcObject = stream; this.els.videoMain.srcObject = null; } } catch (e) { console.error("Erro Cam", e); } },
-        iniciarDeteccaoContinua: function() { const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }); const loop = async () => { if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') { try { const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors(); const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true); const resized = faceapi.resizeResults(detections, dims); const ctx = this.els.overlay.getContext('2d'); ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height); resized.forEach(detection => { const match = this.faceMatcher.findBestMatch(detection.descriptor); const box = detection.detection.box; if (match.label !== 'unknown') { new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay); this.processarReconhecimento(match.label); } else { new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay); } }); } catch (err) { } } requestAnimationFrame(loop); }; loop(); },
-        cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const horas = document.getElementById('new-user-hours').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); document.getElementById('new-user-id').value = ''; document.getElementById('new-user-name').value = ''; } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-
-        imprimirRelatorioDetalhado: async function() { const mes = this.els.dateFilter.value; const unid = document.getElementById('admin-unit-filter').value; const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); if(unid) dados = dados.filter(d => d.unidade === unid); dados.sort((a,b) => a.timestamp - b.timestamp); if(dados.length === 0) return this.mostrarAlerta("Sem dados."); let linhasHTML = dados.map(r => { let localStr = r.localizacaoNome || "N/A"; if(r.localizacaoNome && r.localizacaoNome.includes("EXTERNO") || r.justificativa) { const link = (r.latitude) ? `<a href="https://maps.google.com/?q=${r.latitude},${r.longitude}" target="_blank">Ver Mapa</a>` : ""; localStr = `<b>EXTERNO</b><br>Justif: ${r.justificativa || ''} ${link}`; } return `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td><td>${localStr}</td></tr>`; }).join(''); this.gerarRelatorioImpresso(`Extrato - ${mes}`, ["Data", "Hora", "ID", "Nome", "Unid.", "Tipo", "Localização / Justificativa"], linhasHTML); },
-        imprimirRelatorioFechamento: async function() { const mes = this.els.dateFilter.value; if(!mes) return this.mostrarAlerta("Selecione um mês."); const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => registros.push(doc.data())); if(registros.length === 0) return this.mostrarAlerta("Sem dados."); const resumo = {}; this.funcionariosCache.forEach(f => { resumo[f.id] = { nome: f.nome, unidade: f.unidade, carga: parseFloat(f.horasSemanais || 44), dias: new Set(), pontos: {} }; }); registros.forEach(r => { if(resumo[r.id]) { resumo[r.id].dias.add(r.data); if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = []; const [h, m] = r.hora.split(':').map(Number); resumo[r.id].pontos[r.data].push(h * 60 + m); } }); let linhasHTML = ""; Object.keys(resumo).forEach(id => { const f = resumo[id]; let minTotais = 0; Object.values(f.pontos).forEach(batidas => { batidas.sort((a,b) => a - b); for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]); }); const horasTrab = (minTotais / 60).toFixed(2); const cargaMensal = ((f.carga / 6) * 30).toFixed(2); const saldo = (horasTrab - cargaMensal).toFixed(2); const corSaldo = saldo < 0 ? "red" : "green"; linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.carga}h</td><td>${f.dias.size}</td><td>${horasTrab}h</td><td>${cargaMensal}h</td><td style="color:${corSaldo}">${saldo}h</td></tr>`; }); this.gerarRelatorioImpresso(`Fechamento Mensal - ${mes}`, ["ID", "Nome", "Unidade", "Meta", "Dias", "Trab", "Esperado", "Saldo"], linhasHTML); },
-        renderizarListaFuncionarios: function() { const tbody = document.getElementById('employees-tbody'); const filterUnit = this.els.employeesUnitFilter.value; let lista = this.funcionariosCache; if (filterUnit) lista = lista.filter(u => u.unidade === filterUnit); tbody.innerHTML = ''; lista.forEach(u => { tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.horasSemanais}h</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${u.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirUsuario('${u.docId}')">🗑️</button></td></tr>`; }); },
-        excluirUsuario: async function(docId) { this.mostrarConfirmacao("Excluir?", async () => { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.mostrarAlerta("Excluído.", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } }); },
-        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-hours').value = user.horasSemanais; this.els.modalEdit.classList.add('active'); },
-        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, horasSemanais: document.getElementById('edit-user-hours').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        carregarTabelaPontos: async function() { const mes = this.els.dateFilter.value; if(!mes) return this.mostrarAlerta("Escolha o mês."); const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mes)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const unid = document.getElementById('admin-unit-filter').value; if(unid) dados = dados.filter(d => d.unidade === unid); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.forEach(r => tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`); },
-        carregarHistoricoRecente: async function() { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; try { const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const filterUnit = this.els.historyUnitFilter.value; if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.slice(0, 50).forEach(r => { tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`; }); } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>'; } },
-        mesPorExtenso: function(anoMesStr) { if (!anoMesStr) return ""; const [ano, mes] = anoMesStr.split('-'); const dataObj = new Date(parseInt(ano), parseInt(mes) - 1, 1); const mesExtenso = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); return mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1); },
-        gerarRelatorioImpresso: function(titulo, colunas, linhasHTML) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.logo-text{font-size:24pt;font-weight:bold;color:#1e3a8a;display:block;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}.footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:9pt;border-top:1px solid #ccc;padding-top:10px;}</style></head><body><div class="header"><h1>${COMPANY_INFO.nome}</h1><p>${COMPANY_INFO.endereco}</p><p>${COMPANY_INFO.contato}</p><p>${COMPANY_INFO.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><div class="footer">${COMPANY_INFO.nome}</div><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
+        getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
+        deg2rad: function(deg) { return deg * (Math.PI/180) },
+        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
+        sincronizarFuncionarios: function() { const q = query(collection(db, USERS_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.funcionariosCache = []; const labeledDescriptors = []; querySnapshot.forEach((doc) => { const data = doc.data(); if (data.descriptor) { const values = Object.values(data.descriptor); data.descriptor = new Float32Array(values); labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor])); } this.funcionariosCache.push({ docId: doc.id, ...data }); }); if (labeledDescriptors.length > 0) { this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5); } this.atualizarFiltrosUnidade(); if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios(); }); },
+        sincronizarLocais: function() { const q = query(collection(db, PLACES_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.locaisCache = []; this.els.listaLocais.innerHTML = ""; querySnapshot.forEach((doc) => { const local = doc.data(); this.locaisCache.push({ docId: doc.id, ...local }); const div = document.createElement('div'); div.className = 'local-item'; div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div>`; this.els.listaLocais.appendChild(div); }); this.atualizarOpcoesUnidades(); }); },
+        atualizarOpcoesUnidades: function() { const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.newUserUnit.innerHTML = optionsHTML; this.els.editUserUnit.innerHTML = optionsHTML; const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.unitFilter.innerHTML = filterOptions; this.els.employeesUnitFilter.innerHTML = filterOptions; },
         atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts; this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); },
         switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
