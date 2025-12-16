@@ -25,7 +25,7 @@
         .logo-area h1 { color: var(--primary); font-size: 1.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
         .status-bar { font-size: 0.7rem; font-weight: bold; margin-top: 2px; display: flex; justify-content: center; gap: 8px; }
         .status-item { padding: 2px 8px; border-radius: 10px; background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; }
-        .status-item.online { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: var(--success); }
+        .status-item.online { color: #34d399; border-color: #34d399; }
         
         /* Nav */
         .nav-bar { display: flex; gap: 8px; margin-bottom: 10px; background: var(--card-bg); padding: 5px; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--border); }
@@ -37,12 +37,11 @@
         .view-section.active { display: flex; flex-direction: column; }
         #view-ponto.active { align-items: center; justify-content: center; }
         
-        /* Cards */
         .card { background: var(--card-bg); padding: 15px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #view-admin .card { max-width: 100%; display: block; }
         
         /* Camera */
-        .camera-wrapper { position: relative; margin-bottom: 15px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); width: min(280px, 60vw); height: min(280px, 60vw); flex-shrink: 0; box-shadow: var(--glow); }
+        .camera-wrapper { position: relative; margin-bottom: 15px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); width: min(280px, 60vw); height: min(280px, 60vw); flex-shrink: 0; }
         .camera-container { position: relative; width: 100%; height: 100%; background: #000; border-radius: 50%; overflow: hidden; mask-image: radial-gradient(white, black); -webkit-mask-image: -webkit-radial-gradient(white, black); border: 2px solid #000; }
         video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.9; }
         #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transform: scaleX(-1); }
@@ -55,8 +54,7 @@
         label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: var(--input-bg); color: white; transition: 0.3s; }
         input:focus, select:focus { border-color: var(--primary); outline: none; }
-        #employee-name-display { background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary); font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(14, 165, 233, 0.5); }
-        input[readonly] { cursor: default; }
+        #employee-name-display { background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary); font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Buttons */
         button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 0.95rem; width: 100%; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 5px; }
@@ -67,8 +65,7 @@
         .btn-danger { background: #dc2626; color: white; width: auto; }
         .btn-purple { background: #7c3aed; color: white; width: auto; }
         .btn-edit { background: #d97706; color: white; padding: 4px 8px; font-size: 0.75rem; width: auto; }
-        .btn-warning { background: #f59e0b; color: #000; width: auto; }
-
+        
         /* Admin Layout */
         .filters-area, .input-group.admin-panel { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
@@ -90,6 +87,8 @@
         td { color: #cbd5e1; }
         tr.irregular td { color: #fca5a5; background: rgba(239, 68, 68, 0.1); }
         tr.abonado td { color: #86efac; background: rgba(34, 197, 94, 0.1); }
+        .local-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .local-info b { color: var(--success); }
 
         /* Clock */
         .system-clock { position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; pointer-events: none; font-family: monospace; }
@@ -111,7 +110,7 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        @media(max-width: 900px) { .form-row { grid-template-columns: 1fr; } .filter-row { flex-direction: column; gap: 10px; } .filter-item, .filter-item-large { width: 100%; } }
+        @media(max-width: 900px) { .form-row { grid-template-columns: 1fr; } .filter-row { flex-direction: column; gap: 10px; } .filter-item { width: 100%; } }
     </style>
 </head>
 <body>
@@ -120,7 +119,7 @@
     <div class="system-clock"><div class="digital-time" id="digital-time">00:00</div><div class="digital-date" id="digital-date">--</div></div>
 
     <header class="main-header">
-        <div class="logo-area"><h1> MaranaTime</h1><p>Gestão Total de Ponto </p></div>
+        <div class="logo-area"><h1>☁️ MaranaTime</h1><p>Gestão Total</p></div>
         <div class="status-bar"><span id="ia-status" class="status-item">IA: ...</span><span id="db-status" class="status-item">Conectando...</span></div>
     </header>
 
@@ -254,8 +253,52 @@
 
 <!-- MODAIS -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div><div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div><div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar / Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.aplicarBonificacaoDireta()" class="btn-success" style="flex:1;">✅ Bonificar</button><button onclick="window.app.prepararJustificativa()" class="btn-secondary" style="flex:1;">📝 Justificar (Texto)</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;" placeholder="Digite a justificativa..."></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar Justificativa</button></div></div><div class="modal-actions"><button onclick="window.app.fecharModalJustify()" class="btn-danger" style="width:100%">Fechar</button></div></div></div>
+
+<!-- MODAL EDIÇÃO (Com botão excluir) -->
+<div id="modal-edit" class="modal-overlay">
+    <div class="modal-card">
+        <h3>✏️ Editar Colaborador</h3>
+        <input type="hidden" id="edit-user-id-hidden">
+        <div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div>
+        <div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div>
+        <div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div>
+        <div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
+        
+        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+            <label style="color: var(--primary);">Escala de Horário:</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
+                <div><label>Entrada</label><input type="time" id="edit-user-start"></div>
+                <div><label>Pausa</label><input type="number" id="edit-user-break"></div>
+                <div><label>Saída</label><input type="time" id="edit-user-end"></div>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button>
+            <button onclick="window.app.excluirUsuario(document.getElementById('edit-user-id-hidden').value)" class="btn-danger">Excluir</button>
+            <button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-edit-local" class="modal-overlay">
+    <div class="modal-card">
+        <h3>📍 Editar Unidade</h3>
+        <input type="hidden" id="edit-loc-id-hidden">
+        <div class="input-group"><label>Nome</label><input type="text" id="edit-loc-name"></div>
+        <div class="input-group"><label>CNPJ</label><input type="text" id="edit-loc-cnpj"></div>
+        <div class="input-group"><label>Endereço</label><input type="text" id="edit-loc-address"></div>
+        <div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div>
+        <div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div>
+        <div class="modal-actions">
+            <button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button>
+            <button onclick="window.app.excluirLocal(document.getElementById('edit-loc-id-hidden').value)" class="btn-danger">Excluir</button>
+            <button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-secondary">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.setJustifyMode('bonificar')" id="btn-mode-bonificar" class="btn-secondary">Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary">Justificar</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;"></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p></div><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar</button><button onclick="window.app.fecharModalJustify()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border:2px solid #f59e0b;background:#fffbeb;"><h3 style="color:#b45309;">⚠️ Ponto Externo</h3><p style="color:#78350f;margin-bottom:10px;">Fora dos locais cadastrados.</p><textarea id="justification-text" rows="3" style="background:white;color:black;width:100%;"></textarea><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
@@ -277,7 +320,6 @@
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
         LOGS_COLLECTION = `artifacts/${APP_ID}/public/data/logs`;
         PLACES_COLLECTION = `artifacts/${APP_ID}/public/data/places`;
-        console.log("Modo Preview Ativado");
     } else {
         firebaseConfig = {
             apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ",
@@ -291,7 +333,6 @@
         USERS_COLLECTION = "users";
         LOGS_COLLECTION = "logs";
         PLACES_COLLECTION = "places";
-        console.log("Modo Produção Ativado");
     }
     
     const firebaseApp = initializeApp(firebaseConfig);
@@ -300,13 +341,13 @@
 
     const COMPANY_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Sede-Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
+        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
         contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
         cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
     };
 
     const app = {
-        adminConfig: { user: "Arilson", pass: "rh010203" },
+        adminConfig: { user: "admin", pass: "123" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -336,6 +377,7 @@
             modalConfirm: document.getElementById('custom-confirm'),
             modalJustification: document.getElementById('modal-justification'),
             modalAdminJustify: document.getElementById('modal-admin-justify'),
+            modalEditLocal: document.getElementById('modal-edit-local'),
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
             listaLocais: document.getElementById('lista-locais'),
@@ -348,12 +390,13 @@
             kpiBalance: document.getElementById('kpi-balance'),
             kpiDays: document.getElementById('kpi-days'),
             kpiPunctuality: document.getElementById('kpi-punctuality'),
+            btnModeBonificar: document.getElementById('btn-mode-bonificar'),
+            btnModeJustificar: document.getElementById('btn-mode-justificar'),
             areaJustificativa: document.getElementById('justify-text-area'),
             txtJustificativa: document.getElementById('admin-justification-text'),
             wordCount: document.getElementById('word-count'),
             btnSaveJustify: document.getElementById('btn-save-justify'),
-            statusIA: document.getElementById('ia-status'),
-            btnRegistrar: document.getElementById('btn-registrar')
+            statusIA: document.getElementById('ia-status')
         },
 
         init: async function() {
@@ -387,7 +430,6 @@
             }, 1000);
         },
 
-        // --- GESTÃO DE LOCAIS ---
         buscarCoordenadas: async function() {
             const cep = document.getElementById('loc-cep').value.replace(/\D/g, '');
             const num = document.getElementById('loc-num').value;
@@ -426,7 +468,7 @@
                     this.locaisCache.push({ docId: doc.id, ...local });
                     const div = document.createElement('div');
                     div.className = 'local-item';
-                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div>`;
+                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`;
                     this.els.listaLocais.appendChild(div);
                 });
                 this.atualizarOpcoesUnidades(); 
@@ -440,7 +482,6 @@
             this.els.unitFilter.innerHTML = filterOptions;
         },
 
-        // --- CADASTRO COLABORADOR ---
         cadastrarBiometria: async function() {
             if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA...");
             const id = document.getElementById('new-user-id').value;
@@ -494,7 +535,8 @@
                 });
                 if (labeledDescriptors.length > 0) {
                     this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
-                    console.log("IA Atualizada com", labeledDescriptors.length, "faces.");
+                    this.els.statusIA.innerText = "IA: Online 🟢";
+                    this.els.statusIA.classList.add('ready');
                 }
                 this.atualizarFiltrosUnidade();
                 if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios();
@@ -559,49 +601,32 @@
         abrirJustificativaAdmin: function(docId, nome) {
             document.getElementById('justify-log-id').value = docId;
             document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`;
+            this.setJustifyMode(null);
+            document.getElementById('admin-justification-text').value = "";
             this.els.modalAdminJustify.classList.add('active');
-            this.els.areaJustificativa.style.display = 'none'; // Reseta visual
-            this.els.btnSaveJustify.disabled = true;
         },
-
-        aplicarBonificacaoDireta: async function() {
-            if(!confirm("Deseja abonar este ponto automaticamente?")) return;
-            const docId = document.getElementById('justify-log-id').value;
-            try {
-                await updateDoc(doc(db, LOGS_COLLECTION, docId), {
-                    adminStatus: 'bonificado',
-                    adminNote: 'Abonado Automaticamente'
-                });
-                this.mostrarAlerta("Ponto abonado com sucesso!", "Sucesso");
-                this.fecharModalJustify();
-                this.carregarTabelaPontos();
-            } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); }
+        setJustifyMode: function(mode) {
+            this.justifyMode = mode;
+            this.els.btnModeBonificar.classList.remove('active');
+            this.els.btnModeJustificar.classList.remove('active');
+            if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; } 
+            else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; } 
+            else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; }
         },
-
-        prepararJustificativa: function() {
-            this.els.areaJustificativa.style.display = 'block';
-            this.els.txtJustificativa.value = "";
-            this.els.btnSaveJustify.disabled = true;
-        },
-
         contarPalavras: function() {
             const texto = this.els.txtJustificativa.value.trim();
             const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0;
             this.els.wordCount.innerText = `${palavras}/20 palavras`;
             this.els.btnSaveJustify.disabled = (palavras < 20);
         },
-
         salvarJustificativaAdmin: async function() {
             const docId = document.getElementById('justify-log-id').value;
             const texto = this.els.txtJustificativa.value;
-            try { 
-                await updateDoc(doc(db, LOGS_COLLECTION, docId), { adminStatus: 'justificado', adminNote: texto }); 
-                this.mostrarAlerta("Justificativa Salva!", "Sucesso"); 
-                this.fecharModalJustify(); 
-                this.carregarTabelaPontos(); 
-            } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); }
+            let updateData = {};
+            if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } 
+            else { updateData = { adminStatus: 'justificado', adminNote: texto }; }
+            try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); }
         },
-
         fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
 
         // --- RELATÓRIOS ---
@@ -701,14 +726,17 @@
             });
         },
         
-        // ... (RESTANTE DAS FUNÇÕES MANTIDAS: inicarCamera, modelosIA, etc.)
+        // ... (RESTANTE DAS FUNÇÕES MANTIDAS DA VERSÃO ANTERIOR PARA ECONOMIA DE ESPAÇO: inicarCamera, modelosIA, etc.)
         iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
-        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número."); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
+        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso"); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
         salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         renderizarListaFuncionarios: function() { const tbody = document.getElementById('employees-tbody'); const filterUnit = this.els.employeesUnitFilter.value; let lista = this.funcionariosCache; if (filterUnit) lista = lista.filter(u => u.unidade === filterUnit); tbody.innerHTML = ''; lista.forEach(u => { tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.scale || 'comum'}</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${u.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirUsuario('${u.docId}')">🗑️</button></td></tr>`; }); },
         excluirUsuario: async function(docId) { if(confirm("Excluir?")) { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); } catch(e) { alert(e.message); } } },
-        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-scale').value = user.scale || 'comum'; document.getElementById('edit-user-hours').value = user.horasSemanais; this.els.modalEdit.classList.add('active'); },
-        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, scale: document.getElementById('edit-user-scale').value, horasSemanais: document.getElementById('edit-user-hours').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        excluirLocal: async function(docId) { if(confirm("Remover este local?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
+        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-scale').value = user.scale || 'comum'; document.getElementById('edit-user-hours').value = user.horasSemanais; document.getElementById('edit-user-start').value = user.horarioEntrada || ""; document.getElementById('edit-user-break').value = user.tempoPausa || ""; document.getElementById('edit-user-end').value = user.horarioSaida || ""; this.els.modalEdit.classList.add('active'); },
+        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, scale: document.getElementById('edit-user-scale').value, horasSemanais: document.getElementById('edit-user-hours').value, horarioEntrada: document.getElementById('edit-user-start').value, tempoPausa: document.getElementById('edit-user-break').value, horarioSaida: document.getElementById('edit-user-end').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        abrirEdicaoLocal: function(docId) { const local = this.locaisCache.find(l => l.docId === docId); if (!local) return; document.getElementById('edit-loc-id-hidden').value = docId; document.getElementById('edit-loc-name').value = local.nome; document.getElementById('edit-loc-cnpj').value = local.cnpj || ""; document.getElementById('edit-loc-address').value = local.endereco || ""; document.getElementById('edit-loc-lat').value = local.lat; document.getElementById('edit-loc-lon').value = local.lng; this.els.modalEditLocal.classList.add('active'); },
+        salvarEdicaoLocal: async function() { const docId = document.getElementById('edit-loc-id-hidden').value; const nome = document.getElementById('edit-loc-name').value; const lat = parseFloat(document.getElementById('edit-loc-lat').value); const lng = parseFloat(document.getElementById('edit-loc-lon').value); if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos."); try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Local atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
         verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
@@ -733,8 +761,9 @@
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
         fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
         logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
+        // ... Outras funções de Geocoding e Sincronização mantidas ...
         buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso"); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
-        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Unidade Salva!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
     };
 
     window.app = app;
