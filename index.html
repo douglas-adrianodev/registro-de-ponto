@@ -441,7 +441,7 @@
     };
 
     const app = {
-        adminConfig: { user: "admin", pass: "123" },
+        adminConfig: { user: "Arilson", pass: "rh010203" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -452,51 +452,51 @@
         confirmCallback: null,
         pontoPendente: null,
         processando: false,
-        chartInstance: null,
-        justifyMode: null,
-        mapInstance: null,
-        mapMarker: null,
-        mapCircle: null,
+        salvarLocal: async function() { 
+            const nome = document.getElementById('loc-name').value; 
+            const cnpj = document.getElementById('loc-cnpj').value; 
+            const endereco = document.getElementById('loc-address').value; 
+            const lat = parseFloat(document.getElementById('loc-lat').value); 
+            const lng = parseFloat(document.getElementById('loc-lon').value); 
 
-        els: {
-            videoMain: document.getElementById('video-feed'),
-            videoAdmin: document.getElementById('admin-video-feed'),
-            overlay: document.getElementById('ai-overlay'),
-            canvas: document.getElementById('capture-canvas'),
-            statusDB: document.getElementById('db-status'),
-            employeeNameDisplay: document.getElementById('employee-name-display'),
-            employeeIdHidden: document.getElementById('employee-id'),
-            successMessage: document.getElementById('success-message'),
-            errorMessage: document.getElementById('error-message'),
-            modalLogin: document.getElementById('modal-login'),
-            modalEdit: document.getElementById('modal-edit'),
-            modalAlert: document.getElementById('custom-alert'),
-            modalConfirm: document.getElementById('custom-confirm'),
-            modalJustification: document.getElementById('modal-justification'),
-            modalAdminJustify: document.getElementById('modal-admin-justify'),
-            modalEditLocal: document.getElementById('modal-edit-local'),
-            modalMap: document.getElementById('modal-map'),
-            dateFilter: document.getElementById('admin-month-filter'),
-            unitFilter: document.getElementById('admin-unit-filter'),
-            listaLocais: document.getElementById('lista-locais'),
-            digitalTime: document.getElementById('digital-time'),
-            digitalDate: document.getElementById('digital-date'),
-            newUserUnit: document.getElementById('new-user-unit'),
-            editUserUnit: document.getElementById('edit-user-unit'),
-            dashEmployee: document.getElementById('dashboard-employee-select'),
-            dashMonth: document.getElementById('dashboard-month'),
-            kpiBalance: document.getElementById('kpi-balance'),
-            kpiDays: document.getElementById('kpi-days'),
-            kpiPunctuality: document.getElementById('kpi-punctuality'),
-            btnModeBonificar: document.getElementById('btn-mode-bonificar'),
-            btnModeJustificar: document.getElementById('btn-mode-justificar'),
-            areaJustificativa: document.getElementById('justify-text-area'),
-            txtJustificativa: document.getElementById('admin-justification-text'),
-            wordCount: document.getElementById('word-count'),
-            btnSaveJustify: document.getElementById('btn-save-justify'),
-            statusIA: document.getElementById('ia-status'),
-            adminMenu: document.getElementById('admin-main-menu'),
-            newUserId: document.getElementById('new-user-id') // Auto ID field
+            if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); 
+            
+            // VERIFICAÇÃO DE DUPLICIDADE
+            const duplicado = this.locaisCache.find(l => l.nome.toLowerCase() === nome.toLowerCase() || l.cnpj === cnpj);
+            if (duplicado) return this.mostrarAlerta("Unidade já cadastrada (Nome ou CNPJ).", "Erro");
+
+            try { 
+                await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); 
+                this.mostrarAlerta("Salvo!", "Sucesso"); 
+                // LIMPEZA AUTOMÁTICA
+                document.getElementById('loc-name').value = ""; 
+                document.getElementById('loc-cnpj').value = ""; 
+                document.getElementById('loc-address').value = ""; 
+                document.getElementById('loc-cep').value = ""; 
+                document.getElementById('loc-num').value = ""; 
+                document.getElementById('loc-lat').value = ""; 
+                document.getElementById('loc-lon').value = ""; 
+                // Limpa busca do mapa também
+                document.getElementById('pre-map-search').value = "";
+                document.getElementById('map-search-input').value = "";
+            } catch (e) { this.mostrarAlerta(e.message, "Erro"); } 
+        },
+        sincronizarLocais: function() { 
+            const q = query(collection(db, PLACES_COLLECTION)); 
+            onSnapshot(q, (querySnapshot) => { 
+                this.locaisCache = []; 
+                this.els.listaLocais.innerHTML = ""; 
+                querySnapshot.forEach((doc) => { 
+                    const local = doc.data(); 
+                    this.locaisCache.push({ docId: doc.id, ...local }); 
+                    const div = document.createElement('div'); 
+                    div.className = 'local-item'; 
+                    // Exibição do endereço na lista
+                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><br><small>${local.cnpj}</small><br><small style="color:#aaa">${local.endereco}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`; 
+                    this.els.listaLocais.appendChild(div); 
+                }); 
+                this.atualizarOpcoesUnidades(); 
+            }); 
         },
 
         init: async function() {
@@ -611,9 +611,29 @@
         confirmarMapa: function() {
             if (!this.mapMarker) return alert("Selecione um ponto no mapa.");
             const pos = this.mapMarker.getLatLng();
+            // REVERSE GEOCODING AUTOMÁTICO AQUI
+            this.preencherEnderecoAutomatico(pos.lat, pos.lng);
+            
             document.getElementById('loc-lat').value = pos.lat.toFixed(6);
             document.getElementById('loc-lon').value = pos.lng.toFixed(6);
             this.els.modalMap.classList.remove('active');
+        },
+
+        preencherEnderecoAutomatico: async function(lat, lng) {
+             try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await res.json();
+                if(data && data.display_name) {
+                     // Tenta preencher os campos se estiverem vazios ou sempre sobrescrever para precisão
+                     const enderecoFull = data.display_name;
+                     // Atualiza campo de endereço da unidade com o reverso do pino
+                     document.getElementById('loc-address').value = enderecoFull;
+                     
+                     if(data.address && data.address.postcode) {
+                        document.getElementById('loc-cep').value = data.address.postcode;
+                     }
+                }
+            } catch(e) { console.error("Erro reverso", e); }
         },
 
         // --- NAVEGAÇÃO ADMIN ---
