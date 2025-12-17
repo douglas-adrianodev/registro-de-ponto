@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MaranaTime Cloud - Gestão Total</title>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -146,7 +145,6 @@
         <button onclick="window.app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Gestão</button>
     </nav>
 
-    <!-- PONTO -->
     <section id="view-ponto" class="view-section active">
         <div class="card">
             <div class="camera-wrapper">
@@ -176,7 +174,6 @@
         </div>
     </section>
 
-    <!-- GESTÃO (COM MENU) -->
     <section id="view-admin" class="view-section">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -184,7 +181,6 @@
                 <button onclick="window.app.logoutAdmin()" class="btn-danger small">🔒 Sair</button>
             </div>
 
-            <!-- MENU PRINCIPAL -->
             <div id="admin-main-menu">
                 <div class="admin-menu-grid">
                     <div class="admin-menu-btn" onclick="window.app.openSubSection('dashboard')">
@@ -208,7 +204,6 @@
                 </div>
             </div>
 
-            <!-- SUB: DASHBOARD ANALYTICS AVANÇADO -->
             <div id="admin-sub-dashboard" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="filters-area">
@@ -223,20 +218,18 @@
                         <div class="kpi-card"><div class="kpi-label">Dias Trabalhados</div><div class="kpi-value" id="kpi-days">0</div></div>
                         <div class="kpi-card"><div class="kpi-label">Média Atraso</div><div class="kpi-value" id="kpi-avg-delay">0m</div></div>
                         <div class="kpi-card"><div class="kpi-label">Taxa Presença</div><div class="kpi-value" id="kpi-presence">--%</div></div>
+                        <div class="kpi-card" style="display:none;"><div class="kpi-label">Pontualidade</div><div class="kpi-value" id="kpi-punctuality">0%</div></div>
                     </div>
 
                     <div class="charts-row">
                         <div class="chart-container" style="flex:2;">
-                            <canvas id="performanceChart"></canvas> <!-- Gráfico de Barras/Linha -->
-                        </div>
+                            <canvas id="performanceChart"></canvas> </div>
                         <div class="chart-container" style="flex:1;">
-                            <canvas id="statusChart"></canvas> <!-- Gráfico de Rosca -->
-                        </div>
+                            <canvas id="statusChart"></canvas> </div>
                     </div>
                 </div>
             </div>
 
-            <!-- SUB: CADASTRO -->
             <div id="admin-sub-cadastro" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="input-group admin-panel">
@@ -262,7 +255,6 @@
                 </div>
             </div>
 
-            <!-- SUB: LOCAIS (MAPA INTERATIVO) -->
             <div id="admin-sub-locais" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="input-group admin-panel">
@@ -276,7 +268,6 @@
                         <div><label>Lat</label><input type="text" id="loc-lat" readonly style="background:rgba(0,0,0,0.2)"></div>
                         <div><label>Lon</label><input type="text" id="loc-lon" readonly style="background:rgba(0,0,0,0.2)"></div>
                     </div>
-                    <!-- INPUT PARA BUSCA PRÉVIA -->
                     <div class="input-group" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
                         <label style="color: var(--warning);">Para abrir o mapa no local correto:</label>
                         <div style="display: flex; gap: 10px;">
@@ -289,7 +280,6 @@
                 </div>
             </div>
 
-            <!-- SUB: COLABORADORES -->
             <div id="admin-sub-colaboradores" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="input-group">
@@ -308,7 +298,6 @@
                 </div>
             </div>
 
-            <!-- SUB: RELATÓRIOS -->
             <div id="admin-sub-relatorios" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="filters-area">
@@ -325,7 +314,6 @@
                 </div>
             </div>
 
-            <!-- SUB: HISTÓRICO -->
             <div id="admin-sub-historico" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
                 <div class="logs-area">
@@ -349,7 +337,6 @@
     </section>
 </div>
 
-<!-- MODAIS -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
 
 <div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div><div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
@@ -361,12 +348,10 @@
 <div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
 
-<!-- NOVO: MODAL MAPA LEAFLET -->
 <div id="modal-map" class="modal-overlay"><div class="modal-card" style="max-width: 800px; width: 95%; max-height: 80vh;"><h3>🗺️ Selecione o Local Exato</h3><p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Clique no mapa ou arraste o pino para definir o centro da cerca de 100m.</p><div style="display: flex; gap: 5px; margin-bottom: 10px;"><input type="text" id="map-search-input" placeholder="Digite endereço para buscar..." style="flex:1;"><button onclick="window.app.buscarNoMapa()" class="btn-secondary" style="width: auto;">🔍 Ir</button></div><div id="map-container" style="height: 400px; border-radius: 8px;"></div><div class="modal-actions"><button onclick="window.app.confirmarMapa()" class="btn-success">Confirmar Posição</button><button onclick="document.getElementById('modal-map').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
 <div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Unidade</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>CNPJ</label><input type="text" id="edit-loc-cnpj"></div><div class="input-group"><label>Endereço</label><input type="text" id="edit-loc-address"></div><div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="window.app.excluirLocal(document.getElementById('edit-loc-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
-<!-- CONFIGURAÇÃO FIREBASE - MÓDULO -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -449,6 +434,7 @@
             modalMap: document.getElementById('modal-map'),
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
+            historyUnitFilter: document.getElementById('filter-history-unit'),
             listaLocais: document.getElementById('lista-locais'),
             digitalTime: document.getElementById('digital-time'),
             digitalDate: document.getElementById('digital-date'),
@@ -469,28 +455,6 @@
             btnSaveJustify: document.getElementById('btn-save-justify'),
             statusIA: document.getElementById('ia-status'),
             adminMenu: document.getElementById('admin-main-menu')
-        },
-
-        init: async function() {
-            this.els.statusDB.innerText = "Nuvem: ...";
-            try {
-                await signInAnonymously(auth);
-                this.els.statusDB.innerText = "Nuvem: OK";
-                this.sincronizarLocais(); 
-                this.sincronizarFuncionarios();
-            } catch (error) {
-                this.mostrarAlerta("Erro conexão: " + error.message, "Erro");
-                return;
-            }
-            const hoje = new Date();
-            const mesStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-            this.els.dateFilter.value = mesStr;
-            this.els.dashMonth.value = mesStr;
-
-            this.iniciarRelogio();
-            await this.carregarModelosIA();
-            this.iniciarCamera('main');
-            document.getElementById('btn-send-justification').onclick = () => this.enviarJustificativa();
         },
 
         // --- DASHBOARD AVANÇADO ---
@@ -582,7 +546,7 @@
             this.els.kpiDays.innerText = diasTrabalhados;
             this.els.kpiPunctuality.innerText = pontualidade.toFixed(0) + "%";
             
-            // Novos KPIs (Se existirem no HTML, senão ignora)
+            // Novos KPIs
             if(document.getElementById('kpi-avg-delay')) document.getElementById('kpi-avg-delay').innerText = mediaAtraso + "m";
             if(document.getElementById('kpi-presence')) document.getElementById('kpi-presence').innerText = Math.min(100, taxaPresenca.toFixed(0)) + "%";
 
@@ -653,9 +617,114 @@
             });
         },
 
-        // --- MANTER OUTRAS FUNÇÕES ---
-        // Funções de Mapa, Câmera, Cadastro, etc. mantidas exatamente como na v15.0
-        // (Código omitido aqui por brevidade, mas está incluído no arquivo final acima)
+        // --- GERENCIAMENTO DE COLABORADORES ---
+        renderizarListaFuncionarios: function() {
+            const tbody = document.getElementById('employees-tbody');
+            const filtroUnidade = document.getElementById('filter-employees-unit').value;
+            
+            tbody.innerHTML = '';
+
+            let lista = this.funcionariosCache;
+            if (filtroUnidade) {
+                lista = lista.filter(f => f.unidade === filtroUnidade);
+            }
+
+            if (lista.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum colaborador encontrado.</td></tr>';
+                return;
+            }
+
+            lista.forEach(func => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${func.id}</td>
+                    <td>${func.nome}</td>
+                    <td>${func.unidade}</td>
+                    <td>${func.horasSemanais || 44}h</td>
+                    <td>
+                        <button class="btn-edit" onclick="window.app.abrirEdicao('${func.docId}')">✏️ Editar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        },
+
+        abrirEdicao: function(docId) {
+            const func = this.funcionariosCache.find(f => f.docId === docId);
+            if (!func) return;
+
+            document.getElementById('edit-user-id-hidden').value = docId;
+            document.getElementById('edit-user-name').value = func.nome;
+            document.getElementById('edit-user-unit').value = func.unidade;
+            document.getElementById('edit-user-scale').value = func.scale || 'comum';
+            document.getElementById('edit-user-hours').value = func.horasSemanais || 44;
+            
+            // Horários
+            document.getElementById('edit-user-start').value = func.horarioEntrada || '';
+            document.getElementById('edit-user-break').value = func.tempoPausa || '';
+            document.getElementById('edit-user-end').value = func.horarioSaida || '';
+
+            this.els.modalEdit.classList.add('active');
+        },
+
+        salvarEdicao: async function() {
+            const docId = document.getElementById('edit-user-id-hidden').value;
+            const nome = document.getElementById('edit-user-name').value;
+            const unidade = document.getElementById('edit-user-unit').value;
+            const scale = document.getElementById('edit-user-scale').value;
+            const horas = document.getElementById('edit-user-hours').value;
+            
+            const entrada = document.getElementById('edit-user-start').value;
+            const pausa = document.getElementById('edit-user-break').value;
+            const saida = document.getElementById('edit-user-end').value;
+
+            try {
+                await updateDoc(doc(db, USERS_COLLECTION, docId), {
+                    nome, unidade, scale, horasSemanais: horas,
+                    horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida
+                });
+                
+                this.mostrarAlerta("Dados atualizados!", "Sucesso");
+                this.els.modalEdit.classList.remove('active');
+            } catch (e) {
+                this.mostrarAlerta("Erro ao atualizar: " + e.message, "Erro", "error");
+            }
+        },
+
+        excluirUsuario: function(docId) {
+            this.mostrarConfirmacao("Tem certeza que deseja excluir este colaborador? O histórico será mantido, mas o acesso será revogado.", async () => {
+                try {
+                    await deleteDoc(doc(db, USERS_COLLECTION, docId));
+                    this.mostrarAlerta("Colaborador removido.", "Sucesso");
+                    this.els.modalEdit.classList.remove('active');
+                } catch (e) {
+                    this.mostrarAlerta("Erro: " + e.message, "Erro", "error");
+                }
+            });
+        },
+
+        // --- INICIALIZAÇÃO E OUTRAS FUNÇÕES ---
+        init: async function() {
+            this.els.statusDB.innerText = "Nuvem: ...";
+            try {
+                await signInAnonymously(auth);
+                this.els.statusDB.innerText = "Nuvem: OK";
+                this.sincronizarLocais(); 
+                this.sincronizarFuncionarios();
+            } catch (error) {
+                this.mostrarAlerta("Erro conexão: " + error.message, "Erro");
+                return;
+            }
+            const hoje = new Date();
+            const mesStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+            this.els.dateFilter.value = mesStr;
+            this.els.dashMonth.value = mesStr;
+
+            this.iniciarRelogio();
+            await this.carregarModelosIA();
+            this.iniciarCamera('main');
+            document.getElementById('btn-send-justification').onclick = () => this.enviarJustificativa();
+        },
         
         iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
         abrirMapaSelecao: function() { this.els.modalMap.classList.add('active'); if (!this.mapInstance) { this.mapInstance = L.map('map-container').setView([-22.9068, -43.1729], 13); L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' }).addTo(this.mapInstance); this.mapInstance.on('click', (e) => { this.posicionarMarcador(e.latlng.lat, e.latlng.lng); }); } const addr = document.getElementById('pre-map-search').value; if(addr) this.focarMapaNoEndereco(addr); setTimeout(() => { this.mapInstance.invalidateSize(); }, 300); },
@@ -703,14 +772,11 @@
         carregarModelosIA: async function() { this.els.statusIA.innerText = "IA: Baixando..."; try { await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')]); this.modelosCarregados = true; this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); this.iniciarDeteccaoContinua(); } catch (e) { console.error(e); this.els.statusIA.innerText = "IA: Erro 🔴"; } },
         iniciarCamera: async function(tipo) { if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop()); try { const stream = await navigator.mediaDevices.getUserMedia({ video: {} }); this.streamAtiva = stream; if (tipo === 'main') { this.els.videoMain.srcObject = stream; this.els.videoAdmin.srcObject = null; } else { this.els.videoAdmin.srcObject = stream; this.els.videoMain.srcObject = null; } } catch (e) { console.error("Erro Cam", e); } },
         iniciarDeteccaoContinua: function() { const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }); const loop = async () => { if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') { try { const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors(); const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true); const resized = faceapi.resizeResults(detections, dims); const ctx = this.els.overlay.getContext('2d'); ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height); resized.forEach(detection => { const match = this.faceMatcher.findBestMatch(detection.descriptor); const box = detection.detection.box; if (match.label !== 'unknown') { new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay); this.processarReconhecimento(match.label); } else { new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay); } }); } catch (err) { } } requestAnimationFrame(loop); }; loop(); },
-        cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const horas = document.getElementById('new-user-hours').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts; },
+        atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; if(document.getElementById('filter-employees-unit')) document.getElementById('filter-employees-unit').innerHTML = opts; },
         switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
         fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
         logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
-        // ... Outras funções de Geocoding e Sincronização mantidas ...
-        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso"); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
         salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
     };
 
