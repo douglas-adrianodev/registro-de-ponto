@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MaranaTime Cloud - Gestão Total</title>
+    <!-- Face API -->
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet (Mapas) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     
     <style>
         /* --- ESTILOS GERAIS (DARK TECH THEME) --- */
@@ -23,9 +28,8 @@
         /* Header */
         .main-header { text-align: center; margin-bottom: 5px; flex-shrink: 0; position: relative; z-index: 10; }
         .logo-area h1 { color: var(--primary); font-size: 1.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-        .status-bar { font-size: 0.7rem; font-weight: bold; margin-top: 2px; display: flex; justify-content: center; gap: 8px; }
-        .status-item { padding: 2px 8px; border-radius: 10px; background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; }
-        .status-item.online { color: #34d399; border-color: #34d399; }
+        .status-bar { font-size: 0.7rem; margin-top: 2px; display: flex; justify-content: center; gap: 8px; font-weight: bold; }
+        .status-item.online { color: #34d399; }
         
         /* Nav */
         .nav-bar { display: flex; gap: 8px; margin-bottom: 10px; background: var(--card-bg); padding: 5px; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--border); }
@@ -37,6 +41,17 @@
         .view-section.active { display: flex; flex-direction: column; }
         #view-ponto.active { align-items: center; justify-content: center; }
         
+        /* Admin Navigation Grid */
+        .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; margin-top: 20px; }
+        .admin-menu-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .admin-menu-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); border-color: var(--primary); }
+        .admin-menu-icon { font-size: 2rem; margin-bottom: 5px; }
+        .admin-menu-label { font-weight: bold; font-size: 0.9rem; color: var(--text); }
+        .sub-section { display: none; width: 100%; animation: fadeIn 0.3s; }
+        .sub-section.active { display: block; }
+        .btn-back { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: auto; padding: 5px 15px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 15px; }
+
+        /* Cards */
         .card { background: var(--card-bg); padding: 15px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #view-admin .card { max-width: 100%; display: block; }
         
@@ -65,7 +80,8 @@
         .btn-danger { background: #dc2626; color: white; width: auto; }
         .btn-purple { background: #7c3aed; color: white; width: auto; }
         .btn-edit { background: #d97706; color: white; padding: 4px 8px; font-size: 0.75rem; width: auto; }
-        
+        .btn-warning { background: #f59e0b; color: #000; width: auto; }
+
         /* Admin Layout */
         .filters-area, .input-group.admin-panel { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
         .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
@@ -95,12 +111,13 @@
         .digital-time { font-size: 1.2rem; font-weight: bold; color: var(--success); text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
         .digital-date { font-size: 0.65rem; color: var(--success); opacity: 0.8; text-transform: uppercase; }
 
-        /* Modals & Feedback */
+        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 10px; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
         .modal-card { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         
+        /* Feedback */
         #success-message, #error-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 50px; z-index: 20; font-weight: bold; animation: popIn 0.4s; }
         #success-message { background: rgba(16, 185, 129, 0.95); color: white; }
         #error-message { background: rgba(220, 38, 38, 0.95); color: white; }
@@ -119,7 +136,7 @@
     <div class="system-clock"><div class="digital-time" id="digital-time">00:00</div><div class="digital-date" id="digital-date">--</div></div>
 
     <header class="main-header">
-        <div class="logo-area"><h1> MaranaTime</h1><p>Gestão Total de Ponto</p></div>
+        <div class="logo-area"><h1>☁️ MaranaTime</h1><p>Gestão Total</p></div>
         <div class="status-bar"><span id="ia-status" class="status-item">IA: ...</span><span id="db-status" class="status-item">Conectando...</span></div>
     </header>
 
@@ -166,145 +183,192 @@
                 <button onclick="window.app.logoutAdmin()" class="btn-danger small">🔒 Sair</button>
             </div>
 
-            <!-- DASHBOARD ANALYTICS -->
-            <div class="filters-area" style="border-color: var(--primary);">
-                <label style="font-weight: bold; color: var(--primary);">📊 Indicadores Individuais</label>
-                <div class="filter-row" style="margin-top: 10px;">
-                     <div class="filter-item"><label>Colaborador:</label><select id="dashboard-employee-select" onchange="window.app.atualizarDashboard()"><option value="">Selecione...</option></select></div>
-                     <div class="filter-item"><label>Mês:</label><input type="month" id="dashboard-month" onchange="window.app.atualizarDashboard()"></div>
-                </div>
-                <div class="dashboard-grid" style="margin-top: 20px;">
-                    <div class="kpi-card"><div class="kpi-label">Saldo</div><div class="kpi-value" id="kpi-balance">--</div></div>
-                    <div class="kpi-card"><div class="kpi-label">Dias Trab.</div><div class="kpi-value" id="kpi-days">0</div></div>
-                    <div class="kpi-card"><div class="kpi-label">Pontualidade</div><div class="kpi-value" id="kpi-punctuality">--%</div></div>
-                </div>
-                <div class="chart-container"><canvas id="attendanceChart"></canvas></div>
-            </div>
-
-            <!-- CADASTRO -->
-            <div class="input-group admin-panel">
-                <h3 style="color: var(--primary); font-size: 1rem;">👤 Novo Cadastro</h3>
-                <div class="form-row">
-                    <div><label>ID</label><input type="number" id="new-user-id"></div>
-                    <div><label>Nome</label><input type="text" id="new-user-name"></div>
-                    <div><label>Unidade</label><select id="new-user-unit"><option value="">...</option></select></div>
-                </div>
-                <div class="form-row">
-                     <div><label>Regime</label><select id="new-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div>
-                    <div><label>Hrs/Sem</label><input type="number" id="new-user-hours" value="44"></div>
-                </div>
-                <div class="form-row" style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                    <div><label>Entrada</label><input type="time" id="new-user-start"></div>
-                    <div><label>Pausa (min)</label><input type="number" id="new-user-break" placeholder="60"></div>
-                    <div><label>Saída</label><input type="time" id="new-user-end"></div>
-                </div>
-                <div class="camera-container" style="height: 120px; width: 120px; margin: 10px auto 0; border: 2px solid var(--primary);"> 
-                    <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
-                </div>
-                <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar Cadastro</button>
-            </div>
-
-            <!-- LOCAIS -->
-            <div class="input-group admin-panel">
-                <h3 style="color: #34d399; font-size: 1rem;">📍 Unidades</h3>
-                <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                    <div><label>Nome</label><input type="text" id="loc-name"></div>
-                    <div><label>CNPJ</label><input type="text" id="loc-cnpj"></div>
-                    <div><label>Endereço</label><input type="text" id="loc-address"></div>
-                </div>
-                <div class="form-row">
-                    <div><label>CEP</label><input type="text" id="loc-cep"></div>
-                    <div><label>Nº</label><input type="text" id="loc-num"></div>
-                    <div style="display:flex; align-items:end;"><button onclick="window.app.buscarCoordenadas()" class="btn-secondary">🔍 GPS</button></div>
-                </div>
-                <input type="hidden" id="loc-lat"><input type="hidden" id="loc-lon">
-                <button onclick="window.app.salvarLocal()" class="btn-success" style="margin-top: 10px;">Salvar Unidade</button>
-                <div id="lista-locais" style="max-height: 100px; overflow-y: auto; margin-top: 10px; font-size: 0.8rem;"></div>
-            </div>
-
-            <!-- RELATÓRIOS -->
-            <div class="filters-area">
-                <label style="font-weight:bold; color: var(--primary);">Relatórios:</label>
-                <div class="filter-row" style="margin-top:10px;">
-                    <div class="filter-item"><label>Mês:</label><input type="month" id="admin-month-filter"></div>
-                    <div class="filter-item"><label>Unidade:</label><select id="admin-unit-filter"><option value="">Todas</option></select></div>
-                    <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary" style="margin-top:23px;">Atualizar Lista</button></div>
-                </div>
-                <div class="actions-row">
-                    <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado</button>
-                    <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">📊 Fechamento da Unidade</button>
+            <!-- MENU PRINCIPAL -->
+            <div id="admin-main-menu">
+                <div class="admin-menu-grid">
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('dashboard')">
+                        <span class="admin-menu-icon">📊</span>
+                        <span class="admin-menu-label">Dashboard</span>
+                    </div>
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('cadastro')">
+                        <span class="admin-menu-icon">👤</span>
+                        <span class="admin-menu-label">Novo Cadastro</span>
+                    </div>
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('locais')">
+                        <span class="admin-menu-icon">📍</span>
+                        <span class="admin-menu-label">Unidades (GPS)</span>
+                    </div>
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('colaboradores')">
+                        <span class="admin-menu-icon">📋</span>
+                        <span class="admin-menu-label">Minha Equipe</span>
+                    </div>
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('relatorios')">
+                        <span class="admin-menu-icon">🖨️</span>
+                        <span class="admin-menu-label">Relatórios</span>
+                    </div>
+                    <div class="admin-menu-btn" onclick="window.app.openSubSection('historico')">
+                        <span class="admin-menu-icon">🕒</span>
+                        <span class="admin-menu-label">Histórico</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- HISTÓRICO COM JUSTIFICATIVA -->
-            <div class="logs-area">
-                <h3 style="font-size: 1rem; margin-bottom: 10px;">Acompanhamento Diário (Mês Atual)</h3>
-                <div class="table-responsive">
-                    <table id="logs-table">
-                        <thead><tr><th>Data</th><th>Hora</th><th>Colaborador</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
-                        <tbody id="logs-tbody"></tbody>
-                    </table>
+            <!-- SUB-SEÇÕES -->
+
+            <!-- 1. DASHBOARD -->
+            <div id="admin-sub-dashboard" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="filters-area" style="border-color: var(--primary);">
+                    <label style="font-weight: bold; color: var(--primary);">📊 Indicadores Individuais</label>
+                    <div class="filter-row" style="margin-top: 10px;">
+                         <div class="filter-item"><label>Colaborador:</label><select id="dashboard-employee-select" onchange="window.app.atualizarDashboard()"><option value="">Selecione...</option></select></div>
+                         <div class="filter-item"><label>Mês:</label><input type="month" id="dashboard-month" onchange="window.app.atualizarDashboard()"></div>
+                    </div>
+                    <div class="dashboard-grid" style="margin-top: 20px;">
+                        <div class="kpi-card"><div class="kpi-label">Saldo</div><div class="kpi-value" id="kpi-balance">--</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Dias Trab.</div><div class="kpi-value" id="kpi-days">0</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Pontualidade</div><div class="kpi-value" id="kpi-punctuality">--%</div></div>
+                    </div>
+                    <div class="chart-container"><canvas id="attendanceChart"></canvas></div>
                 </div>
-                <p style="font-size: 0.75rem; color: #fca5a5; margin-top: 5px;">* Linhas vermelhas indicam divergência de horário.</p>
             </div>
+
+            <!-- 2. CADASTRO -->
+            <div id="admin-sub-cadastro" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="input-group admin-panel">
+                    <h3 style="color: var(--primary); font-size: 1rem;">👤 Novo Cadastro</h3>
+                    <div class="form-row">
+                        <div><label>ID</label><input type="number" id="new-user-id"></div>
+                        <div><label>Nome</label><input type="text" id="new-user-name"></div>
+                        <div><label>Unidade</label><select id="new-user-unit"><option value="">...</option></select></div>
+                    </div>
+                    <div class="form-row">
+                         <div><label>Regime</label><select id="new-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div>
+                        <div><label>Hrs/Sem</label><input type="number" id="new-user-hours" value="44"></div>
+                    </div>
+                    <div class="form-row" style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
+                        <div><label>Entrada</label><input type="time" id="new-user-start"></div>
+                        <div><label>Pausa (min)</label><input type="number" id="new-user-break" placeholder="60"></div>
+                        <div><label>Saída</label><input type="time" id="new-user-end"></div>
+                    </div>
+                    <div class="camera-container" style="height: 120px; width: 120px; margin: 10px auto 0; border: 2px solid var(--primary);"> 
+                        <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
+                    </div>
+                    <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar Cadastro</button>
+                </div>
+            </div>
+
+            <!-- 3. LOCAIS (MAPA INTERATIVO) -->
+            <div id="admin-sub-locais" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="input-group admin-panel">
+                    <h3 style="color: #34d399; font-size: 1rem;">📍 Unidades</h3>
+                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
+                        <div><label>Nome</label><input type="text" id="loc-name"></div>
+                        <div><label>CNPJ</label><input type="text" id="loc-cnpj"></div>
+                        <div><label>Endereço</label><input type="text" id="loc-address"></div>
+                    </div>
+                    <div class="form-row">
+                        <div><label>Lat</label><input type="text" id="loc-lat" readonly style="background:rgba(0,0,0,0.2)"></div>
+                        <div><label>Lon</label><input type="text" id="loc-lon" readonly style="background:rgba(0,0,0,0.2)"></div>
+                    </div>
+                    <!-- INPUT PARA BUSCA PRÉVIA -->
+                    <div class="input-group" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
+                        <label style="color: var(--warning);">Para abrir o mapa no local correto:</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="pre-map-search" placeholder="Ex: Rua Dias da Cruz, Méier, Rio de Janeiro" style="flex:1;">
+                            <button onclick="window.app.abrirMapaSelecao()" class="btn-secondary" style="border-color:#34d399; color:#34d399; width: auto;">🗺️ Abrir Mapa</button>
+                        </div>
+                    </div>
+
+                    <button onclick="window.app.salvarLocal()" class="btn-success" style="margin-top: 15px;">Salvar Unidade</button>
+                    <div id="lista-locais" style="max-height: 100px; overflow-y: auto; margin-top: 10px; font-size: 0.8rem;"></div>
+                </div>
+            </div>
+
+            <!-- 4. COLABORADORES -->
+            <div id="admin-sub-colaboradores" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size: 1rem; margin:0;">Colaboradores</h3>
+                        <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 130px; padding: 6px;">
+                            <option value="">Todas</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="employees-table">
+                            <thead><tr><th>ID</th><th>Nome</th><th>Unid.</th><th>Hrs</th><th>Ações</th></tr></thead>
+                            <tbody id="employees-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. RELATÓRIOS -->
+            <div id="admin-sub-relatorios" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="filters-area">
+                    <label style="font-weight:bold; color: var(--primary);">Relatórios:</label>
+                    <div class="filter-row" style="margin-top:10px;">
+                        <div class="filter-item"><label>Mês:</label><input type="month" id="admin-month-filter"></div>
+                        <div class="filter-item"><label>Unidade:</label><select id="admin-unit-filter"><option value="">Todas</option></select></div>
+                        <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary" style="margin-top:23px;">Atualizar Lista</button></div>
+                    </div>
+                    <div class="actions-row">
+                        <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado</button>
+                        <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">📊 Fechamento da Unidade</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. HISTÓRICO -->
+            <div id="admin-sub-historico" class="sub-section">
+                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
+                <div class="logs-area">
+                    <h3 style="font-size: 1rem; margin-bottom: 10px;">Acompanhamento Diário (Mês Atual)</h3>
+                    <div class="table-responsive">
+                        <table id="logs-table">
+                            <thead><tr><th>Data</th><th>Hora</th><th>Colaborador</th><th>Tipo</th><th>Status</th><th>Ações</th></tr></thead>
+                            <tbody id="logs-tbody"></tbody>
+                        </table>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #fca5a5; margin-top: 5px;">* Linhas vermelhas indicam divergência de horário.</p>
+                </div>
+            </div>
+
         </div>
     </section>
 </div>
 
 <!-- MODAIS -->
 <div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
-
-<!-- MODAL EDIÇÃO (Com botão excluir) -->
-<div id="modal-edit" class="modal-overlay">
-    <div class="modal-card">
-        <h3>✏️ Editar Colaborador</h3>
-        <input type="hidden" id="edit-user-id-hidden">
-        <div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div>
-        <div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div>
-        <div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div>
-        <div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
-        
-        <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-            <label style="color: var(--primary);">Escala de Horário:</label>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;">
-                <div><label>Entrada</label><input type="time" id="edit-user-start"></div>
-                <div><label>Pausa</label><input type="number" id="edit-user-break"></div>
-                <div><label>Saída</label><input type="time" id="edit-user-end"></div>
-            </div>
-        </div>
-        
-        <div class="modal-actions">
-            <button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button>
-            <button onclick="window.app.excluirUsuario(document.getElementById('edit-user-id-hidden').value)" class="btn-danger">Excluir</button>
-            <button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-secondary">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-edit-local" class="modal-overlay">
-    <div class="modal-card">
-        <h3>📍 Editar Unidade</h3>
-        <input type="hidden" id="edit-loc-id-hidden">
-        <div class="input-group"><label>Nome</label><input type="text" id="edit-loc-name"></div>
-        <div class="input-group"><label>CNPJ</label><input type="text" id="edit-loc-cnpj"></div>
-        <div class="input-group"><label>Endereço</label><input type="text" id="edit-loc-address"></div>
-        <div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div>
-        <div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div>
-        <div class="modal-actions">
-            <button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button>
-            <button onclick="window.app.excluirLocal(document.getElementById('edit-loc-id-hidden').value)" class="btn-danger">Excluir</button>
-            <button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-secondary">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.setJustifyMode('bonificar')" id="btn-mode-bonificar" class="btn-secondary">Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary">Justificar</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;"></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p></div><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar</button><button onclick="window.app.fecharModalJustify()" class="btn-danger">Cancelar</button></div></div></div>
+<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div><div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
+<div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><label style="color: var(--primary);">Escala de Horário:</label><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;"><div><label>Entrada</label><input type="time" id="edit-user-start"></div><div><label>Pausa</label><input type="number" id="edit-user-break"></div><div><label>Saída</label><input type="time" id="edit-user-end"></div></div></div>
+<div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="window.app.excluirUsuario(document.getElementById('edit-user-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
+<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.aplicarBonificacaoDireta()" class="btn-success" style="flex:1;">✅ Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary" style="flex:1;">📝 Justificar (Texto)</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;" placeholder="Mínimo 20 palavras..."></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar Justificativa</button></div></div><div class="modal-actions"><button onclick="window.app.fecharModalJustify()" class="btn-danger" style="width:100%">Fechar</button></div></div></div>
 <div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border:2px solid #f59e0b;background:#fffbeb;"><h3 style="color:#b45309;">⚠️ Ponto Externo</h3><p style="color:#78350f;margin-bottom:10px;">Fora dos locais cadastrados.</p><textarea id="justification-text" rows="3" style="background:white;color:black;width:100%;"></textarea><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
+
+<!-- NOVO: MODAL MAPA LEAFLET -->
+<div id="modal-map" class="modal-overlay">
+    <div class="modal-card" style="max-width: 800px; width: 95%; max-height: 80vh;">
+        <h3>🗺️ Selecione o Local Exato</h3>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Clique no mapa ou arraste o pino.</p>
+        <div id="map-container" style="height: 400px; border-radius: 8px;"></div>
+        <div class="modal-actions">
+            <button onclick="window.app.confirmarMapa()" class="btn-success">Confirmar Posição</button>
+            <button onclick="document.getElementById('modal-map').classList.remove('active')" class="btn-danger">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Unidade</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>CNPJ</label><input type="text" id="edit-loc-cnpj"></div><div class="input-group"><label>Endereço</label><input type="text" id="edit-loc-address"></div><div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="window.app.excluirLocal(document.getElementById('edit-loc-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
 <canvas id="capture-canvas" style="display:none;"></canvas>
 
-<!-- SCRIPT -->
+<!-- CONFIGURAÇÃO FIREBASE - MÓDULO -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -320,6 +384,7 @@
         USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
         LOGS_COLLECTION = `artifacts/${APP_ID}/public/data/logs`;
         PLACES_COLLECTION = `artifacts/${APP_ID}/public/data/places`;
+        console.log("Modo Preview Ativado");
     } else {
         firebaseConfig = {
             apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ",
@@ -333,6 +398,7 @@
         USERS_COLLECTION = "users";
         LOGS_COLLECTION = "logs";
         PLACES_COLLECTION = "places";
+        console.log("Modo Produção Ativado");
     }
     
     const firebaseApp = initializeApp(firebaseConfig);
@@ -341,13 +407,13 @@
 
     const COMPANY_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Sede - Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
+        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
         contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
         cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
     };
 
     const app = {
-        adminConfig: { user: "Arilson", pass: "rh010203" },
+        adminConfig: { user: "admin", pass: "123" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -360,6 +426,9 @@
         processando: false,
         chartInstance: null,
         justifyMode: null,
+        mapInstance: null,
+        mapMarker: null,
+        mapCircle: null,
 
         els: {
             videoMain: document.getElementById('video-feed'),
@@ -378,6 +447,7 @@
             modalJustification: document.getElementById('modal-justification'),
             modalAdminJustify: document.getElementById('modal-admin-justify'),
             modalEditLocal: document.getElementById('modal-edit-local'),
+            modalMap: document.getElementById('modal-map'), // Novo
             dateFilter: document.getElementById('admin-month-filter'),
             unitFilter: document.getElementById('admin-unit-filter'),
             listaLocais: document.getElementById('lista-locais'),
@@ -396,7 +466,8 @@
             txtJustificativa: document.getElementById('admin-justification-text'),
             wordCount: document.getElementById('word-count'),
             btnSaveJustify: document.getElementById('btn-save-justify'),
-            statusIA: document.getElementById('ia-status')
+            statusIA: document.getElementById('ia-status'),
+            adminMenu: document.getElementById('admin-main-menu')
         },
 
         init: async function() {
@@ -430,313 +501,123 @@
             }, 1000);
         },
 
-        buscarCoordenadas: async function() {
-            const cep = document.getElementById('loc-cep').value.replace(/\D/g, '');
-            const num = document.getElementById('loc-num').value;
-            if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.");
-            try {
-                const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                const dataCep = await resCep.json();
-                if(dataCep.erro) throw new Error("CEP não encontrado.");
-                document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`;
-                
-                const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`;
-                const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
-                const dataGeo = await resGeo.json();
-                if(dataGeo.length === 0) throw new Error("Endereço não localizado.");
-                document.getElementById('loc-lat').value = dataGeo[0].lat;
-                document.getElementById('loc-lon').value = dataGeo[0].lon;
-                this.mostrarAlerta(`Endereço localizado!`, "Sucesso");
-            } catch(e) { this.mostrarAlerta(e.message, "Erro"); }
-        },
-        salvarLocal: async function() {
-            const nome = document.getElementById('loc-name').value;
-            const cnpj = document.getElementById('loc-cnpj').value;
-            const endereco = document.getElementById('loc-address').value;
-            const lat = parseFloat(document.getElementById('loc-lat').value);
-            const lng = parseFloat(document.getElementById('loc-lon').value);
-            if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados.");
-            try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); document.getElementById('loc-name').value = ""; document.getElementById('loc-cnpj').value = ""; document.getElementById('loc-address').value = ""; document.getElementById('loc-cep').value = ""; document.getElementById('loc-num').value = ""; document.getElementById('loc-lat').value = ""; document.getElementById('loc-lon').value = ""; } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
-        },
-        sincronizarLocais: function() {
-            const q = query(collection(db, PLACES_COLLECTION));
-            onSnapshot(q, (querySnapshot) => {
-                this.locaisCache = [];
-                this.els.listaLocais.innerHTML = "";
-                querySnapshot.forEach((doc) => {
-                    const local = doc.data();
-                    this.locaisCache.push({ docId: doc.id, ...local });
-                    const div = document.createElement('div');
-                    div.className = 'local-item';
-                    div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`;
-                    this.els.listaLocais.appendChild(div);
-                });
-                this.atualizarOpcoesUnidades(); 
-            });
-        },
-        atualizarOpcoesUnidades: function() {
-            const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
-            this.els.newUserUnit.innerHTML = optionsHTML;
-            this.els.editUserUnit.innerHTML = optionsHTML;
-            const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join('');
-            this.els.unitFilter.innerHTML = filterOptions;
-        },
-
-        cadastrarBiometria: async function() {
-            if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA...");
-            const id = document.getElementById('new-user-id').value;
-            const nome = document.getElementById('new-user-name').value;
-            const unidade = document.getElementById('new-user-unit').value;
-            const scale = document.getElementById('new-user-scale').value;
-            const horas = document.getElementById('new-user-hours').value;
-            const entrada = document.getElementById('new-user-start').value;
-            const pausa = document.getElementById('new-user-break').value;
-            const saida = document.getElementById('new-user-end').value;
-
-            if (!id || !nome || !unidade || !entrada || !saida) return this.mostrarAlerta("Preencha campos e horários.");
-            if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!");
+        // --- NAVEGAÇÃO ADMIN ---
+        openSubSection: function(sectionName) {
+            document.getElementById('admin-main-menu').style.display = 'none';
+            document.querySelectorAll('.sub-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`admin-sub-${sectionName}`).classList.add('active');
             
-            const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-            if (!detection) return this.mostrarAlerta("Rosto não detectado!");
+            if(sectionName === 'cadastro') this.iniciarCamera('admin');
+            if(sectionName === 'historico') this.carregarHistoricoRecente();
+        },
+
+        closeSubSection: function() {
+            document.querySelectorAll('.sub-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('admin-main-menu').style.display = 'block';
+            this.iniciarCamera('stop-admin'); 
+        },
+
+        // --- MAPA LEAFLET ---
+        abrirMapaSelecao: function() {
+            const termoBusca = document.getElementById('pre-map-search').value;
+            if(!termoBusca || termoBusca.length < 5) return alert("Digite um endereço ou cidade para abrir o mapa.");
             
-            const descriptorObj = { ...detection.descriptor }; 
-            try { 
-                await addDoc(collection(db, USERS_COLLECTION), { 
-                    id, nome, unidade, scale, 
-                    horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida, 
-                    horasSemanais: horas, descriptor: descriptorObj 
-                }); 
-                this.mostrarAlerta("Cadastrado!", "Sucesso"); 
-                document.getElementById('new-user-id').value = ''; 
-                document.getElementById('new-user-name').value = '';
-            } catch (e) { this.mostrarAlerta(e.message, "Erro"); }
-        },
+            this.els.modalMap.classList.add('active');
+            
+            // Inicializa mapa se não existir
+            if (!this.mapInstance) {
+                this.mapInstance = L.map('map-container').setView([-22.9068, -43.1729], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(this.mapInstance);
 
-        sincronizarFuncionarios: function() {
-            const q = query(collection(db, USERS_COLLECTION));
-            onSnapshot(q, (querySnapshot) => {
-                this.funcionariosCache = [];
-                const labeledDescriptors = [];
-                const dashboardSelect = this.els.dashEmployee;
-                dashboardSelect.innerHTML = '<option value="">Selecione...</option>'; 
-
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.descriptor) {
-                        const values = Object.values(data.descriptor);
-                        data.descriptor = new Float32Array(values);
-                        labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor]));
-                    }
-                    this.funcionariosCache.push({ docId: doc.id, ...data });
-                    const opt = document.createElement('option');
-                    opt.value = data.id;
-                    opt.innerText = `${data.nome}`;
-                    dashboardSelect.appendChild(opt);
+                this.mapInstance.on('click', (e) => {
+                    this.posicionarMarcador(e.latlng.lat, e.latlng.lng);
                 });
-                if (labeledDescriptors.length > 0) {
-                    this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5);
-                    this.els.statusIA.innerText = "IA: Online 🟢";
-                    this.els.statusIA.classList.add('ready');
-                }
-                this.atualizarFiltrosUnidade();
-                if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios();
-            });
-        },
-
-        // --- DASHBOARD ---
-        atualizarDashboard: async function() {
-            const userId = this.els.dashEmployee.value;
-            const mesAno = this.els.dashMonth.value;
-            if (!userId || !mesAno) return;
-            const func = this.funcionariosCache.find(u => u.id == userId);
-            if (!func) return;
-
-            const q = query(collection(db, LOGS_COLLECTION)); 
-            const snapshot = await getDocs(q);
-            const registros = [];
-            snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mesAno && d.id == userId) registros.push(d); });
-
-            const pontosPorDia = {};
-            registros.forEach(r => {
-                if (!pontosPorDia[r.data]) pontosPorDia[r.data] = [];
-                const [h, m] = r.hora.split(':').map(Number);
-                pontosPorDia[r.data].push(h * 60 + m);
-            });
-
-            let minutosTotais = 0; let diasTrabalhados = Object.keys(pontosPorDia).length; let diasPontuais = 0;
-            const diasLabels = []; const horasData = [];
-            const diasOrdenados = Object.keys(pontosPorDia).sort((a, b) => { const [d1, m1, y1] = a.split('/'); const [d2, m2, y2] = b.split('/'); return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2); });
-
-            diasOrdenados.forEach(dia => {
-                const batidas = pontosPorDia[dia].sort((a, b) => a - b);
-                let minutosDia = 0;
-                if (batidas.length > 0 && batidas[0] <= 485) diasPontuais++; 
-                for (let i = 0; i < batidas.length - 1; i += 2) minutosDia += (batidas[i+1] - batidas[i]);
-                minutosTotais += minutosDia;
-                diasLabels.push(dia.substring(0, 5));
-                horasData.push((minutosDia / 60).toFixed(2));
-            });
-
-            const cargaSemanal = parseFloat(func.horasSemanais || 44);
-            const cargaMensal = (cargaSemanal / 6) * 30; 
-            const horasTrabalhadas = minutosTotais / 60;
-            const saldo = horasTrabalhadas - cargaMensal;
-            const taxaPontualidade = diasTrabalhados > 0 ? (diasPontuais / diasTrabalhados) * 100 : 0;
-
-            this.els.kpiDays.innerText = diasTrabalhados;
-            this.els.kpiPunctuality.innerText = taxaPontualidade.toFixed(0) + "%";
-            const saldoElem = this.els.kpiBalance;
-            saldoElem.innerText = saldo.toFixed(2) + "h";
-            saldoElem.style.color = saldo >= 0 ? "var(--success)" : "var(--danger)";
-            this.renderizarGrafico(diasLabels, horasData);
-        },
-
-        renderizarGrafico: function(labels, data) {
-            const ctx = document.getElementById('attendanceChart').getContext('2d');
-            if (this.chartInstance) this.chartInstance.destroy();
-            this.chartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Horas', data: data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: '#0ea5e9', borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } } });
-        },
-
-        // --- JUSTIFICATIVA ADMIN ---
-        abrirJustificativaAdmin: function(docId, nome) {
-            document.getElementById('justify-log-id').value = docId;
-            document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`;
-            this.setJustifyMode(null);
-            document.getElementById('admin-justification-text').value = "";
-            this.els.modalAdminJustify.classList.add('active');
-        },
-        setJustifyMode: function(mode) {
-            this.justifyMode = mode;
-            this.els.btnModeBonificar.classList.remove('active');
-            this.els.btnModeJustificar.classList.remove('active');
-            if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; } 
-            else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; } 
-            else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; }
-        },
-        contarPalavras: function() {
-            const texto = this.els.txtJustificativa.value.trim();
-            const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0;
-            this.els.wordCount.innerText = `${palavras}/20 palavras`;
-            this.els.btnSaveJustify.disabled = (palavras < 20);
-        },
-        salvarJustificativaAdmin: async function() {
-            const docId = document.getElementById('justify-log-id').value;
-            const texto = this.els.txtJustificativa.value;
-            let updateData = {};
-            if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } 
-            else { updateData = { adminStatus: 'justificado', adminNote: texto }; }
-            try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); }
-        },
-        fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
-
-        // --- RELATÓRIOS ---
-        imprimirRelatorioFechamento: async function() {
-            const mes = this.els.dateFilter.value;
-            const unidNome = document.getElementById('admin-unit-filter').value;
-            if(!mes) return this.mostrarAlerta("Selecione um mês.");
-
-            let unitInfo = COMPANY_INFO; 
-            if (unidNome && unidNome !== "") {
-                const local = this.locaisCache.find(l => l.nome === unidNome);
-                if (local) {
-                    unitInfo = {
-                        nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(),
-                        endereco: local.endereco || "Endereço não cadastrado",
-                        contato: "",
-                        cnpj_site: "CNPJ: " + (local.cnpj || "N/A")
-                    };
-                }
             }
-
-            const q = query(collection(db, LOGS_COLLECTION));
-            const snapshot = await getDocs(q);
-            const registros = []; 
-            snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); });
             
-            const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros;
-            if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade.");
+            // Busca o endereço digitado para centrar o mapa
+            this.focarMapaNoEndereco(termoBusca);
+            
+            setTimeout(() => { this.mapInstance.invalidateSize(); }, 300);
+        },
 
-            const resumo = {};
-            this.funcionariosCache.forEach(f => {
-                if (!unidNome || f.unidade === unidNome) {
-                    resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} };
+        focarMapaNoEndereco: async function(endereco) {
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}&limit=1`);
+                const data = await res.json();
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+                    this.mapInstance.setView([lat, lon], 16);
+                    this.posicionarMarcador(lat, lon); // Coloca pino inicial
                 }
-            });
+            } catch(e) { console.error(e); }
+        },
 
-            registrosFiltrados.forEach(r => {
-                if(resumo[r.id]) {
-                    resumo[r.id].dias.add(r.data);
-                    if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = [];
-                    const [h, m] = r.hora.split(':').map(Number);
-                    resumo[r.id].pontos[r.data].push(h * 60 + m);
-                }
-            });
-
-            let linhasHTML = "";
-            Object.keys(resumo).forEach(id => {
-                const f = resumo[id];
-                let minTotais = 0;
-                Object.values(f.pontos).forEach(batidas => {
-                    batidas.sort((a,b) => a - b);
-                    for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]);
+        posicionarMarcador: function(lat, lng) {
+            if (this.mapMarker) {
+                this.mapMarker.setLatLng([lat, lng]);
+            } else {
+                this.mapMarker = L.marker([lat, lng], {draggable: true}).addTo(this.mapInstance);
+                // Atualiza ao arrastar
+                this.mapMarker.on('dragend', (e) => {
+                   const pos = e.target.getLatLng();
+                   this.posicionarMarcador(pos.lat, pos.lng); // Redesenha circulo
                 });
-                const horasTrab = (minTotais / 60).toFixed(2);
-                linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`;
-            });
-            this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo);
+            }
+            // Adiciona círculo visual de 150m (NOVA TOLERÂNCIA)
+            if (this.mapCircle) this.mapInstance.removeLayer(this.mapCircle);
+            this.mapCircle = L.circle([lat, lng], {
+                color: 'blue',
+                fillColor: '#30f',
+                fillOpacity: 0.2,
+                radius: 150
+            }).addTo(this.mapInstance);
         },
-        gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
 
-        carregarTabelaPontos: async function() {
-            const mes = this.els.dateFilter.value;
-            if(!mes) return this.mostrarAlerta("Escolha o mês.");
-            const tbody = document.getElementById('logs-tbody');
-            tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>';
-            
-            const q = query(collection(db, LOGS_COLLECTION));
-            const snapshot = await getDocs(q);
-            let dados = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) dados.push({ docId: doc.id, ...d }); });
-            
-            const unid = document.getElementById('admin-unit-filter').value;
-            if(unid) dados = dados.filter(d => d.unidade === unid);
-            dados.sort((a,b) => b.timestamp - a.timestamp);
-            
-            tbody.innerHTML = '';
-            if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; }
-            
-            dados.forEach(r => {
-                const func = this.funcionariosCache.find(u => u.id == r.id);
-                let classeIrregular = "";
-                let statusTexto = "OK";
-                
-                if (func && r.tipo === "Entrada" && func.horarioEntrada) {
-                    const [hP, mP] = func.horarioEntrada.split(':').map(Number);
-                    const [hR, mR] = r.hora.split(':').map(Number);
-                    const minutosPrevistos = hP * 60 + mP;
-                    const minutosReais = hR * 60 + mR;
-                    if (minutosReais > minutosPrevistos + 10) {
-                        classeIrregular = "irregular";
-                        statusTexto = "ATRASO";
-                    }
-                }
-                if (r.adminStatus === "bonificado") { classeIrregular = "abonado"; statusTexto = "ABONADO"; }
-                if (r.adminStatus === "justificado") { classeIrregular = "abonado"; statusTexto = "JUSTIFICADO"; }
-
-                tbody.innerHTML += `<tr class="${classeIrregular}"><td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td><td>${statusTexto}</td><td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td></tr>`;
-            });
+        confirmarMapa: function() {
+            if (!this.mapMarker) return alert("Selecione um ponto no mapa.");
+            const pos = this.mapMarker.getLatLng();
+            document.getElementById('loc-lat').value = pos.lat.toFixed(6);
+            document.getElementById('loc-lon').value = pos.lng.toFixed(6);
+            this.els.modalMap.classList.remove('active');
         },
+
+        // --- OUTRAS FUNÇÕES ---
+        buscarCoordenadas: async function() { this.mostrarAlerta("Use o Mapa para selecionar o local com precisão.", "Info"); }, // Desativado busca de CEP antiga em favor do Mapa
+
+        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); document.getElementById('loc-name').value = ""; document.getElementById('loc-cnpj').value = ""; document.getElementById('loc-address').value = ""; document.getElementById('loc-cep').value = ""; document.getElementById('loc-num').value = ""; document.getElementById('loc-lat').value = ""; document.getElementById('loc-lon').value = ""; } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        sincronizarLocais: function() { const q = query(collection(db, PLACES_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.locaisCache = []; this.els.listaLocais.innerHTML = ""; querySnapshot.forEach((doc) => { const local = doc.data(); this.locaisCache.push({ docId: doc.id, ...local }); const div = document.createElement('div'); div.className = 'local-item'; div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`; this.els.listaLocais.appendChild(div); }); this.atualizarOpcoesUnidades(); }); },
+        atualizarOpcoesUnidades: function() { const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.newUserUnit.innerHTML = optionsHTML; this.els.editUserUnit.innerHTML = optionsHTML; const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.unitFilter.innerHTML = filterOptions; },
+        cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const scale = document.getElementById('new-user-scale').value; const horas = document.getElementById('new-user-hours').value; const entrada = document.getElementById('new-user-start').value; const pausa = document.getElementById('new-user-break').value; const saida = document.getElementById('new-user-end').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos e horários."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id, nome, unidade, scale, horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         
-        // ... (RESTANTE DAS FUNÇÕES MANTIDAS DA VERSÃO ANTERIOR PARA ECONOMIA DE ESPAÇO: inicarCamera, modelosIA, etc.)
-        iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
-        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso"); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
+        sincronizarFuncionarios: function() { const q = query(collection(db, USERS_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.funcionariosCache = []; const labeledDescriptors = []; const dashboardSelect = this.els.dashEmployee; dashboardSelect.innerHTML = '<option value="">Selecione...</option>'; querySnapshot.forEach((doc) => { const data = doc.data(); if (data.descriptor) { const values = Object.values(data.descriptor); data.descriptor = new Float32Array(values); labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor])); } this.funcionariosCache.push({ docId: doc.id, ...data }); const opt = document.createElement('option'); opt.value = data.id; opt.innerText = `${data.nome}`; dashboardSelect.appendChild(opt); }); if (labeledDescriptors.length > 0) { this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5); this.els.statusIA.innerText = "IA: Online 🟢"; } this.atualizarFiltrosUnidade(); if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios(); }); },
+        
+        atualizarDashboard: async function() { const userId = this.els.dashEmployee.value; const mesAno = this.els.dashMonth.value; if (!userId || !mesAno) return; const func = this.funcionariosCache.find(u => u.id == userId); if (!func) return; const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mesAno && d.id == userId) registros.push(d); }); const pontosPorDia = {}; registros.forEach(r => { if (!pontosPorDia[r.data]) pontosPorDia[r.data] = []; const [h, m] = r.hora.split(':').map(Number); pontosPorDia[r.data].push(h * 60 + m); }); let minutosTotais = 0; let diasTrabalhados = Object.keys(pontosPorDia).length; let diasPontuais = 0; const diasLabels = []; const horasData = []; const diasOrdenados = Object.keys(pontosPorDia).sort((a, b) => { const [d1, m1, y1] = a.split('/'); const [d2, m2, y2] = b.split('/'); return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2); }); diasOrdenados.forEach(dia => { const batidas = pontosPorDia[dia].sort((a, b) => a - b); let minutosDia = 0; if (batidas.length > 0 && batidas[0] <= 485) diasPontuais++; for (let i = 0; i < batidas.length - 1; i += 2) minutosDia += (batidas[i+1] - batidas[i]); minutosTotais += minutosDia; diasLabels.push(dia.substring(0, 5)); horasData.push((minutosDia / 60).toFixed(2)); }); const cargaSemanal = parseFloat(func.horasSemanais || 44); const cargaMensal = (cargaSemanal / 6) * 30; const horasTrabalhadas = minutosTotais / 60; const saldo = horasTrabalhadas - cargaMensal; const taxaPontualidade = diasTrabalhados > 0 ? (diasPontuais / diasTrabalhados) * 100 : 0; this.els.kpiDays.innerText = diasTrabalhados; this.els.kpiPunctuality.innerText = taxaPontualidade.toFixed(0) + "%"; const saldoElem = this.els.kpiBalance; saldoElem.innerText = saldo.toFixed(2) + "h"; saldoElem.style.color = saldo >= 0 ? "var(--success)" : "var(--danger)"; this.renderizarGrafico(diasLabels, horasData); },
+        renderizarGrafico: function(labels, data) { const ctx = document.getElementById('attendanceChart').getContext('2d'); if (this.chartInstance) this.chartInstance.destroy(); this.chartInstance = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Horas', data: data, backgroundColor: 'rgba(14, 165, 233, 0.6)', borderColor: '#0ea5e9', borderWidth: 1, borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#94a3b8' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { display: false } } } }); },
+        abrirJustificativaAdmin: function(docId, nome) { document.getElementById('justify-log-id').value = docId; document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`; this.setJustifyMode(null); document.getElementById('admin-justification-text').value = ""; this.els.modalAdminJustify.classList.add('active'); },
+        setJustifyMode: function(mode) { this.justifyMode = mode; this.els.btnModeBonificar.classList.remove('active'); this.els.btnModeJustificar.classList.remove('active'); if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; } else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; } else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; } },
+        contarPalavras: function() { const texto = this.els.txtJustificativa.value.trim(); const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0; this.els.wordCount.innerText = `${palavras}/20 palavras`; this.els.btnSaveJustify.disabled = (palavras < 20); },
+        salvarJustificativaAdmin: async function() { const docId = document.getElementById('justify-log-id').value; const texto = this.els.txtJustificativa.value; let updateData = {}; if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } else { updateData = { adminStatus: 'justificado', adminNote: texto }; } try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
+        fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
+        aplicarBonificacaoDireta: async function() { if(!confirm("Abonar este ponto?")) return; const docId = document.getElementById('justify-log-id').value; try { await updateDoc(doc(db, LOGS_COLLECTION, docId), { adminStatus: 'bonificado', adminNote: 'Abonado Auto' }); this.mostrarAlerta("Abonado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        imprimirRelatorioFechamento: async function() { const mes = this.els.dateFilter.value; const unidNome = document.getElementById('admin-unit-filter').value; if(!mes) return this.mostrarAlerta("Selecione um mês."); let unitInfo = COMPANY_INFO; if (unidNome && unidNome !== "") { const local = this.locaisCache.find(l => l.nome === unidNome); if (local) { unitInfo = { nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(), endereco: local.endereco || "Endereço não cadastrado", contato: "", cnpj_site: "CNPJ: " + (local.cnpj || "N/A") }; } } const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); }); const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros; if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade."); const resumo = {}; this.funcionariosCache.forEach(f => { if (!unidNome || f.unidade === unidNome) { resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} }; } }); registrosFiltrados.forEach(r => { if(resumo[r.id]) { resumo[r.id].dias.add(r.data); if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = []; const [h, m] = r.hora.split(':').map(Number); resumo[r.id].pontos[r.data].push(h * 60 + m); } }); let linhasHTML = ""; Object.keys(resumo).forEach(id => { const f = resumo[id]; let minTotais = 0; Object.values(f.pontos).forEach(batidas => { batidas.sort((a,b) => a - b); for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]); }); const horasTrab = (minTotais / 60).toFixed(2); linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`; }); this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo); },
+        gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
+        carregarTabelaPontos: async function() { const mes = this.els.dateFilter.value; if(!mes) return this.mostrarAlerta("Escolha o mês."); const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) dados.push({ docId: doc.id, ...d }); }); const unid = document.getElementById('admin-unit-filter').value; if(unid) dados = dados.filter(d => d.unidade === unid); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.forEach(r => { const func = this.funcionariosCache.find(u => u.id == r.id); let classeIrregular = ""; let statusTexto = "OK"; if (func && r.tipo === "Entrada" && func.horarioEntrada) { const [hP, mP] = func.horarioEntrada.split(':').map(Number); const [hR, mR] = r.hora.split(':').map(Number); const minutosPrevistos = hP * 60 + mP; const minutosReais = hR * 60 + mR; if (minutosReais > minutosPrevistos + 10) { classeIrregular = "irregular"; statusTexto = "ATRASO"; } } if (r.adminStatus === "bonificado") { classeIrregular = "abonado"; statusTexto = "ABONADO"; } if (r.adminStatus === "justificado") { classeIrregular = "abonado"; statusTexto = "JUSTIFICADO"; } tbody.innerHTML += `<tr class="${classeIrregular}"><td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td><td>${statusTexto}</td><td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td></tr>`; }); },
+        carregarHistoricoRecente: async function() { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; try { const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const filterUnit = this.els.historyUnitFilter.value; if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.slice(0, 50).forEach(r => { tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`; }); } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>'; } },
+        mesPorExtenso: function(anoMesStr) { if (!anoMesStr) return ""; const [ano, mes] = anoMesStr.split('-'); const dataObj = new Date(parseInt(ano), parseInt(mes) - 1, 1); const mesExtenso = dataObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); return mesExtenso.charAt(0).toUpperCase() + mesExtenso.slice(1); },
+        atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts; this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); },
+        switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
+        verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
+        fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
+        logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
+        // ... Outras funções de Geocoding e Sincronização mantidas ...
         salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        renderizarListaFuncionarios: function() { const tbody = document.getElementById('employees-tbody'); const filterUnit = this.els.employeesUnitFilter.value; let lista = this.funcionariosCache; if (filterUnit) lista = lista.filter(u => u.unidade === filterUnit); tbody.innerHTML = ''; lista.forEach(u => { tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.scale || 'comum'}</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${u.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirUsuario('${u.docId}')">🗑️</button></td></tr>`; }); },
-        excluirUsuario: async function(docId) { if(confirm("Excluir?")) { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); } catch(e) { alert(e.message); } } },
-        excluirLocal: async function(docId) { if(confirm("Remover este local?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
-        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-scale').value = user.scale || 'comum'; document.getElementById('edit-user-hours').value = user.horasSemanais; document.getElementById('edit-user-start').value = user.horarioEntrada || ""; document.getElementById('edit-user-break').value = user.tempoPausa || ""; document.getElementById('edit-user-end').value = user.horarioSaida || ""; this.els.modalEdit.classList.add('active'); },
-        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, scale: document.getElementById('edit-user-scale').value, horasSemanais: document.getElementById('edit-user-hours').value, horarioEntrada: document.getElementById('edit-user-start').value, tempoPausa: document.getElementById('edit-user-break').value, horarioSaida: document.getElementById('edit-user-end').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        abrirEdicaoLocal: function(docId) { const local = this.locaisCache.find(l => l.docId === docId); if (!local) return; document.getElementById('edit-loc-id-hidden').value = docId; document.getElementById('edit-loc-name').value = local.nome; document.getElementById('edit-loc-cnpj').value = local.cnpj || ""; document.getElementById('edit-loc-address').value = local.endereco || ""; document.getElementById('edit-loc-lat').value = local.lat; document.getElementById('edit-loc-lon').value = local.lng; this.els.modalEditLocal.classList.add('active'); },
-        salvarEdicaoLocal: async function() { const docId = document.getElementById('edit-loc-id-hidden').value; const nome = document.getElementById('edit-loc-name').value; const lat = parseFloat(document.getElementById('edit-loc-lat').value); const lng = parseFloat(document.getElementById('edit-loc-lon').value); if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos."); try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Local atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
+        excluirLocal: async function(docId) { if(confirm("Remover?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
+        abrirEdicaoLocal: function(docId) { const local = this.locaisCache.find(l => l.docId === docId); if (!local) return; document.getElementById('edit-loc-id-hidden').value = docId; document.getElementById('edit-loc-name').value = local.nome; document.getElementById('edit-loc-lat').value = local.lat; document.getElementById('edit-loc-lon').value = local.lng; this.els.modalEditLocal.classList.add('active'); },
+        salvarEdicaoLocal: async function() { const docId = document.getElementById('edit-loc-id-hidden').value; const nome = document.getElementById('edit-loc-name').value; const lat = parseFloat(document.getElementById('edit-loc-lat').value); const lng = parseFloat(document.getElementById('edit-loc-lon').value); if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos."); try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
         verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
@@ -761,8 +642,6 @@
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
         fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
         logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
-        // ... Outras funções de Geocoding e Sincronização mantidas ...
-        buscarCoordenadas: async function() { const cep = document.getElementById('loc-cep').value.replace(/\D/g, ''); const num = document.getElementById('loc-num').value; if(cep.length !== 8 || !num) return this.mostrarAlerta("Digite CEP e Número.", "Aviso"); try { const resCep = await fetch(`https://viacep.com.br/ws/${cep}/json/`); const dataCep = await resCep.json(); if(dataCep.erro) throw new Error("CEP não encontrado."); document.getElementById('loc-address').value = `${dataCep.logradouro}, ${num} - ${dataCep.bairro}, ${dataCep.localidade}/${dataCep.uf}`; const query = `${num}, ${dataCep.logradouro}, ${dataCep.localidade}, ${dataCep.uf}, Brazil`; const resGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`); const dataGeo = await resGeo.json(); if(dataGeo.length === 0) throw new Error("Endereço não localizado."); document.getElementById('loc-lat').value = dataGeo[0].lat; document.getElementById('loc-lon').value = dataGeo[0].lon; this.mostrarAlerta(`Endereço localizado!`, "Sucesso"); } catch(e) { this.mostrarAlerta(e.message, "Erro"); } },
         salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
     };
 
