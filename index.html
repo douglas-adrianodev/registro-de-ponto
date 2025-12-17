@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MaranaTime Cloud - Gestão Total</title>
     
-    <!-- Face API -->
+    <!-- LIBRARIES -->
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Leaflet (Mapas) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     
     <style>
         /* --- ESTILOS GERAIS (DARK TECH THEME) --- */
@@ -29,7 +29,7 @@
         
         /* Header */
         .main-header { text-align: center; margin-bottom: 5px; flex-shrink: 0; position: relative; z-index: 10; }
-        .logo-area h1 { color: var(--primary); font-size: 1.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
+        .logo-area h1 { color: var(--primary); font-size: 1.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(14, 165, 233, 0.4); }
         .status-bar { font-size: 0.7rem; font-weight: bold; margin-top: 2px; display: flex; justify-content: center; gap: 8px; }
         .status-item { padding: 2px 8px; border-radius: 10px; background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; }
         .status-item.online { color: #34d399; border-color: #34d399; }
@@ -40,10 +40,20 @@
         .nav-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: var(--glow); }
 
         /* Content */
-        .view-section { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
+        .view-section { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; padding-bottom: 20px; }
         .view-section.active { display: flex; flex-direction: column; }
         #view-ponto.active { align-items: center; justify-content: center; }
         
+        /* Admin Grid */
+        .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; margin-top: 20px; }
+        .admin-menu-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+        .admin-menu-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); border-color: var(--primary); }
+        .admin-menu-icon { font-size: 2rem; margin-bottom: 5px; }
+        .admin-menu-label { font-weight: bold; font-size: 0.9rem; color: var(--text); }
+        .sub-section { display: none; width: 100%; animation: fadeIn 0.3s; }
+        .sub-section.active { display: block; }
+        .btn-back { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: auto; padding: 5px 15px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 15px; }
+
         /* Cards */
         .card { background: var(--card-bg); padding: 15px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #view-admin .card { max-width: 100%; display: block; }
@@ -102,31 +112,22 @@
 
         /* Clock */
         .system-clock { position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; pointer-events: none; font-family: monospace; }
-        .digital-time { font-size: 1.2rem; font-weight: bold; color: var(--success); text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-        .digital-date { font-size: 0.65rem; color: var(--success); opacity: 0.8; text-transform: uppercase; }
+        .digital-time { font-size: 1.2rem; font-weight: bold; color: var(--neon-green); text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
+        .digital-date { font-size: 0.65rem; color: var(--neon-green); opacity: 0.8; text-transform: uppercase; }
 
-        /* Modals & Feedback */
+        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 10px; }
         .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
         .modal-card { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
         .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         
-        #success-message, #error-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 50px; z-index: 20; font-weight: bold; animation: popIn 0.4s; text-align: center; }
+        /* Feedback */
+        #success-message, #error-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 50px; z-index: 20; font-weight: bold; animation: popIn 0.4s; text-align: center; white-space: nowrap; }
         #success-message { background: rgba(16, 185, 129, 0.95); color: white; border: 2px solid #fff; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
         #error-message { background: rgba(220, 38, 38, 0.95); color: white; border: 2px solid #fff; box-shadow: 0 0 20px rgba(220, 38, 38, 0.5); }
         
         .modal-card.error-style { border-color: var(--danger); background: #3f1010; }
         .modal-card.error-style h3 { color: #fca5a5; }
-
-        /* Admin Menu Grid */
-        .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; margin-top: 20px; }
-        .admin-menu-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-        .admin-menu-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); border-color: var(--primary); }
-        .admin-menu-icon { font-size: 2rem; margin-bottom: 5px; }
-        .admin-menu-label { font-weight: bold; font-size: 0.9rem; color: var(--text); }
-        .sub-section { display: none; width: 100%; animation: fadeIn 0.3s; }
-        .sub-section.active { display: block; }
-        .btn-back { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: auto; padding: 5px 15px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 15px; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
@@ -139,7 +140,7 @@
     <div class="system-clock"><div class="digital-time" id="digital-time">00:00</div><div class="digital-date" id="digital-date">--</div></div>
 
     <header class="main-header">
-        <div class="logo-area"><h1> MaranaTime</h1><p>Gestão Total</p></div>
+        <div class="logo-area"><h1> MaranaTime</h1><p>Gestão Total de Ponto</p></div>
         <div class="status-bar"><span id="ia-status" class="status-item">IA: ...</span><span id="db-status" class="status-item">Conectando...</span></div>
     </header>
 
@@ -178,7 +179,7 @@
         </div>
     </section>
 
-    <!-- GESTÃO (COM MENU) -->
+    <!-- GESTÃO -->
     <section id="view-admin" class="view-section">
         <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -210,9 +211,7 @@
                 </div>
             </div>
 
-            <!-- SUB-SEÇÕES -->
-
-            <!-- 1. DASHBOARD -->
+            <!-- SUB: DASHBOARD -->
             <div id="admin-sub-dashboard" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="filters-area">
@@ -230,7 +229,7 @@
                 </div>
             </div>
 
-            <!-- 2. CADASTRO -->
+            <!-- SUB: CADASTRO -->
             <div id="admin-sub-cadastro" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="input-group admin-panel">
@@ -266,7 +265,7 @@
                 </div>
             </div>
 
-            <!-- 3. LOCAIS (MAPA INTERATIVO) -->
+            <!-- SUB: LOCAIS -->
             <div id="admin-sub-locais" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="input-group admin-panel">
@@ -293,7 +292,7 @@
                 </div>
             </div>
 
-            <!-- 4. COLABORADORES -->
+            <!-- SUB: COLABORADORES -->
             <div id="admin-sub-colaboradores" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="input-group">
@@ -312,7 +311,7 @@
                 </div>
             </div>
 
-            <!-- 5. RELATÓRIOS -->
+            <!-- SUB: RELATÓRIOS -->
             <div id="admin-sub-relatorios" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="filters-area">
@@ -329,7 +328,7 @@
                 </div>
             </div>
 
-            <!-- 6. HISTÓRICO -->
+            <!-- SUB: HISTÓRICO -->
             <div id="admin-sub-historico" class="sub-section">
                 <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar ao Menu</button>
                 <div class="logs-area">
@@ -400,6 +399,13 @@
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // --- CONFIGURAÇÃO DO EMAILJS ---
+    const EMAILJS_PUBLIC_KEY = "0d3UjOMFJwhaB6_2g";
+    const EMAILJS_SERVICE_ID = "service_wkxu2gf";
+    const EMAILJS_TEMPLATE_ID = "template_lsanqlr";
+
+    // --- CONFIGURAÇÃO DO FIREBASE ---
+    // (ADICIONE SUAS CHAVES DO FIREBASE ABAIXO)
     let firebaseConfig;
     let USERS_COLLECTION, LOGS_COLLECTION, PLACES_COLLECTION;
     let APP_ID = 'default';
@@ -433,13 +439,13 @@
 
     const COMPANY_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
+        endereco: "Sede - Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
         contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
-        cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
+        cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com.br"
     };
 
     const app = {
-        adminConfig: { user: "admin", pass: "123" },
+        adminConfig: { user: "Arilson", pass: "rh010203" },
         adminLogado: false,
         funcionariosCache: [],
         locaisCache: [], 
@@ -494,10 +500,13 @@
             btnSaveJustify: document.getElementById('btn-save-justify'),
             statusIA: document.getElementById('ia-status'),
             adminMenu: document.getElementById('admin-main-menu'),
-            newUserId: document.getElementById('new-user-id') // Auto ID field
+            newUserId: document.getElementById('new-user-id') // Campo de ID Automático
         },
 
         init: async function() {
+            // Inicializa EmailJS
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+
             this.els.statusDB.innerText = "Nuvem: ...";
             try {
                 await signInAnonymously(auth);
@@ -528,13 +537,12 @@
             }, 1000);
         },
 
-        // --- NOVO: GERADOR DE ID AUTOMÁTICO ---
+        // --- GERADOR DE ID ---
         gerarIdUnico: function() {
-            // Gera ID de 6 dígitos aleatório
             return Math.floor(100000 + Math.random() * 900000);
         },
 
-        // --- MÁSCARAS (TELEFONE E CNPJ) ---
+        // --- MÁSCARAS ---
         mascaraCNPJ: function(i) {
             let v = i.value.replace(/\D/g, "");                           
             if (v.length > 14) v = v.substring(0, 14);
@@ -544,7 +552,6 @@
             v = v.replace(/(\d{4})(\d)/, "$1-$2");              
             i.value = v;
         },
-        // mascaraTelefone REMOVIDA - Não usada mais
         mascaraCPF: function(i) {
              let v = i.value.replace(/\D/g, "");
              if (v.length > 11) v = v.substring(0, 11);
@@ -554,11 +561,12 @@
              i.value = v;
         },
 
-        // --- MAPA LEAFLET (Google Hybrid) ---
+        // --- MAPA LEAFLET (Google Híbrido) ---
         abrirMapaSelecao: function() {
             this.els.modalMap.classList.add('active');
             if (!this.mapInstance) {
                 this.mapInstance = L.map('map-container').setView([-22.9068, -43.1729], 13);
+                // Camada Google Híbrido
                 L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
                     maxZoom: 20, attribution: '© Google'
                 }).addTo(this.mapInstance);
@@ -622,7 +630,6 @@
             }
             if(sectionName === 'historico') this.carregarHistoricoRecente();
         },
-
         closeSubSection: function() {
             document.querySelectorAll('.sub-section').forEach(el => el.classList.remove('active'));
             document.getElementById('admin-main-menu').style.display = 'block';
@@ -636,21 +643,21 @@
         sincronizarLocais: function() { const q = query(collection(db, PLACES_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.locaisCache = []; this.els.listaLocais.innerHTML = ""; querySnapshot.forEach((doc) => { const local = doc.data(); this.locaisCache.push({ docId: doc.id, ...local }); const div = document.createElement('div'); div.className = 'local-item'; div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`; this.els.listaLocais.appendChild(div); }); this.atualizarOpcoesUnidades(); }); },
         atualizarOpcoesUnidades: function() { const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.newUserUnit.innerHTML = optionsHTML; this.els.editUserUnit.innerHTML = optionsHTML; const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.unitFilter.innerHTML = filterOptions; this.els.historyUnitFilter.innerHTML = '<option value="">Todas Unidades</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); },
         
-        // --- CADASTRO BIOMETRIA (ATUALIZADO PARA EMAIL) ---
+        // --- CADASTRO BIOMETRIA (EMAILJS) ---
         cadastrarBiometria: async function() {
             if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA...");
             const id = document.getElementById('new-user-id').value;
             const nome = document.getElementById('new-user-name').value;
             const unidade = document.getElementById('new-user-unit').value;
             const doc_id = document.getElementById('new-user-doc').value;
-            const email = document.getElementById('new-user-email').value; // Changed
+            const email = document.getElementById('new-user-email').value;
             const scale = document.getElementById('new-user-scale').value;
             const horas = document.getElementById('new-user-hours').value;
             const entrada = document.getElementById('new-user-start').value;
             const pausa = document.getElementById('new-user-break').value;
             const saida = document.getElementById('new-user-end').value;
 
-            // Validação de novos campos obrigatórios
+            // Validação
             if (!id || !nome || !unidade || !doc_id || !email || !entrada || !saida) return this.mostrarAlerta("Preencha todos os campos obrigatórios (incluindo CPF e E-mail).");
             if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); 
             
@@ -665,6 +672,7 @@
                     horasSemanais: horas, descriptor: descriptorObj 
                 }); 
                 this.mostrarAlerta("Cadastrado!", "Sucesso"); 
+                // Reset
                 document.getElementById('new-user-name').value = '';
                 document.getElementById('new-user-doc').value = '';
                 document.getElementById('new-user-email').value = '';
@@ -683,6 +691,7 @@
         salvarJustificativaAdmin: async function() { const docId = document.getElementById('justify-log-id').value; const texto = this.els.txtJustificativa.value; let updateData = {}; if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } else { updateData = { adminStatus: 'justificado', adminNote: texto }; } try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
         fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
         aplicarBonificacaoDireta: async function() { if(!confirm("Abonar este ponto?")) return; const docId = document.getElementById('justify-log-id').value; try { await updateDoc(doc(db, LOGS_COLLECTION, docId), { adminStatus: 'bonificado', adminNote: 'Abonado Auto' }); this.mostrarAlerta("Abonado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        
         imprimirRelatorioFechamento: async function() { const mes = this.els.dateFilter.value; const unidNome = document.getElementById('admin-unit-filter').value; if(!mes) return this.mostrarAlerta("Selecione um mês."); let unitInfo = COMPANY_INFO; if (unidNome && unidNome !== "") { const local = this.locaisCache.find(l => l.nome === unidNome); if (local) { unitInfo = { nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(), endereco: local.endereco || "Endereço não cadastrado", contato: "", cnpj_site: "CNPJ: " + (local.cnpj || "N/A") }; } } const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); }); const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros; if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade."); const resumo = {}; this.funcionariosCache.forEach(f => { if (!unidNome || f.unidade === unidNome) { resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} }; } }); registrosFiltrados.forEach(r => { if(resumo[r.id]) { resumo[r.id].dias.add(r.data); if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = []; const [h, m] = r.hora.split(':').map(Number); resumo[r.id].pontos[r.data].push(h * 60 + m); } }); let linhasHTML = ""; Object.keys(resumo).forEach(id => { const f = resumo[id]; let minTotais = 0; Object.values(f.pontos).forEach(batidas => { batidas.sort((a,b) => a - b); for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]); }); const horasTrab = (minTotais / 60).toFixed(2); linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`; }); this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo); },
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
 
@@ -724,23 +733,18 @@
                 tbody.innerHTML += `<tr class="${classeIrregular}"><td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td><td>${statusTexto}</td><td>${r.localizacaoNome || '-'}</td><td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td></tr>`;
             });
         },
-        
-        // ... (RESTANTE DAS FUNÇÕES MANTIDAS: inicarCamera, modelosIA, etc.)
-        iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
-        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        excluirLocal: async function(docId) { if(confirm("Remover?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
-        abrirEdicaoLocal: function(docId) { const local = this.locaisCache.find(l => l.docId === docId); if (!local) return; document.getElementById('edit-loc-id-hidden').value = docId; document.getElementById('edit-loc-name').value = local.nome; document.getElementById('edit-loc-lat').value = local.lat; document.getElementById('edit-loc-lon').value = local.lng; this.els.modalEditLocal.classList.add('active'); },
-        salvarEdicaoLocal: async function() { const docId = document.getElementById('edit-loc-id-hidden').value; const nome = document.getElementById('edit-loc-name').value; const lat = parseFloat(document.getElementById('edit-loc-lat').value); const lng = parseFloat(document.getElementById('edit-loc-lon').value); if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos."); try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        carregarHistoricoRecente: async function() { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; try { const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const filterUnit = this.els.historyUnitFilter.value; if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.slice(0, 50).forEach(r => { tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`; }); } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>'; } },
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
-        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
+        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 100; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
+        
+        // --- FINALIZAR REGISTRO COM EMAILJS ---
         processarReconhecimento: function(id) { if (this.processando) return; const agora = Date.now(); if (agora - this.ultimoRegistro < 10000) return; const func = this.funcionariosCache.find(u => u.id == id); if (func) { this.processando = true; this.els.employeeNameDisplay.value = func.nome.split(' ')[0]; this.els.employeeIdHidden.value = id; this.ultimoRegistro = agora; this.iniciarRegistroPonto(func, true); } },
         iniciarRegistroPonto: function(func, automatico = false) { if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; } navigator.geolocation.getCurrentPosition((pos) => { const lat = pos.coords.latitude; const lng = pos.coords.longitude; const statusLocal = this.verificarLocalizacao(lat, lng); this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado); }, (err) => { this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false); }, { enableHighAccuracy: true, timeout: 10000 }); },
         prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) { const tipo = document.getElementById('punch-type').value; const agora = new Date(); this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico }; if (autorizado) { this.finalizarRegistro(null); } else { this.ultimoRegistro = Date.now() + 60000; document.getElementById('justification-text').value = ""; this.els.modalJustification.classList.add('active'); } },
         enviarJustificativa: function() { const just = document.getElementById('justification-text').value; if (!just || just.trim().length < 5) return alert("Por favor, justifique."); this.els.modalJustification.classList.remove('active'); this.finalizarRegistro(just); },
         cancelarPonto: function() { this.els.modalJustification.classList.remove('active'); this.pontoPendente = null; this.ultimoRegistro = 0; this.processando = false; this.els.employeeNameDisplay.value = ""; },
         
-        // --- FINALIZAR REGISTRO COM EMAIL MOCK ---
         finalizarRegistro: async function(justificativa = null) { 
             const { func, tipo, agora, lat, lng, localNome, automatico } = this.pontoPendente; 
             const dataHoje = agora.toLocaleDateString('pt-BR'); 
@@ -773,11 +777,23 @@
                     localizacaoNome: localNome, justificativa: justificativa 
                 }); 
                 
-                // SIMULAÇÃO DE ENVIO DE EMAIL (Mock)
-                const userEmail = func.email || "N/A";
-                console.log(`[EMAIL MOCK] Enviando para ${userEmail}: "Olá ${func.nome}, seu ponto de ${tipo} foi registrado em ${dataHoje} às ${hora}."`);
-                
-                this.mostrarSucesso(`Ponto Registrado!\nComprovante enviado para: ${userEmail}`); 
+                // ENVIO DE EMAIL VIA EMAILJS
+                if (func.email && func.email.includes("@")) {
+                    const templateParams = {
+                        nome: func.nome,
+                        tipo: tipo,
+                        data: dataHoje,
+                        hora: hora,
+                        local: localNome || "N/A",
+                        email_to: func.email
+                    };
+                    
+                    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams)
+                        .then(() => console.log("Email enviado com sucesso!"))
+                        .catch((err) => console.error("Erro ao enviar email:", err));
+                }
+
+                this.mostrarSucesso(`Ponto Registrado!\nComprovante enviado para: ${func.email || 'N/A'}`); 
                 
                 setTimeout(() => { 
                     this.els.employeeNameDisplay.value = ""; 
@@ -787,7 +803,8 @@
                 if(this.adminLogado) this.carregarHistoricoRecente(); 
             } catch (e) { console.error(e); this.processando = false; } 
         },
-        
+
+        // --- SISTEMA BÁSICO ---
         mostrarSucesso: function(texto) { this.els.successText.innerText = texto; this.els.successMessage.style.display = "block"; setTimeout(() => { this.els.successMessage.style.display = "none"; }, 3000); },
         mostrarErro: function(texto) { this.els.errorText.innerText = texto; this.els.errorMessage.style.display = "block"; setTimeout(() => { this.els.errorMessage.style.display = "none"; }, 3000); },
         mostrarAlerta: function(msg, titulo = "Aviso", tipo = "normal") { const card = this.els.modalAlert.querySelector('.modal-card'); card.classList.remove('error-style'); if (tipo === "error") card.classList.add('error-style'); document.getElementById('alert-title').innerText = titulo; document.getElementById('alert-msg').innerText = msg; this.els.modalAlert.classList.add('active'); },
@@ -797,8 +814,7 @@
         carregarModelosIA: async function() { this.els.statusIA.innerText = "IA: Baixando..."; try { await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')]); this.modelosCarregados = true; this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); this.iniciarDeteccaoContinua(); } catch (e) { console.error(e); this.els.statusIA.innerText = "IA: Erro 🔴"; } },
         iniciarCamera: async function(tipo) { if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop()); try { const stream = await navigator.mediaDevices.getUserMedia({ video: {} }); this.streamAtiva = stream; if (tipo === 'main') { this.els.videoMain.srcObject = stream; this.els.videoAdmin.srcObject = null; } else { this.els.videoAdmin.srcObject = stream; this.els.videoMain.srcObject = null; } } catch (e) { console.error("Erro Cam", e); } },
         iniciarDeteccaoContinua: function() { const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }); const loop = async () => { if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') { try { const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors(); const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true); const resized = faceapi.resizeResults(detections, dims); const ctx = this.els.overlay.getContext('2d'); ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height); resized.forEach(detection => { const match = this.faceMatcher.findBestMatch(detection.descriptor); const box = detection.detection.box; if (match.label !== 'unknown') { new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay); this.processarReconhecimento(match.label); } else { new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay); } }); } catch (err) { } } requestAnimationFrame(loop); }; loop(); },
-        // ... (Cadastro modificado acima)
-        
+        cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const horas = document.getElementById('new-user-hours').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id: id, nome: nome, unidade: unidade, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); document.getElementById('new-user-id').value = ''; document.getElementById('new-user-name').value = ''; } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; this.els.employeesUnitFilter.innerHTML = opts; },
         switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
         verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
@@ -813,48 +829,9 @@
         getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
         deg2rad: function(deg) { return deg * (Math.PI/180) },
         verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 100; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
-        
-        renderizarListaFuncionarios: function() { const tbody = document.getElementById('employees-tbody'); const filterUnit = this.els.employeesUnitFilter.value; let lista = this.funcionariosCache; if (filterUnit) lista = lista.filter(u => u.unidade === filterUnit); tbody.innerHTML = ''; lista.forEach(u => { tbody.innerHTML += `<tr><td>${u.id}</td><td>${u.nome}</td><td>${u.unidade}</td><td>${u.email}</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${u.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirUsuario('${u.docId}')">🗑️</button></td></tr>`; }); },
-        excluirUsuario: async function(docId) { this.mostrarConfirmacao("Excluir?", async () => { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.mostrarAlerta("Excluído.", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } }); },
-        
-        // --- EDIÇÃO (ATUALIZADA PARA EMAIL) ---
-        abrirEdicao: function(id) { 
-            const user = this.funcionariosCache.find(u => u.id == id); 
-            if (!user) return; 
-            document.getElementById('edit-user-id-hidden').value = user.docId; 
-            document.getElementById('edit-user-name').value = user.nome; 
-            document.getElementById('edit-user-unit').value = user.unidade; 
-            document.getElementById('edit-user-scale').value = user.scale || 'comum'; 
-            document.getElementById('edit-user-hours').value = user.horasSemanais; 
-            document.getElementById('edit-user-start').value = user.horarioEntrada || ""; 
-            document.getElementById('edit-user-break').value = user.tempoPausa || ""; 
-            document.getElementById('edit-user-end').value = user.horarioSaida || ""; 
-            
-            // Novos campos
-            document.getElementById('edit-user-doc').value = user.cpf || "";
-            document.getElementById('edit-user-email').value = user.email || "";
-
-            this.els.modalEdit.classList.add('active'); 
-        },
-        salvarEdicao: async function() { 
-            const docId = document.getElementById('edit-user-id-hidden').value; 
-            try { 
-                await updateDoc(doc(db, USERS_COLLECTION, docId), { 
-                    nome: document.getElementById('edit-user-name').value, 
-                    unidade: document.getElementById('edit-user-unit').value, 
-                    scale: document.getElementById('edit-user-scale').value, 
-                    horasSemanais: document.getElementById('edit-user-hours').value,
-                    horarioEntrada: document.getElementById('edit-user-start').value,
-                    tempoPausa: document.getElementById('edit-user-break').value,
-                    horarioSaida: document.getElementById('edit-user-end').value,
-                    // Novos campos
-                    cpf: document.getElementById('edit-user-doc').value,
-                    email: document.getElementById('edit-user-email').value
-                }); 
-                this.mostrarAlerta("Atualizado!", "Sucesso"); 
-                this.els.modalEdit.classList.remove('active'); 
-            } catch (e) { this.mostrarAlerta(e.message, "Erro"); } 
-        },
+        salvarEdicao: async function() { const docId = document.getElementById('edit-user-id-hidden').value; try { await updateDoc(doc(db, USERS_COLLECTION, docId), { nome: document.getElementById('edit-user-name').value, unidade: document.getElementById('edit-user-unit').value, scale: document.getElementById('edit-user-scale').value, horasSemanais: document.getElementById('edit-user-hours').value, cpf: document.getElementById('edit-user-doc').value, email: document.getElementById('edit-user-email').value, horarioEntrada: document.getElementById('edit-user-start').value, tempoPausa: document.getElementById('edit-user-break').value, horarioSaida: document.getElementById('edit-user-end').value }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+        excluirUsuario: async function(docId) { if(confirm("Excluir?")) { try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.els.modalEdit.classList.remove('active'); } catch(e) { alert(e.message); } } },
+        abrirEdicao: function(id) { const user = this.funcionariosCache.find(u => u.id == id); if (!user) return; document.getElementById('edit-user-id-hidden').value = user.docId; document.getElementById('edit-user-name').value = user.nome; document.getElementById('edit-user-unit').value = user.unidade; document.getElementById('edit-user-scale').value = user.scale || 'comum'; document.getElementById('edit-user-hours').value = user.horasSemanais; document.getElementById('edit-user-start').value = user.horarioEntrada || ""; document.getElementById('edit-user-break').value = user.tempoPausa || ""; document.getElementById('edit-user-end').value = user.horarioSaida || ""; document.getElementById('edit-user-doc').value = user.cpf || ""; document.getElementById('edit-user-email').value = user.email || ""; this.els.modalEdit.classList.add('active'); },
     };
 
     window.app = app;
