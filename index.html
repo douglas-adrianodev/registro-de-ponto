@@ -102,8 +102,9 @@
         th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
         th { background: #1e293b; position: sticky; top: 0; z-index: 10; color: var(--text); }
         td { color: #cbd5e1; }
-        tr.irregular td { color: #fca5a5; background: rgba(239, 68, 68, 0.1); }
-        tr.abonado td { color: #86efac; background: rgba(34, 197, 94, 0.1); }
+        /* AQUI É O CSS PARA AS LINHAS VERMELHAS E VERDES */
+        tr.irregular td { color: #fca5a5 !important; background: rgba(239, 68, 68, 0.15) !important; font-weight: bold; }
+        tr.abonado td { color: #86efac !important; background: rgba(34, 197, 94, 0.15) !important; font-weight: bold; }
         .local-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
         .local-info b { color: var(--success); }
 
@@ -214,7 +215,7 @@
                     </div>
                     
                     <div class="dashboard-grid" style="margin-top: 20px;">
-                        <div class="kpi-card"><div class="kpi-label">Saldo do Mês</div><div class="kpi-value" id="kpi-balance">--</div></div>
+                        <div class="kpi-card"><div class="kpi-label">Saldo do Mês (Compensação)</div><div class="kpi-value" id="kpi-balance">--</div></div>
                         <div class="kpi-card"><div class="kpi-label">Dias Trabalhados</div><div class="kpi-value" id="kpi-days">0</div></div>
                         <div class="kpi-card"><div class="kpi-label">Média Atraso</div><div class="kpi-value" id="kpi-avg-delay">0m</div></div>
                         <div class="kpi-card"><div class="kpi-label">Taxa Presença</div><div class="kpi-value" id="kpi-presence">--%</div></div>
@@ -308,7 +309,7 @@
                         <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary" style="margin-top:23px;">Atualizar Lista</button></div>
                     </div>
                     <div class="actions-row">
-                        <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado</button>
+                        <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado (PDF/Mapa)</button>
                         <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">📊 Fechamento da Unidade</button>
                     </div>
                 </div>
@@ -343,7 +344,8 @@
 <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><label style="color: var(--primary);">Escala de Horário:</label><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;"><div><label>Entrada</label><input type="time" id="edit-user-start"></div><div><label>Pausa</label><input type="number" id="edit-user-break"></div><div><label>Saída</label><input type="time" id="edit-user-end"></div></div></div>
 <div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="window.app.excluirUsuario(document.getElementById('edit-user-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
 
-<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.aplicarBonificacaoDireta()" class="btn-success" style="flex:1;">✅ Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary" style="flex:1;">📝 Justificar (Texto)</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;" placeholder="Mínimo 20 palavras..."></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Salvar Justificativa</button></div></div><div class="modal-actions"><button onclick="window.app.fecharModalJustify()" class="btn-danger" style="width:100%">Fechar</button></div></div></div>
+<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.setJustifyMode('bonificar')" id="btn-mode-bonificar" class="btn-success" style="flex:1;">✅ Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary" style="flex:1;">📝 Justificar (Texto)</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;" placeholder="Mínimo 20 palavras..."></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p></div><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Confirmar</button><button onclick="window.app.fecharModalJustify()" class="btn-danger" style="width:100%">Fechar</button></div></div></div>
+
 <div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border:2px solid #f59e0b;background:#fffbeb;"><h3 style="color:#b45309;">⚠️ Ponto Externo</h3><p style="color:#78350f;margin-bottom:10px;">Fora dos locais cadastrados.</p><textarea id="justification-text" rows="3" style="background:white;color:black;width:100%;"></textarea><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
 <div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary">OK</button></div></div>
 <div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
@@ -457,7 +459,7 @@
             adminMenu: document.getElementById('admin-main-menu')
         },
 
-        // --- DASHBOARD AVANÇADO ---
+        // --- DASHBOARD AVANÇADO (COM COMPENSAÇÃO E BONIFICAÇÃO) ---
         atualizarDashboard: async function() {
             const userId = this.els.dashEmployee.value;
             const mesAno = this.els.dashMonth.value;
@@ -473,9 +475,12 @@
 
             const pontosPorDia = {};
             registros.forEach(r => {
-                if (!pontosPorDia[r.data]) pontosPorDia[r.data] = [];
+                if (!pontosPorDia[r.data]) pontosPorDia[r.data] = { batidas: [], bonificado: false };
+                if (r.adminStatus === 'bonificado' || r.adminStatus === 'justificado') {
+                    pontosPorDia[r.data].bonificado = true; // Marca o dia como bonificado/justificado
+                }
                 const [h, m] = r.hora.split(':').map(Number);
-                pontosPorDia[r.data].push({ min: h * 60 + m, tipo: r.tipo });
+                pontosPorDia[r.data].batidas.push({ min: h * 60 + m, tipo: r.tipo });
             });
 
             // Variaveis de Analise
@@ -487,7 +492,7 @@
 
             const diasLabels = [];
             const horasData = [];
-            const metasData = []; // Para gráfico misto
+            const metasData = [];
 
             // Ordenação
             const diasOrdenados = Object.keys(pontosPorDia).sort((a, b) => {
@@ -495,7 +500,7 @@
                 return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
             });
 
-            // Meta Diária Estimada (baseada no cadastro)
+            // Meta Diária Estimada
             let metaDiariaMinutos = 0;
             if(func.horarioEntrada && func.horarioSaida) {
                 const [hE, mE] = func.horarioEntrada.split(':').map(Number);
@@ -507,38 +512,42 @@
             }
 
             diasOrdenados.forEach(dia => {
-                const batidas = pontosPorDia[dia].sort((a, b) => a.min - b.min);
+                const diaInfo = pontosPorDia[dia];
+                const batidas = diaInfo.batidas.sort((a, b) => a.min - b.min);
                 let minutosDia = 0;
-                
-                // Pontualidade
-                if (batidas.length > 0 && func.horarioEntrada) {
-                    const [hE, mE] = func.horarioEntrada.split(':').map(Number);
-                    const entradaPrevista = hE * 60 + mE;
-                    const diff = batidas[0].min - entradaPrevista;
-                    
-                    if (diff <= 10) diasPontuais++; // 10 min tolerância
-                    if (diff > 10) {
-                        atrasoTotal += diff;
-                        qtdAtrasos++;
-                    }
-                }
 
-                // Cálculo Horas Trabalhadas
-                for (let i = 0; i < batidas.length - 1; i += 2) {
-                    minutosDia += (batidas[i+1].min - batidas[i].min);
+                // Lógica de Bonificação/Justificativa: Se bonificado, ganha o dia cheio
+                if (diaInfo.bonificado) {
+                    minutosDia = metaDiariaMinutos;
+                    diasPontuais++; // Considera pontual para não prejudicar KPI
+                } else {
+                    // Cálculo normal pelas batidas
+                    if (batidas.length > 0 && func.horarioEntrada) {
+                        const [hE, mE] = func.horarioEntrada.split(':').map(Number);
+                        const entradaPrevista = hE * 60 + mE;
+                        const diff = batidas[0].min - entradaPrevista;
+                        if (diff <= 10) diasPontuais++; 
+                        if (diff > 10) {
+                            atrasoTotal += diff;
+                            qtdAtrasos++;
+                        }
+                    }
+                    for (let i = 0; i < batidas.length - 1; i += 2) {
+                        minutosDia += (batidas[i+1].min - batidas[i].min);
+                    }
                 }
                 
                 minutosTotais += minutosDia;
                 diasLabels.push(dia.substring(0, 5));
                 horasData.push((minutosDia / 60).toFixed(2));
-                metasData.push((metaDiariaMinutos / 60).toFixed(2)); // Linha de meta
+                metasData.push((metaDiariaMinutos / 60).toFixed(2));
             });
 
-            // KPIs
-            const saldo = (minutosTotais / 60) - ((metaDiariaMinutos/60) * diasTrabalhados); // Saldo aproximado baseado nos dias trabalhados
+            // KPIs - O Saldo aqui já reflete a compensação (Positivo = Crédito, Negativo = Débito)
+            const saldo = (minutosTotais / 60) - ((metaDiariaMinutos/60) * diasTrabalhados); 
             const pontualidade = diasTrabalhados > 0 ? (diasPontuais / diasTrabalhados) * 100 : 0;
             const mediaAtraso = qtdAtrasos > 0 ? (atrasoTotal / qtdAtrasos).toFixed(0) : 0;
-            const diasUteisEstimados = 22; // Média mensal
+            const diasUteisEstimados = 22; 
             const taxaPresenca = (diasTrabalhados / diasUteisEstimados) * 100;
 
             this.els.kpiBalance.innerText = saldo.toFixed(2) + "h";
@@ -546,7 +555,6 @@
             this.els.kpiDays.innerText = diasTrabalhados;
             this.els.kpiPunctuality.innerText = pontualidade.toFixed(0) + "%";
             
-            // Novos KPIs
             if(document.getElementById('kpi-avg-delay')) document.getElementById('kpi-avg-delay').innerText = mediaAtraso + "m";
             if(document.getElementById('kpi-presence')) document.getElementById('kpi-presence').innerText = Math.min(100, taxaPresenca.toFixed(0)) + "%";
 
@@ -595,10 +603,7 @@
         renderizarGraficoStatus: function(pontuais, atrasos, total) {
             const ctx = document.getElementById('statusChart').getContext('2d');
             if (this.statusChartInstance) this.statusChartInstance.destroy();
-            
-            // Calcula "outros" (saídas antecipadas ou erros, simplificado)
             const outros = total - (pontuais + atrasos); 
-
             this.statusChartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -621,86 +626,87 @@
         renderizarListaFuncionarios: function() {
             const tbody = document.getElementById('employees-tbody');
             const filtroUnidade = document.getElementById('filter-employees-unit').value;
-            
             tbody.innerHTML = '';
-
             let lista = this.funcionariosCache;
-            if (filtroUnidade) {
-                lista = lista.filter(f => f.unidade === filtroUnidade);
-            }
-
-            if (lista.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum colaborador encontrado.</td></tr>';
-                return;
-            }
-
+            if (filtroUnidade) { lista = lista.filter(f => f.unidade === filtroUnidade); }
+            if (lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum colaborador encontrado.</td></tr>'; return; }
             lista.forEach(func => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${func.id}</td>
-                    <td>${func.nome}</td>
-                    <td>${func.unidade}</td>
-                    <td>${func.horasSemanais || 44}h</td>
-                    <td>
-                        <button class="btn-edit" onclick="window.app.abrirEdicao('${func.docId}')">✏️ Editar</button>
-                    </td>
-                `;
+                tr.innerHTML = `<td>${func.id}</td><td>${func.nome}</td><td>${func.unidade}</td><td>${func.horasSemanais || 44}h</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${func.docId}')">✏️ Editar</button></td>`;
                 tbody.appendChild(tr);
             });
         },
-
         abrirEdicao: function(docId) {
             const func = this.funcionariosCache.find(f => f.docId === docId);
             if (!func) return;
-
             document.getElementById('edit-user-id-hidden').value = docId;
             document.getElementById('edit-user-name').value = func.nome;
             document.getElementById('edit-user-unit').value = func.unidade;
             document.getElementById('edit-user-scale').value = func.scale || 'comum';
             document.getElementById('edit-user-hours').value = func.horasSemanais || 44;
-            
-            // Horários
             document.getElementById('edit-user-start').value = func.horarioEntrada || '';
             document.getElementById('edit-user-break').value = func.tempoPausa || '';
             document.getElementById('edit-user-end').value = func.horarioSaida || '';
-
             this.els.modalEdit.classList.add('active');
         },
-
         salvarEdicao: async function() {
             const docId = document.getElementById('edit-user-id-hidden').value;
             const nome = document.getElementById('edit-user-name').value;
             const unidade = document.getElementById('edit-user-unit').value;
             const scale = document.getElementById('edit-user-scale').value;
             const horas = document.getElementById('edit-user-hours').value;
-            
             const entrada = document.getElementById('edit-user-start').value;
             const pausa = document.getElementById('edit-user-break').value;
             const saida = document.getElementById('edit-user-end').value;
-
             try {
-                await updateDoc(doc(db, USERS_COLLECTION, docId), {
-                    nome, unidade, scale, horasSemanais: horas,
-                    horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida
-                });
-                
+                await updateDoc(doc(db, USERS_COLLECTION, docId), { nome, unidade, scale, horasSemanais: horas, horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida });
                 this.mostrarAlerta("Dados atualizados!", "Sucesso");
                 this.els.modalEdit.classList.remove('active');
-            } catch (e) {
-                this.mostrarAlerta("Erro ao atualizar: " + e.message, "Erro", "error");
-            }
+            } catch (e) { this.mostrarAlerta("Erro ao atualizar: " + e.message, "Erro", "error"); }
         },
-
         excluirUsuario: function(docId) {
             this.mostrarConfirmacao("Tem certeza que deseja excluir este colaborador? O histórico será mantido, mas o acesso será revogado.", async () => {
-                try {
-                    await deleteDoc(doc(db, USERS_COLLECTION, docId));
-                    this.mostrarAlerta("Colaborador removido.", "Sucesso");
-                    this.els.modalEdit.classList.remove('active');
-                } catch (e) {
-                    this.mostrarAlerta("Erro: " + e.message, "Erro", "error");
-                }
+                try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.mostrarAlerta("Colaborador removido.", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro", "error"); }
             });
+        },
+
+        // --- RELATÓRIOS E IMPRESSÃO (CORRIGIDO E NOVO) ---
+        imprimirRelatorioDetalhado: async function() {
+            const mes = this.els.dateFilter.value;
+            if (!mes) return this.mostrarAlerta("Selecione um mês.");
+            
+            const q = query(collection(db, LOGS_COLLECTION));
+            const snapshot = await getDocs(q);
+            let registros = [];
+            snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); });
+            
+            // Filtra se houver unidade selecionada
+            const unidNome = document.getElementById('admin-unit-filter').value;
+            if (unidNome) registros = registros.filter(r => r.unidade === unidNome);
+
+            registros.sort((a,b) => b.timestamp - a.timestamp);
+
+            let linhasHTML = "";
+            registros.forEach(r => {
+                let statusLoc = r.localizacaoNome;
+                // Se tiver lat/lon e for "Externo", cria link pro mapa
+                if(r.latitude && r.longitude) {
+                     statusLoc = `<a href="https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}" target="_blank" style="color:blue;text-decoration:underline;">${r.localizacaoNome} 🌎</a>`;
+                }
+
+                linhasHTML += `
+                    <tr>
+                        <td>${r.data}</td>
+                        <td>${r.hora}</td>
+                        <td>${r.nome}</td>
+                        <td>${r.tipo}</td>
+                        <td>${statusLoc}</td>
+                        <td>${r.justificativa || r.adminNote || '-'}</td>
+                    </tr>
+                `;
+            });
+
+            this.gerarRelatorioImpresso(`Extrato Detalhado - ${mes}`, ["Data", "Hora", "Nome", "Tipo", "Localização (GPS)", "Obs/Justificativa"], linhasHTML);
         },
 
         // --- INICIALIZAÇÃO E OUTRAS FUNÇÕES ---
@@ -741,11 +747,10 @@
         cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const scale = document.getElementById('new-user-scale').value; const horas = document.getElementById('new-user-hours').value; const entrada = document.getElementById('new-user-start').value; const pausa = document.getElementById('new-user-break').value; const saida = document.getElementById('new-user-end').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos e horários."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id, nome, unidade, scale, horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         sincronizarFuncionarios: function() { const q = query(collection(db, USERS_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.funcionariosCache = []; const labeledDescriptors = []; const dashboardSelect = this.els.dashEmployee; dashboardSelect.innerHTML = '<option value="">Selecione...</option>'; querySnapshot.forEach((doc) => { const data = doc.data(); if (data.descriptor) { const values = Object.values(data.descriptor); data.descriptor = new Float32Array(values); labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor])); } this.funcionariosCache.push({ docId: doc.id, ...data }); const opt = document.createElement('option'); opt.value = data.id; opt.innerText = `${data.nome}`; dashboardSelect.appendChild(opt); }); if (labeledDescriptors.length > 0) { this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5); this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); } this.atualizarFiltrosUnidade(); if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios(); }); },
         abrirJustificativaAdmin: function(docId, nome) { document.getElementById('justify-log-id').value = docId; document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`; this.setJustifyMode(null); document.getElementById('admin-justification-text').value = ""; this.els.modalAdminJustify.classList.add('active'); },
-        setJustifyMode: function(mode) { this.justifyMode = mode; this.els.btnModeBonificar.classList.remove('active'); this.els.btnModeJustificar.classList.remove('active'); if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; } else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; } else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; } },
+        setJustifyMode: function(mode) { this.justifyMode = mode; this.els.btnModeBonificar.classList.remove('active'); this.els.btnModeJustificar.classList.remove('active'); if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; this.els.btnSaveJustify.innerText = "Confirmar Bonificação"; } else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; this.els.btnSaveJustify.innerText = "Salvar Justificativa"; } else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; } },
         contarPalavras: function() { const texto = this.els.txtJustificativa.value.trim(); const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0; this.els.wordCount.innerText = `${palavras}/20 palavras`; this.els.btnSaveJustify.disabled = (palavras < 20); },
-        salvarJustificativaAdmin: async function() { const docId = document.getElementById('justify-log-id').value; const texto = this.els.txtJustificativa.value; let updateData = {}; if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' }; } else { updateData = { adminStatus: 'justificado', adminNote: texto }; } try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
+        salvarJustificativaAdmin: async function() { const docId = document.getElementById('justify-log-id').value; const texto = this.els.txtJustificativa.value; let updateData = {}; if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'BONIFICADO (Dia Pago)' }; } else { updateData = { adminStatus: 'justificado', adminNote: texto }; } try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
         fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
-        aplicarBonificacaoDireta: async function() { if(!confirm("Abonar este ponto?")) return; const docId = document.getElementById('justify-log-id').value; try { await updateDoc(doc(db, LOGS_COLLECTION, docId), { adminStatus: 'bonificado', adminNote: 'Abonado Auto' }); this.mostrarAlerta("Abonado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
         imprimirRelatorioFechamento: async function() { const mes = this.els.dateFilter.value; const unidNome = document.getElementById('admin-unit-filter').value; if(!mes) return this.mostrarAlerta("Selecione um mês."); let unitInfo = COMPANY_INFO; if (unidNome && unidNome !== "") { const local = this.locaisCache.find(l => l.nome === unidNome); if (local) { unitInfo = { nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(), endereco: local.endereco || "Endereço não cadastrado", contato: "", cnpj_site: "CNPJ: " + (local.cnpj || "N/A") }; } } const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); }); const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros; if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade."); const resumo = {}; this.funcionariosCache.forEach(f => { if (!unidNome || f.unidade === unidNome) { resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} }; } }); registrosFiltrados.forEach(r => { if(resumo[r.id]) { resumo[r.id].dias.add(r.data); if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = []; const [h, m] = r.hora.split(':').map(Number); resumo[r.id].pontos[r.data].push(h * 60 + m); } }); let linhasHTML = ""; Object.keys(resumo).forEach(id => { const f = resumo[id]; let minTotais = 0; Object.values(f.pontos).forEach(batidas => { batidas.sort((a,b) => a - b); for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]); }); const horasTrab = (minTotais / 60).toFixed(2); linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`; }); this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo); },
         gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
         carregarTabelaPontos: async function() { const mes = this.els.dateFilter.value; if(!mes) return this.mostrarAlerta("Escolha o mês."); const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) dados.push({ docId: doc.id, ...d }); }); const unid = document.getElementById('admin-unit-filter').value; if(unid) dados = dados.filter(d => d.unidade === unid); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.forEach(r => { const func = this.funcionariosCache.find(u => u.id == r.id); let classeIrregular = ""; let statusTexto = "OK"; if (func && r.tipo === "Entrada" && func.horarioEntrada) { const [hP, mP] = func.horarioEntrada.split(':').map(Number); const [hR, mR] = r.hora.split(':').map(Number); const minutosPrevistos = hP * 60 + mP; const minutosReais = hR * 60 + mR; if (minutosReais > minutosPrevistos + 10) { classeIrregular = "irregular"; statusTexto = "ATRASO"; } } if (r.adminStatus === "bonificado") { classeIrregular = "abonado"; statusTexto = "ABONADO"; } if (r.adminStatus === "justificado") { classeIrregular = "abonado"; statusTexto = "JUSTIFICADO"; } tbody.innerHTML += `<tr class="${classeIrregular}"><td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td><td>${statusTexto}</td><td>${r.localizacaoNome || '-'}</td><td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td></tr>`; }); },
