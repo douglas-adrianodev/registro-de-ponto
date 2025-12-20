@@ -3,799 +3,418 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaranaTime - Gestão Total</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    
+    <title>Maranata App - Comprovante Digital</title>
     <style>
-        /* --- ESTÉTICA "DARK TECH" --- */
+        /* --- ESTILO BASE --- */
         :root {
-            --bg: #0f172a; --card-bg: #1e293b; --input-bg: #334155;
-            --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
-            --primary: #0ea5e9; --secondary: #6366f1;
-            --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
-            --glow: 0 0 20px rgba(14, 165, 233, 0.3);
+            --primary: #00695c;
+            --accent: #00e676;
+            --white: #ffffff;
+            --bg-dark: #050505;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-size: 14px; }
-        .app-container { height: 100%; display: flex; flex-direction: column; position: relative; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- HEADER --- */
-        .main-header { 
-            display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; 
-            padding: 15px 20px; background: var(--card-bg); border-bottom: 1px solid var(--border); 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10;
+        /* --- LOGIN --- */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(160deg, #004d40 0%, #000000 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000;
         }
-        .logo-area h1 { color: var(--primary); font-size: 1.8rem; margin: 0; text-transform: uppercase; letter-spacing: 2px; text-shadow: var(--glow); text-align: center; }
-        .header-right { display: flex; align-items: center; gap: 15px; justify-content: flex-end; }
-        .digital-clock { font-family: 'Courier New', monospace; font-weight: bold; color: var(--success); font-size: 1.1rem; }
-        .btn-config { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: 0.3s; }
-        .btn-config:hover { color: var(--text); transform: rotate(90deg); }
-
-        /* --- TELAS --- */
-        .screen { display: none; flex: 1; overflow-y: auto; padding: 20px; flex-direction: column; align-items: center; }
-        .screen.active { display: flex; animation: fadeIn 0.4s; }
-
-        /* --- HOME --- */
-        .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 600px; margin-top: 40px; }
-        .action-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px;
-            padding: 40px 10px; display: flex; flex-direction: column; align-items: center; gap: 15px;
-            cursor: pointer; transition: 0.3s; position: relative; overflow: hidden;
+        .login-box {
+            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
+            padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; width: 85%; max-width: 350px;
         }
-        .action-btn:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--glow); }
-        .action-btn span { font-size: 3rem; }
-        .action-btn label { font-size: 1.2rem; font-weight: bold; color: var(--text); }
-        .btn-entry::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:4px; background:var(--success); }
-        .btn-pause::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:4px; background:var(--warning); }
-        .btn-return::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:4px; background:var(--primary); }
-        .btn-exit::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:4px; background:var(--danger); }
+        .login-box input {
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none;
+            background: rgba(255,255,255,0.9); font-size: 16px; text-align: center; outline: none;
+        }
+        .btn-login {
+            width: 100%; padding: 15px; background: var(--primary); color: white;
+            border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px;
+        }
 
-        /* --- CÂMERA --- */
-        .camera-container { position: relative; width: 100%; max-width: 400px; aspect-ratio: 3/4; background: #000; border-radius: 20px; overflow: hidden; border: 2px solid var(--primary); margin-bottom: 20px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        #ai-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1); }
+        /* --- MENU SCROLL --- */
+        #main-menu { display: none; height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        #main-menu::-webkit-scrollbar { display: none; }
+
+        .fixed-header {
+            position: fixed; top: 0; width: 100%; padding-top: 25px; text-align: center; z-index: 1000;
+            pointer-events: none; text-shadow: 0 2px 10px black;
+        }
+        .fixed-header h2 { font-weight: 300; font-size: 20px; color: #fff; }
+
+        .scroll-section {
+            height: 100vh; width: 100vw; scroll-snap-align: center;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;
+        }
         
-        /* --- ADMIN GRID --- */
-        .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; max-width: 800px; margin-top: 20px; }
-        .admin-card { 
-            background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px; 
-            text-align: center; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+        /* Botões Scroll */
+        .circle-btn {
+            width: 200px; height: 200px; border-radius: 50%; border: none; color: white;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            font-size: 18px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 30px rgba(255,255,255,0.1);
+            position: relative; z-index: 10; text-transform: uppercase; letter-spacing: 1px;
+            transition: transform 0.2s;
         }
-        .admin-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: var(--glow); }
-        .admin-icon { font-size: 2.5rem; }
-        .sub-section { display: none; width: 100%; max-width: 1000px; animation: fadeIn 0.3s; }
-        .sub-section.active { display: block; }
+        .circle-btn:active { transform: scale(0.95); }
+        
+        .btn-entrada { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 2px solid #4caf50; }
+        .btn-pausa { background: linear-gradient(135deg, #f9a825, #f57f17); border: 2px solid #fbc02d; }
+        .btn-retorno { background: linear-gradient(135deg, #0277bd, #01579b); border: 2px solid #039be5; }
+        .btn-fim { background: linear-gradient(135deg, #c62828, #b71c1c); border: 2px solid #ef5350; }
 
-        /* --- DASHBOARD & TABLE --- */
-        .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .kpi-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
-        .kpi-val { font-size: 1.8rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
-        .chart-box { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; border: 1px solid var(--border); height: 300px; position: relative; }
+        .hint { position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% {transform:translateY(0);} 50% {transform:translateY(-10px);} }
 
-        .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 600px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
-        th { background: #1e293b; color: var(--text); font-weight: 600; }
-        tr.late td { color: #fca5a5; background: rgba(239, 68, 68, 0.15); font-weight: bold; }
-        tr.ok td { color: #86efac; background: rgba(16, 185, 129, 0.15); font-weight: bold; }
+        /* --- CÂMERA IA --- */
+        #camera-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; z-index: 3000; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .camera-viewport { position: relative; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
 
-        input, select { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 10px; font-size: 1rem; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+        .face-silhouette {
+            position: absolute; width: 280px; height: 380px;
+            border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 50% 50% 45% 45%;
+            box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.85); z-index: 10; transition: all 0.5s ease;
+        }
+        .face-silhouette.scanning { border-color: var(--accent); border-style: solid; box-shadow: 0 0 30px var(--accent), 0 0 0 100vmax rgba(0,0,0,0.9); }
 
-        /* --- BOTÕES --- */
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 1rem; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
-        .btn-back { width: auto; padding: 8px 15px; margin-bottom: 15px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s infinite; display: none; }
-        button.loading .spinner { display: inline-block; } button.loading span { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .status-msg {
+            position: absolute; bottom: 100px; width: 100%; text-align: center; z-index: 20;
+            color: white; text-shadow: 0 2px 5px black;
+        }
+        .status-msg h3 { font-size: 24px; margin-bottom: 5px; }
 
-        /* MODAIS */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 10px; backdrop-filter: blur(5px); }
-        .modal-card { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; border: 1px solid var(--border); box-shadow: 0 0 30px rgba(0,0,0,0.5); }
+        /* --- POPUP JUSTIFICATIVA --- */
+        #justificativa-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 3500;
+            justify-content: center; align-items: center;
+        }
+        .just-box {
+            background: #1e1e1e; width: 90%; max-width: 350px; padding: 25px;
+            border-radius: 15px; border: 1px solid #ffb300; text-align: center;
+            box-shadow: 0 10px 30px black;
+        }
+        .just-box textarea {
+            width: 100%; height: 80px; background: #333; border: 1px solid #555; color: white;
+            padding: 10px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; resize: none;
+        }
+        .btn-confirm-just {
+            width: 100%; padding: 12px; background: #ffb300; color: black; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer;
+        }
+
+        /* --- TELA FINAL (SUCESSO + COMPROVANTE) --- */
+        #success-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1b5e20 0%, #004d40 100%); z-index: 4000;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; padding: 20px;
+        }
+        .check-circle {
+            width: 100px; height: 100px; border-radius: 50%; background: white;
+            display: flex; justify-content: center; align-items: center;
+            margin-bottom: 30px; animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .check-circle span { font-size: 60px; color: #1b5e20; }
+        
+        @keyframes scaleUp { from{transform:scale(0);} to{transform:scale(1);} }
+
+        .success-actions {
+            display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; margin-top: 40px;
+        }
+        
+        .btn-download {
+            background: rgba(255,255,255,0.2); border: 2px solid white; color: white;
+            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            transition: 0.3s;
+        }
+        .btn-download:hover { background: white; color: #1b5e20; }
+        
+        .btn-ok {
+            background: white; color: #1b5e20; border: none;
+            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-ok:hover { transform: scale(1.05); }
+
     </style>
 </head>
-<body>
+<body onload="initSystem()">
 
-<div class="app-container">
-    <header class="main-header">
-        <div></div>
-        <div class="logo-area"><h1>MaranaTime</h1></div>
-        <div class="header-right">
-            <div id="clock" class="digital-clock">00:00</div>
-            <button class="btn-config" onclick="app.abrirLoginAdmin()">⚙️</button>
-        </div>
-    </header>
-
-    <div id="screen-home" class="screen active">
-        <h2 style="margin-top: 30px; font-weight: 300;">O que deseja registrar?</h2>
-        <div class="home-grid">
-            <div class="action-btn btn-entry" onclick="app.iniciarFluxo('Entrada')"><span>🟢</span><label>Entrada</label></div>
-            <div class="action-btn btn-pause" onclick="app.iniciarFluxo('Início Pausa')"><span>⏸️</span><label>Início Pausa</label></div>
-            <div class="action-btn btn-return" onclick="app.iniciarFluxo('Fim Pausa')"><span>▶️</span><label>Fim Pausa</label></div>
-            <div class="action-btn btn-exit" onclick="app.iniciarFluxo('Saída')"><span>🔴</span><label>Saída</label></div>
-        </div>
-        <div style="margin-top: 40px; color: var(--text-muted); font-size: 0.8rem; text-align: center;">
-            <p>🔒 Geolocalização Precisa (50m)</p>
-            <p id="system-status">Carregando IA...</p>
+    <div id="login-screen">
+        <div class="login-box">
+            <div style="font-size: 40px; margin-bottom: 10px;">💎</div>
+            <h2>MARANATA</h2>
+            <input type="text" id="user" placeholder="ID Usuário">
+            <input type="password" id="pass" placeholder="Senha">
+            <button class="btn-login" onclick="login()">ENTRAR</button>
         </div>
     </div>
 
-    <div id="screen-camera" class="screen">
-        <h3 id="camera-title" style="color: var(--primary);">Identificando...</h3>
-        <div class="camera-container">
+    <div id="main-menu">
+        <div class="fixed-header">
+            <h2>O que deseja registrar?</h2>
+            <p style="font-size:12px; color:#aaa;">Role para selecionar</p>
+        </div>
+
+        <section class="scroll-section" style="background: radial-gradient(circle, #002200 0%, #000 70%);">
+            <button class="circle-btn btn-entrada" onclick="iniciarProcesso('ENTRADA')">
+                <div style="font-size:40px">☀️</div> Entrada
+            </button>
+            <div class="hint">▼ Pausa</div>
+        </section>
+
+        <section class="scroll-section" style="background: radial-gradient(circle, #332200 0%, #000 70%);">
+            <button class="circle-btn btn-pausa" onclick="iniciarProcesso('INÍCIO PAUSA')">
+                <div style="font-size:40px">☕</div> Início Pausa
+            </button>
+            <div class="hint">▼ Retorno</div>
+        </section>
+
+        <section class="scroll-section" style="background: radial-gradient(circle, #001133 0%, #000 70%);">
+            <button class="circle-btn btn-retorno" onclick="iniciarProcesso('RETORNO PAUSA')">
+                <div style="font-size:40px">🔙</div> Retorno Pausa
+            </button>
+            <div class="hint">▼ Fim</div>
+        </section>
+
+        <section class="scroll-section" style="background: radial-gradient(circle, #330000 0%, #000 70%);">
+            <button class="circle-btn btn-fim" onclick="iniciarProcesso('FIM EXPEDIENTE')">
+                <div style="font-size:40px">🌙</div> Fim Expediente
+            </button>
+        </section>
+    </div>
+
+    <div id="camera-modal">
+        <div class="camera-viewport">
             <video id="video-feed" autoplay playsinline muted></video>
-            <canvas id="ai-overlay"></canvas>
-        </div>
-        <p id="feedback-msg" style="color: var(--warning); font-weight: bold; height: 20px;">Posicione o rosto</p>
-        <button class="btn-danger" style="max-width: 200px; margin-top: 20px;" onclick="app.cancelarFluxo()">Cancelar</button>
-    </div>
-
-    <div id="screen-success" class="screen">
-        <div class="modal-card" style="text-align: center; border-color: var(--success);">
-            <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
-            <h2 style="color: var(--success);">Registrado!</h2>
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: left; margin: 20px 0;">
-                <p><b>Nome:</b> <span id="receipt-name"></span></p>
-                <p><b>Tipo:</b> <span id="receipt-type"></span></p>
-                <p><b>Horário:</b> <span id="receipt-time"></span></p>
-                <p><b>Local:</b> <span id="receipt-loc" style="font-size:0.8rem;"></span></p>
-            </div>
-            <button class="btn-primary" onclick="app.baixarComprovante()">📥 Baixar Comprovante</button>
-            <button class="btn-secondary" style="margin-top: 10px;" onclick="app.voltarHome()">Voltar ao Início</button>
-        </div>
-    </div>
-
-    <div id="screen-admin" class="screen">
-        <div style="width: 100%; max-width: 1000px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>Painel Gestor</h2>
-            <button class="btn-danger" style="width: auto; padding: 5px 15px;" onclick="app.sairAdmin()">Sair 🔒</button>
-        </div>
-
-        <div id="admin-menu" class="admin-menu-grid">
-            <div class="admin-card" onclick="app.abrirSubSecao('dashboard')"><span class="admin-icon">📊</span><span class="admin-label">Dashboard</span></div>
-            <div class="admin-card" onclick="app.abrirSubSecao('colaboradores')"><span class="admin-icon">👥</span><span class="admin-label">Minha Equipe</span></div>
-            <div class="admin-card" onclick="app.abrirSubSecao('cadastro')"><span class="admin-icon">👤</span><span class="admin-label">Novo Cadastro</span></div>
-            <div class="admin-card" onclick="app.abrirSubSecao('unidades')"><span class="admin-icon">📍</span><span class="admin-label">Unidades</span></div>
-            <div class="admin-card" onclick="app.abrirSubSecao('registros')"><span class="admin-icon">📋</span><span class="admin-label">Histórico</span></div>
-            <div class="admin-card" onclick="app.abrirSubSecao('relatorios')"><span class="admin-icon">🖨️</span><span class="admin-label">Relatórios</span></div>
-        </div>
-
-        <div id="sub-dashboard" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <div class="form-row" style="margin-bottom: 20px;">
-                <select id="dash-user" onchange="app.atualizarDashboard()"><option value="">Selecione Colaborador...</option></select>
-                <input type="month" id="dash-month" onchange="app.atualizarDashboard()">
-            </div>
-            <div class="kpi-row">
-                <div class="kpi-box"><div class="kpi-lbl">Saldo Mês</div><div class="kpi-val" id="kpi-saldo">--</div></div>
-                <div class="kpi-box"><div class="kpi-lbl">Dias Trab.</div><div class="kpi-val" id="kpi-dias">0</div></div>
-                <div class="kpi-box"><div class="kpi-lbl">Pontualidade</div><div class="kpi-val" id="kpi-pont">--%</div></div>
-            </div>
-            <div class="chart-box"><canvas id="performanceChart"></canvas></div>
-        </div>
-
-        <div id="sub-colaboradores" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <h3>Gerenciar Equipe</h3>
-            <div class="form-row" style="margin-bottom: 10px;">
-                <select id="filter-team-unit" onchange="app.renderTeamList()"><option value="">Todas as Unidades</option></select>
-            </div>
-            <div class="table-responsive">
-                <table id="table-team">
-                    <thead><tr><th>Nome</th><th>Unidade</th><th>Escala</th><th>Ação</th></tr></thead>
-                    <tbody id="tbody-team"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="sub-registros" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <h3>Histórico Diário</h3>
-            <div class="form-row" style="margin-bottom: 10px;">
-                <select id="filter-history-unit" onchange="app.carregarLogsAdmin()"><option value="">Todas as Unidades</option></select>
-            </div>
-            <div class="table-responsive">
-                <table id="table-logs">
-                    <thead><tr><th>Nome</th><th>Unidade</th><th>Tipo</th><th>Hora</th><th>Status</th><th>Ações</th></tr></thead>
-                    <tbody id="tbody-logs"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="sub-cadastro" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <div class="modal-card" style="max-width: 100%;">
-                <h3>Novo Colaborador</h3>
-                <div class="form-row">
-                    <input type="text" id="new-id" placeholder="ID Automático" readonly style="color: var(--success); font-weight: bold;">
-                    <input type="text" id="new-name" placeholder="Nome Completo">
-                </div>
-                <div class="form-row">
-                    <select id="new-scale"><option value="comum">Escala Comum</option><option value="12x36">Escala 12x36</option></select>
-                    <select id="new-unit-select" class="unit-filler"><option value="">Selecione Unidade...</option></select>
-                </div>
-                <div class="form-row">
-                    <input type="time" id="new-start" placeholder="Entrada">
-                    <input type="time" id="new-end" placeholder="Saída">
-                </div>
-                <div class="camera-container" style="height: 200px; margin: 10px auto;">
-                    <video id="video-admin" autoplay playsinline muted></video>
-                </div>
-                <button id="btn-save-user" class="btn-primary" onclick="app.salvarColaborador()">
-                    <div class="spinner"></div><span>📸 Cadastrar e Salvar</span>
-                </button>
-            </div>
-        </div>
-
-        <div id="sub-unidades" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <div class="modal-card" style="max-width: 100%;">
-                <h3>Cadastrar Unidade</h3>
-                <input type="text" id="unit-name" placeholder="Nome da Unidade">
-                <input type="text" id="unit-address" placeholder="Endereço">
-                <div class="form-row">
-                    <input type="text" id="unit-lat" placeholder="Lat">
-                    <input type="text" id="unit-lon" placeholder="Lon">
-                </div>
-                <button class="btn-secondary" onclick="app.obterGPSAtual()" style="margin-bottom: 10px;">📍 GPS Atual</button>
-                <button id="btn-save-unit" class="btn-primary" onclick="app.salvarUnidade()">
-                    <div class="spinner"></div><span>Salvar Unidade</span>
-                </button>
-                <div id="list-units" style="margin-top: 15px;"></div>
-            </div>
-        </div>
-
-        <div id="sub-relatorios" class="sub-section">
-            <button class="btn-back" onclick="app.fecharSubSecao()">⬅ Voltar</button>
-            <div class="modal-card" style="max-width: 100%;">
-                <h3>Emissão de Relatórios</h3>
-                <div class="form-row">
-                    <input type="month" id="report-month">
-                    <select id="report-unit" class="unit-filler"><option value="">Todas</option></select>
-                </div>
-                <div class="form-row">
-                    <button class="btn-secondary" onclick="app.imprimirRelatorioDetalhado()">Extrato Detalhado</button>
-                    <button class="btn-primary" onclick="app.imprimirRelatorioFechamento()">Fechamento Mês</button>
-                </div>
+            <div class="face-silhouette" id="silhouette"></div>
+            <div class="status-msg">
+                <h3 id="ia-status">Buscando Rosto...</h3>
+                <p id="ia-details">Posicione-se na silhueta</p>
             </div>
         </div>
     </div>
-</div>
 
-<div id="modal-login" class="modal-overlay">
-    <div class="modal-card" style="width: 300px;">
-        <h3>Acesso Gestor</h3>
-        <input type="password" id="admin-pass" placeholder="Senha">
-        <div class="form-row">
-            <button class="btn-primary" onclick="app.loginAdmin()">Entrar</button>
-            <button class="btn-secondary" onclick="document.getElementById('modal-login').style.display='none'">Cancelar</button>
+    <div id="justificativa-modal">
+        <div class="just-box">
+            <h3>⚠️ Ponto Externo</h3>
+            <p>Você está fora da cerca virtual da Sede.<br>Descreva o motivo:</p>
+            <textarea id="txt-motivo" placeholder="Motivo..."></textarea>
+            <button class="btn-confirm-just" onclick="confirmarJustificativa()">CONFIRMAR E REGISTRAR</button>
         </div>
     </div>
-</div>
 
-<div id="modal-justify" class="modal-overlay">
-    <div class="modal-card">
-        <h3 style="color: var(--warning);">Justificar Ponto</h3>
-        <p id="justify-info"></p>
-        <input type="hidden" id="justify-id">
-        <textarea id="justify-text" rows="4" placeholder="Motivo..."></textarea>
-        <div class="form-row">
-            <button class="btn-primary" onclick="app.salvarJustificativa()">Salvar</button>
-            <button class="btn-secondary" onclick="document.getElementById('modal-justify').style.display='none'">Cancelar</button>
+    <div id="success-screen">
+        <div class="check-circle">
+            <span>✓</span>
         </div>
-    </div>
-</div>
-
-<div id="modal-edit-user" class="modal-overlay">
-    <div class="modal-card">
-        <h3>✏️ Editar Colaborador</h3>
-        <input type="hidden" id="edit-uid">
-        <label>Nome</label>
-        <input type="text" id="edit-name">
-        <label>Unidade</label>
-        <select id="edit-unit" class="unit-filler"></select>
-        <label>Escala</label>
-        <select id="edit-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select>
-        <div class="form-row">
-            <div><label>Entrada</label><input type="time" id="edit-start"></div>
-            <div><label>Saída</label><input type="time" id="edit-end"></div>
-        </div>
-        <div class="form-row">
-            <button class="btn-primary" onclick="app.salvarEdicaoUser()">Salvar Alterações</button>
-            <button class="btn-secondary" onclick="document.getElementById('modal-edit-user').style.display='none'">Cancelar</button>
-        </div>
-        <button class="btn-danger" style="margin-top:10px" onclick="app.excluirColaborador()">Excluir Colaborador</button>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    let firebaseConfig;
-    let APP_ID = 'marana-v8-final';
-    if (typeof __firebase_config !== 'undefined') {
-        firebaseConfig = JSON.parse(__firebase_config);
-        APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
-    } else {
-        firebaseConfig = { apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ", projectId: "maranatime", appId: "1:738069003904:web:cc1ca9a2e2f5545f9c7065" };
-    }
-    const firebaseApp = initializeApp(firebaseConfig);
-    const auth = getAuth(firebaseApp);
-    const db = getFirestore(firebaseApp);
-    const USERS_COLL = `artifacts/${APP_ID}/users`;
-    const PLACES_COLL = `artifacts/${APP_ID}/places`;
-    const LOGS_COLL = `artifacts/${APP_ID}/logs`;
-
-    const COMPANY = { nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO", contato: "www.maranathario.com" };
-
-    const app = {
-        state: { users: [], units: [], modelsLoaded: false, stream: null, adminStream: null, faceMatcher: null, currentType: null, lastReceipt: null, chart: null },
-        els: { video: document.getElementById('video-feed'), overlay: document.getElementById('ai-overlay') },
-
-        init: async function() {
-            this.startClock();
-            document.getElementById('system-status').innerText = "Conectando...";
-            const hoje = new Date();
-            document.getElementById('dash-month').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
-            document.getElementById('report-month').value = document.getElementById('dash-month').value;
-
-            try {
-                await signInAnonymously(auth);
-                await this.loadAI();
-                this.listenData();
-                document.getElementById('system-status').innerText = "Sistema Online 🟢";
-            } catch(e) { document.getElementById('system-status').innerText = "Erro Conexão 🔴"; }
-        },
-
-        startClock: () => setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR').substring(0,5), 1000),
-
-        loadAI: async function() {
-            const URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-            await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(URL),
-                faceapi.nets.ssdMobilenetv1.loadFromUri(URL)
-            ]);
-            this.state.modelsLoaded = true;
-        },
-
-        listenData: function() {
-            onSnapshot(collection(db, USERS_COLL), (snap) => {
-                this.state.users = [];
-                const descriptors = [];
-                const dashSel = document.getElementById('dash-user');
-                dashSel.innerHTML = '<option value="">Selecione...</option>';
-                
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    this.state.users.push({ docId: doc.id, ...d });
-                    dashSel.innerHTML += `<option value="${d.id}">${d.nome}</option>`;
-                    if(d.descriptor) descriptors.push(new faceapi.LabeledFaceDescriptors(d.id.toString(), [new Float32Array(Object.values(d.descriptor))]));
-                });
-                if(descriptors.length) this.state.faceMatcher = new faceapi.FaceMatcher(descriptors, 0.5);
-                this.renderTeamList();
-            });
-
-            onSnapshot(collection(db, PLACES_COLL), (snap) => {
-                this.state.units = [];
-                const list = document.getElementById('list-units');
-                list.innerHTML = '';
-                
-                // Atualiza todos os selects de unidade (Cadastro, Filtros, Edição)
-                const selects = document.querySelectorAll('.unit-filler');
-                selects.forEach(s => s.innerHTML = '<option value="">Selecione/Todas</option>');
-                document.getElementById('filter-team-unit').innerHTML = '<option value="">Todas as Unidades</option>';
-                document.getElementById('filter-history-unit').innerHTML = '<option value="">Todas as Unidades</option>';
-
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    this.state.units.push({ docId: doc.id, ...d });
-                    list.innerHTML += `<div style="padding:5px; border-bottom:1px solid #333;">${d.nome}</div>`;
-                    
-                    selects.forEach(s => s.innerHTML += `<option value="${d.nome}">${d.nome}</option>`);
-                    document.getElementById('filter-team-unit').innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
-                    document.getElementById('filter-history-unit').innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
-                });
-            });
-        },
-
-        // --- FLUXO PRINCIPAL ---
-        iniciarFluxo: async function(tipo) {
-            if(!this.state.modelsLoaded) return alert("IA Carregando...");
-            this.state.currentType = tipo;
-            document.getElementById('camera-title').innerText = `Registrando: ${tipo}`;
-            this.showScreen('camera');
-            
-            try {
-                const s = await navigator.mediaDevices.getUserMedia({ video: {} });
-                this.state.stream = s;
-                this.els.video.srcObject = s;
-                this.detectarRosto();
-            } catch(e) { alert("Sem Câmera!"); this.voltarHome(); }
-        },
-
-        detectarRosto: function() {
-            const loop = async () => {
-                if(!this.state.stream) return;
-                const video = this.els.video;
-                const canvas = this.els.overlay;
-                
-                const opt = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
-                const detections = await faceapi.detectAllFaces(video, opt).withFaceLandmarks().withFaceDescriptors();
-                
-                const dims = faceapi.matchDimensions(canvas, video, true);
-                const resized = faceapi.resizeResults(detections, dims);
-                faceapi.draw.drawDetections(canvas, resized);
-
-                if(detections.length > 0 && this.state.faceMatcher) {
-                    const match = this.state.faceMatcher.findBestMatch(detections[0].descriptor);
-                    if(match.label !== 'unknown') {
-                        document.getElementById('feedback-msg').innerText = "Identificado!";
-                        this.processarPonto(match.label);
-                        return;
-                    }
-                }
-                requestAnimationFrame(loop);
-            };
-            loop();
-        },
-
-        processarPonto: async function(id) {
-            this.stopStream();
-            const user = this.state.users.find(u => u.id == id);
-            const hoje = new Date().toLocaleDateString('pt-BR');
-            
-            const q = query(collection(db, LOGS_COLL), where("id", "==", id), where("data", "==", hoje), where("tipo", "==", this.state.currentType));
-            const check = await getDocs(q);
-            if(!check.empty) { alert(`⚠️ ${user.nome} já registrou ${this.state.currentType} hoje!`); this.voltarHome(); return; }
-
-            const geo = await this.getGeo();
-            const local = this.verificarLocalizacao(geo.lat, geo.lon);
-
-            const reg = {
-                id, nome: user.nome, tipo: this.state.currentType, unidade: user.unidade,
-                data: hoje, hora: new Date().toLocaleTimeString('pt-BR'), 
-                mesAno: document.getElementById('dash-month').value, 
-                lat: geo.lat, lon: geo.lon, localNome: local.nome, timestamp: Date.now()
-            };
-            
-            const ref = await addDoc(collection(db, LOGS_COLL), reg);
-            this.state.lastReceipt = { ...reg, hash: ref.id.substring(0,8).toUpperCase() };
-            
-            document.getElementById('receipt-name').innerText = user.nome;
-            document.getElementById('receipt-type').innerText = reg.tipo;
-            document.getElementById('receipt-time').innerText = reg.hora;
-            document.getElementById('receipt-loc').innerText = local.nome;
-            this.showScreen('success');
-        },
-
-        // --- DASHBOARD ---
-        atualizarDashboard: async function() {
-            const uid = document.getElementById('dash-user').value;
-            const mes = document.getElementById('dash-month').value;
-            if(!uid || !mes) return;
-
-            const user = this.state.users.find(u => u.id == uid);
-            const q = query(collection(db, LOGS_COLL), where("id", "==", uid), where("mesAno", "==", mes));
-            const snap = await getDocs(q);
-            
-            let diasTrab = new Set();
-            let minutosTrab = 0;
-            let atrasos = 0;
-            const pontosDia = {};
-
-            snap.forEach(d => {
-                const p = d.data();
-                diasTrab.add(p.data);
-                if(!pontosDia[p.data]) pontosDia[p.data] = [];
-                const [h,m] = p.hora.split(':').map(Number);
-                pontosDia[p.data].push({ min: h*60+m, tipo: p.tipo });
-            });
-
-            const labels = [], dataVals = [];
-            const diasArr = Array.from(diasTrab).sort((a,b) => new Date(a.split('/').reverse().join('-')) - new Date(b.split('/').reverse().join('-')));
-
-            diasArr.forEach(dia => {
-                const pts = pontosDia[dia].sort((a,b) => a.min - b.min);
-                let minDia = 0;
-                
-                if(user.horarioEntrada && pts[0].tipo === 'Entrada') {
-                    const [hE,mE] = user.horarioEntrada.split(':').map(Number);
-                    if(pts[0].min > (hE*60+mE)+10) atrasos++;
-                }
-
-                for(let i=0; i<pts.length-1; i+=2) minDia += (pts[i+1].min - pts[i].min);
-                minutosTrab += minDia;
-                labels.push(dia.substring(0,5));
-                dataVals.push((minDia/60).toFixed(2));
-            });
-
-            const saldo = (minutosTrab/60) - (diasTrab.size * 8);
-            document.getElementById('kpi-saldo').innerText = saldo.toFixed(2) + 'h';
-            document.getElementById('kpi-dias').innerText = diasTrab.size;
-            document.getElementById('kpi-pont').innerText = diasTrab.size ? (100 - ((atrasos/diasTrab.size)*100)).toFixed(0)+'%' : '100%';
-            document.getElementById('kpi-saldo').style.color = saldo >= 0 ? 'var(--success)' : 'var(--danger)';
-
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            if(this.state.chart) this.state.chart.destroy();
-            this.state.chart = new Chart(ctx, {
-                type: 'bar', data: { labels, datasets: [{ label: 'Horas', data: dataVals, backgroundColor: '#0ea5e9' }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
-            });
-        },
-
-        // --- GESTÃO DE EQUIPE (NOVO) ---
-        renderTeamList: function() {
-            const tbody = document.getElementById('tbody-team');
-            const filter = document.getElementById('filter-team-unit').value;
-            let list = this.state.users;
-            
-            if(filter) list = list.filter(u => u.unidade === filter);
-            
-            tbody.innerHTML = list.map(u => `
-                <tr>
-                    <td>${u.nome}</td>
-                    <td>${u.unidade}</td>
-                    <td>${u.scale}</td>
-                    <td><button class="btn-primary" style="padding:5px; width:auto;" onclick="app.abrirEdicao('${u.docId}')">✏️</button></td>
-                </tr>
-            `).join('') || '<tr><td colspan="4">Nenhum colaborador.</td></tr>';
-        },
-
-        abrirEdicao: function(docId) {
-            const u = this.state.users.find(us => us.docId === docId);
-            document.getElementById('edit-uid').value = docId;
-            document.getElementById('edit-name').value = u.nome;
-            document.getElementById('edit-unit').value = u.unidade;
-            document.getElementById('edit-scale').value = u.scale;
-            document.getElementById('edit-start').value = u.horarioEntrada || '';
-            document.getElementById('edit-end').value = u.horarioSaida || '';
-            document.getElementById('modal-edit-user').style.display = 'flex';
-        },
-
-        salvarEdicaoUser: async function() {
-            const id = document.getElementById('edit-uid').value;
-            try {
-                await updateDoc(doc(db, USERS_COLL, id), {
-                    nome: document.getElementById('edit-name').value,
-                    unidade: document.getElementById('edit-unit').value,
-                    scale: document.getElementById('edit-scale').value,
-                    horarioEntrada: document.getElementById('edit-start').value,
-                    horarioSaida: document.getElementById('edit-end').value
-                });
-                alert("Atualizado!");
-                document.getElementById('modal-edit-user').style.display = 'none';
-            } catch(e) { alert("Erro ao atualizar"); }
-        },
-
-        excluirColaborador: async function() {
-            if(confirm("Tem certeza? Esta ação é irreversível.")) {
-                await deleteDoc(doc(db, USERS_COLL, document.getElementById('edit-uid').value));
-                document.getElementById('modal-edit-user').style.display = 'none';
-                alert("Excluído.");
-            }
-        },
-
-        // --- FUNÇÕES AUXILIARES ---
-        showScreen: (id) => { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(`screen-${id}`).classList.add('active'); },
-        voltarHome: function() { this.stopStream(); this.showScreen('home'); },
-        stopStream: function() { if(this.state.stream) this.state.stream.getTracks().forEach(t=>t.stop()); },
-        getGeo: () => new Promise(r => navigator.geolocation.getCurrentPosition(p=>r({lat:p.coords.latitude,lon:p.coords.longitude}), ()=>r({lat:0,lon:0}), {enableHighAccuracy:true})),
+        <h2 style="font-size:28px; margin-bottom:5px;">REGISTRADO!</h2>
+        <p style="opacity:0.8;">Seu ponto foi computado com sucesso.</p>
         
-        verificarLocalizacao: function(lat, lng) {
-            for(let u of this.state.units) {
-                const R=6371e3, φ1=lat*Math.PI/180, φ2=u.lat*Math.PI/180, Δφ=(u.lat-lat)*Math.PI/180, Δλ=(u.lon-lng)*Math.PI/180;
-                const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)*Math.sin(Δλ/2);
-                if((R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) <= 50) return { nome: u.nome };
-            }
-            return { nome: "EXTERNO" };
-        },
+        <div class="success-actions">
+            <button class="btn-download" onclick="baixarComprovante()">
+                📄 Baixar Comprovante
+            </button>
 
-        // --- ADMIN GERAL ---
-        abrirLoginAdmin: () => document.getElementById('modal-login').style.display='flex',
-        loginAdmin: function() {
-            if(document.getElementById('admin-pass').value === '123') {
-                document.getElementById('modal-login').style.display='none';
-                this.showScreen('admin');
-                document.getElementById('admin-menu').style.display='grid';
-                document.querySelectorAll('.sub-section').forEach(s=>s.classList.remove('active'));
-            } else alert("Senha Errada");
-        },
-        sairAdmin: function() { this.voltarHome(); },
+            <button class="btn-ok" onclick="voltarParaMenu()">
+                OK (Voltar ao Início)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIG
+        const SEDE_LAT = -22.9035; 
+        const SEDE_LNG = -43.2800; 
+        const RAIO_METROS = 50; 
         
-        abrirSubSecao: function(id) {
-            document.getElementById('admin-menu').style.display='none';
-            document.getElementById(`sub-${id}`).classList.add('active');
-            if(id === 'cadastro') { this.iniciarCamAdmin(); this.gerarId(); }
-            if(id === 'registros') this.carregarLogsAdmin();
-            if(id === 'colaboradores') this.renderTeamList();
-        },
-        fecharSubSecao: function() {
-            document.querySelectorAll('.sub-section').forEach(s=>s.classList.remove('active'));
-            document.getElementById('admin-menu').style.display='grid';
-            if(this.state.adminStream) this.state.adminStream.getTracks().forEach(t=>t.stop());
-        },
-        
-        iniciarCamAdmin: async function() {
-            try { this.state.adminStream = await navigator.mediaDevices.getUserMedia({video:{}}); document.getElementById('video-admin').srcObject = this.state.adminStream; } catch(e){}
-        },
-        gerarId: () => document.getElementById('new-id').value = Math.floor(100000 + Math.random() * 900000),
+        // DADOS DA SESSÃO
+        let stream = null;
+        let tipoAtual = "";
+        let usuarioAtual = "";
+        let estaDentro = false;
+        let registroFinal = {}; // Guarda dados para o comprovante
 
-        salvarColaborador: async function() {
-            const btn = document.getElementById('btn-save-user');
-            const nome = document.getElementById('new-name').value;
-            const uni = document.getElementById('new-unit-select').value;
-            if(!nome || !uni) return alert("Preencha dados.");
-            if(this.state.users.find(u=>u.nome.toLowerCase()===nome.toLowerCase())) return alert("Nome já existe!");
+        function initSystem() { console.log("Sistema Pronto"); }
 
-            btn.classList.add('loading'); btn.disabled=true;
-            try {
-                const det = await faceapi.detectSingleFace(document.getElementById('video-admin'), new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
-                if(!det) throw new Error("Rosto não detectado!");
-                
-                await addDoc(collection(db, USERS_COLL), {
-                    id: document.getElementById('new-id').value, nome, unidade: uni, 
-                    horarioEntrada: document.getElementById('new-start').value,
-                    scale: document.getElementById('new-scale').value, descriptor: {...det.descriptor}
-                });
-                alert("Salvo!");
-                document.getElementById('new-name').value = "";
-                this.gerarId();
-            } catch(e) { alert(e.message); }
-            finally { btn.classList.remove('loading'); btn.disabled=false; }
-        },
-
-        salvarUnidade: async function() {
-            const btn = document.getElementById('btn-save-unit');
-            const nome = document.getElementById('unit-name').value;
-            if(!nome) return alert("Nome obrigatório");
-            if(this.state.units.find(u=>u.nome===nome)) return alert("Unidade já existe");
-
-            btn.classList.add('loading'); btn.disabled=true;
-            try {
-                await addDoc(collection(db, PLACES_COLL), {
-                    nome, endereco: document.getElementById('unit-address').value,
-                    lat: document.getElementById('unit-lat').value, lon: document.getElementById('unit-lon').value
-                });
-                alert("Salvo!");
-                document.getElementById('unit-name').value="";
-            } catch(e){alert("Erro");}
-            finally { btn.classList.remove('loading'); btn.disabled=false; }
-        },
-
-        obterGPSAtual: function() {
-            navigator.geolocation.getCurrentPosition(p => {
-                document.getElementById('unit-lat').value = p.coords.latitude;
-                document.getElementById('unit-lon').value = p.coords.longitude;
-            });
-        },
-
-        // --- HISTÓRICO & AÇÕES (COM FILTRO) ---
-        carregarLogsAdmin: function() {
-            const tbody = document.getElementById('tbody-logs');
-            const filterUnit = document.getElementById('filter-history-unit').value;
-            tbody.innerHTML = "<tr><td colspan='6'>Carregando...</td></tr>";
-            
-            const hoje = new Date().toLocaleDateString('pt-BR');
-            const q = query(collection(db, LOGS_COLL), where("data", "==", hoje));
-            onSnapshot(q, (snap) => {
-                let html = "";
-                snap.forEach(d => {
-                    const l = d.data();
-                    // APLICAR FILTRO SELECIONADO
-                    if (filterUnit && l.unidade !== filterUnit) return; 
-
-                    const u = this.state.users.find(us => us.id == l.id);
-                    let cls = "", stt = "OK";
-                    
-                    if(l.adminStatus) { cls = "ok"; stt = l.adminStatus === 'bonificado' ? 'ABONADO' : 'JUSTIFICADO'; }
-                    else if(l.tipo === 'Entrada' && u && u.horarioEntrada) {
-                        const [hE,mE] = u.horarioEntrada.split(':').map(Number);
-                        const [hR,mR] = l.hora.split(':').map(Number);
-                        if((hR*60+mR) > (hE*60+mE)+10) { cls = "late"; stt = "ATRASO"; }
-                    }
-
-                    html += `<tr class="${cls}">
-                        <td>${l.nome}</td><td>${l.unidade}</td><td>${l.tipo}</td><td>${l.hora}</td><td>${stt}</td>
-                        <td>
-                            <button class="btn-primary" style="width:auto; padding:5px; background:var(--success)" onclick="app.abonar('${d.id}')">✅</button>
-                            <button class="btn-primary" style="width:auto; padding:5px; background:var(--warning)" onclick="app.abrirJustif('${d.id}','${l.nome}')">📝</button>
-                        </td>
-                    </tr>`;
-                });
-                tbody.innerHTML = html || "<tr><td colspan='6'>Sem registros para o filtro atual.</td></tr>";
-            });
-        },
-
-        abonar: async (id) => { if(confirm("Abonar dia integral?")) await updateDoc(doc(db, LOGS_COLL, id), { adminStatus: 'bonificado' }); },
-        abrirJustif: (id, nome) => {
-            document.getElementById('justify-id').value = id;
-            document.getElementById('justify-info').innerText = nome;
-            document.getElementById('modal-justify').style.display = 'flex';
-        },
-        salvarJustificativa: async () => {
-            const id = document.getElementById('justify-id').value;
-            const txt = document.getElementById('justify-text').value;
-            if(txt) {
-                await updateDoc(doc(db, LOGS_COLL, id), { adminStatus: 'justificado', adminNote: txt });
-                document.getElementById('modal-justify').style.display = 'none';
-            }
-        },
-
-        // --- RELATÓRIOS ---
-        baixarComprovante: function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const r = this.state.lastReceipt;
-            doc.text("COMPROVANTE DE PONTO", 20, 20);
-            doc.text(`Colaborador: ${r.nome}`, 20, 40);
-            doc.text(`Registro: ${r.tipo} às ${r.hora}`, 20, 50);
-            doc.text(`Local: ${r.localNome}`, 20, 60);
-            doc.text(`HASH: ${r.hash}`, 20, 80);
-            doc.save('comprovante.pdf');
-        },
-
-        imprimirRelatorioFechamento: async function() {
-            const mesInput = document.getElementById('report-month').value;
-            const unid = document.getElementById('report-unit').value;
-            if(!mesInput) return alert("Selecione mês");
-
-            const snap = await getDocs(query(collection(db, LOGS_COLL)));
-            let data = [];
-            snap.forEach(d => { if(d.data().mesAno === mesInput) data.push(d.data()) });
-            if(unid) data = data.filter(d => d.unidade === unid);
-
-            const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-            const [ano, m] = mesInput.split('-');
-            const titulo = `Fechamento - ${meses[parseInt(m)-1]}/${ano} - ${unid || 'Geral'}`;
-            const empresa = `ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO${unid ? ' - ' + unid.toUpperCase() : ''}`;
-
-            let rows = "";
-            data.forEach(d => rows += `<tr><td>${d.nome}</td><td>${d.data}</td><td>${d.tipo}</td><td>${d.hora}</td></tr>`);
-            this.abrirJanelaImpressao(empresa, titulo, rows, ["Nome", "Data", "Tipo", "Hora"]);
-        },
-
-        imprimirRelatorioDetalhado: function() { this.imprimirRelatorioFechamento(); },
-
-        abrirJanelaImpressao: function(empresa, titulo, linhas, cols) {
-            const w = window.open('', '_blank');
-            w.document.write(`
-                <html><head><title>${titulo}</title>
-                <style>
-                    body { font-family: sans-serif; padding: 20px; }
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
-                    th { background: #eee; }
-                    @media print { .btn-print { display: none; } }
-                    .btn-print { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-                </style>
-                </head><body>
-                <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
-                <div style="text-align:center; border-bottom: 2px solid blue; padding-bottom: 10px;">
-                    <h2>${empresa}</h2><p>CNPJ: 05.284.121/0001-26</p>
-                </div>
-                <h3 style="text-align:center; background:#f0f8ff; padding:10px;">${titulo}</h3>
-                <table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhas}</tbody></table>
-                </body></html>
-            `);
-            w.document.close();
+        function login() {
+            const u = document.getElementById('user').value;
+            if(u) {
+                usuarioAtual = u;
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-menu').style.display = 'block';
+            } else { alert("Login obrigatório"); }
         }
-    };
 
-    window.app = app;
-    window.onload = () => app.init();
-</script>
+        // --- 1. CLIQUE / INÍCIO ---
+        function iniciarProcesso(tipo) {
+            tipoAtual = tipo;
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = "🛰️ Verificando...";
+
+            if(!navigator.geolocation) {
+                alert("GPS Obrigatório!");
+                btn.innerHTML = originalHTML;
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const dist = calcularDist(pos.coords.latitude, pos.coords.longitude, SEDE_LAT, SEDE_LNG);
+                    estaDentro = (dist <= RAIO_METROS);
+                    
+                    // Salva dados parciais
+                    registroFinal = {
+                        data: new Date(),
+                        lat: pos.coords.latitude,
+                        lng: pos.coords.longitude,
+                        local: estaDentro ? "SEDE ADMINISTRATIVA" : "LOCAL EXTERNO",
+                        justificativa: estaDentro ? "Registro Normal" : ""
+                    };
+
+                    btn.innerHTML = originalHTML;
+                    abrirCameraIA();
+                },
+                (err) => {
+                    alert("Erro GPS.");
+                    btn.innerHTML = originalHTML;
+                }
+            );
+        }
+
+        // --- 2. CÂMERA IA ---
+        async function abrirCameraIA() {
+            const modal = document.getElementById('camera-modal');
+            const h3 = document.getElementById('ia-status');
+            const silhueta = document.getElementById('silhouette');
+
+            modal.style.display = 'flex';
+            h3.innerText = "Buscando Rosto..."; h3.style.color="white";
+            silhueta.classList.remove('scanning');
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('video-feed').srcObject = stream;
+
+                setTimeout(() => {
+                    h3.innerText = "Analisando...";
+                    silhueta.classList.add('scanning');
+                }, 1500);
+
+                setTimeout(() => {
+                    h3.innerText = "ROSTO IDENTIFICADO";
+                    h3.style.color = "#00e676";
+                    
+                    setTimeout(() => {
+                        fecharCamera();
+                        verificarDestino(); // Decisão
+                    }, 1500);
+                }, 3500);
+
+            } catch (err) {
+                alert("Erro Câmera: " + err.message);
+                modal.style.display = 'none';
+            }
+        }
+
+        function fecharCamera() {
+            document.getElementById('camera-modal').style.display = 'none';
+            if(stream) stream.getTracks().forEach(t => t.stop());
+        }
+
+        // --- 3. DECISÃO E JUSTIFICATIVA ---
+        function verificarDestino() {
+            if (estaDentro) {
+                exibirTelaSucesso();
+            } else {
+                abrirPopupJustificativa();
+            }
+        }
+
+        function abrirPopupJustificativa() {
+            document.getElementById('txt-motivo').value = "";
+            document.getElementById('justificativa-modal').style.display = 'flex';
+        }
+
+        function confirmarJustificativa() {
+            const motivo = document.getElementById('txt-motivo').value;
+            if(motivo.length < 3) { alert("Justifique!"); return; }
+            
+            registroFinal.justificativa = motivo;
+            document.getElementById('justificativa-modal').style.display = 'none';
+            exibirTelaSucesso();
+        }
+
+        // --- 4. TELA FINAL (BOTOES DE AÇÃO) ---
+        function exibirTelaSucesso() {
+            // Preenche dados finais (Hora exata do registro)
+            registroFinal.data = new Date();
+            
+            const screen = document.getElementById('success-screen');
+            screen.style.display = 'flex';
+        }
+
+        // AÇÃO: VOLTAR PARA O INÍCIO
+        function voltarParaMenu() {
+            document.getElementById('success-screen').style.display = 'none';
+            // O sistema já está resetado pois a câmera fechou e variáveis locais foram usadas.
+            // O app volta ao estado de espera no menu de scroll.
+        }
+
+        // AÇÃO: BAIXAR COMPROVANTE (TIPO CUPOM FISCAL)
+        function baixarComprovante() {
+            const dt = registroFinal.data;
+            const dia = dt.toLocaleDateString('pt-BR');
+            const hora = dt.toLocaleTimeString('pt-BR');
+            
+            // Layout do "Papelzinho"
+            const textoComprovante = `
+================================
+    ASSOCIAÇÃO MARANATA RH    
+      Comprovante de Ponto      
+================================
+CNPJ: 26.123.456/0001-00
+--------------------------------
+COLABORADOR: ${usuarioAtual.toUpperCase()}
+DATA: ${dia}
+HORA: ${hora}
+TIPO: ${tipoAtual}
+--------------------------------
+STATUS: ${registroFinal.local}
+${!estaDentro ? "JUSTIFICATIVA: " + registroFinal.justificativa : ""}
+--------------------------------
+ID REGISTRO: ${Math.floor(Math.random() * 100000000)}
+AUTENTICAÇÃO: ${btoa(usuarioAtual + hora).substring(0, 15)}
+================================
+   Guardar para conferência.    
+`;
+
+            // Cria o arquivo TXT para download
+            const blob = new Blob([textoComprovante], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.download = `Comprovante_Maranata_${dia.replace(/\//g,'-')}_${hora}.txt`;
+            link.click();
+        }
+
+        // --- UTILS ---
+        function calcularDist(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; 
+            const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2-lat1) * Math.PI/180, Δλ = (lon2-lon1) * Math.PI/180;
+            const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2) * Math.sin(Δλ/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+    </script>
 </body>
 </html>
