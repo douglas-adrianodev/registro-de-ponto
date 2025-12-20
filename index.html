@@ -3,56 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Maranata App - Comprovante Digital</title>
+    <title>Maranata - Sistema Integrado</title>
     <style>
         /* --- ESTILO BASE --- */
         :root {
             --primary: #00695c;
-            --accent: #00e676;
-            --white: #ffffff;
+            --accent: #00e676; /* Verde Neon */
             --bg-dark: #050505;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; width: 100vw; }
 
-        /* --- LOGIN --- */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(160deg, #004d40 0%, #000000 100%);
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000;
-        }
-        .login-box {
-            background: rgba(255,255,255,0.1); backdrop-filter: blur(20px);
-            padding: 40px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; width: 85%; max-width: 350px;
-        }
-        .login-box input {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 50px; border: none;
-            background: rgba(255,255,255,0.9); font-size: 16px; text-align: center; outline: none;
-        }
-        .btn-login {
-            width: 100%; padding: 15px; background: var(--primary); color: white;
-            border: none; border-radius: 50px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px;
-        }
-
-        /* --- MENU SCROLL --- */
-        #main-menu { display: none; height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        /* --- MENU SCROLL (TELA INICIAL) --- */
+        #main-menu { display: block; height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
         #main-menu::-webkit-scrollbar { display: none; }
 
         .fixed-header {
-            position: fixed; top: 0; width: 100%; padding-top: 25px; text-align: center; z-index: 1000;
-            pointer-events: none; text-shadow: 0 2px 10px black;
+            position: fixed; top: 0; width: 100%; padding: 25px; text-align: center; z-index: 1000;
+            pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
         }
-        .fixed-header h2 { font-weight: 300; font-size: 20px; color: #fff; }
+        .fixed-header h2 { font-weight: 300; font-size: 22px; color: #fff; text-shadow: 0 2px 5px black; }
 
+        /* SEÇÕES SCROLL */
         .scroll-section {
             height: 100vh; width: 100vw; scroll-snap-align: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;
         }
         
-        /* Botões Scroll */
+        /* BOTÕES */
         .circle-btn {
-            width: 200px; height: 200px; border-radius: 50%; border: none; color: white;
+            width: 220px; height: 220px; border-radius: 50%; border: none; color: white;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-size: 18px; font-weight: bold; cursor: pointer;
             box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 30px rgba(255,255,255,0.1);
@@ -60,16 +40,18 @@
             transition: transform 0.2s;
         }
         .circle-btn:active { transform: scale(0.95); }
-        
+        .emoji { font-size: 50px; margin-bottom: 10px; }
+
         .btn-entrada { background: linear-gradient(135deg, #2e7d32, #1b5e20); border: 2px solid #4caf50; }
         .btn-pausa { background: linear-gradient(135deg, #f9a825, #f57f17); border: 2px solid #fbc02d; }
         .btn-retorno { background: linear-gradient(135deg, #0277bd, #01579b); border: 2px solid #039be5; }
         .btn-fim { background: linear-gradient(135deg, #c62828, #b71c1c); border: 2px solid #ef5350; }
+        .btn-admin { background: linear-gradient(135deg, #424242, #212121); border: 2px solid #616161; }
 
         .hint { position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 100% {transform:translateY(0);} 50% {transform:translateY(-10px);} }
 
-        /* --- CÂMERA IA --- */
+        /* --- CÂMERA IA (HUD) --- */
         #camera-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: black; z-index: 3000; flex-direction: column; justify-content: center; align-items: center;
@@ -84,16 +66,23 @@
         }
         .face-silhouette.scanning { border-color: var(--accent); border-style: solid; box-shadow: 0 0 30px var(--accent), 0 0 0 100vmax rgba(0,0,0,0.9); }
 
+        .scanner-laser {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--accent); box-shadow: 0 0 15px var(--accent);
+            animation: scanDown 2s infinite; display: none;
+        }
+        @keyframes scanDown { 0% {top:0; opacity:0;} 20%{opacity:1;} 90%{opacity:1;} 100%{top:100%; opacity:0;} }
+
         .status-msg {
             position: absolute; bottom: 100px; width: 100%; text-align: center; z-index: 20;
             color: white; text-shadow: 0 2px 5px black;
         }
         .status-msg h3 { font-size: 24px; margin-bottom: 5px; }
 
-        /* --- POPUP JUSTIFICATIVA --- */
+        /* --- JUSTIFICATIVA --- */
         #justificativa-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 3500;
+            background: rgba(0,0,0,0.9); z-index: 3500;
             justify-content: center; align-items: center;
         }
         .just-box {
@@ -105,12 +94,12 @@
             width: 100%; height: 80px; background: #333; border: 1px solid #555; color: white;
             padding: 10px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; resize: none;
         }
-        .btn-confirm-just {
+        .btn-action {
             width: 100%; padding: 12px; background: #ffb300; color: black; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer;
+            border: none; border-radius: 8px; cursor: pointer; margin-top:10px;
         }
 
-        /* --- TELA FINAL (SUCESSO + COMPROVANTE) --- */
+        /* --- TELA SUCESSO --- */
         #success-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #1b5e20 0%, #004d40 100%); z-index: 4000;
@@ -120,75 +109,84 @@
         .check-circle {
             width: 100px; height: 100px; border-radius: 50%; background: white;
             display: flex; justify-content: center; align-items: center;
-            margin-bottom: 30px; animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 30px; animation: scaleUp 0.5s;
         }
         .check-circle span { font-size: 60px; color: #1b5e20; }
-        
         @keyframes scaleUp { from{transform:scale(0);} to{transform:scale(1);} }
 
-        .success-actions {
-            display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 300px; margin-top: 40px;
-        }
-        
         .btn-download {
             background: rgba(255,255,255,0.2); border: 2px solid white; color: white;
-            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
+            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; max-width: 300px; margin-top: 20px;
             display: flex; justify-content: center; align-items: center; gap: 10px;
-            transition: 0.3s;
         }
-        .btn-download:hover { background: white; color: #1b5e20; }
-        
         .btn-ok {
-            background: white; color: #1b5e20; border: none;
+            background: white; color: #1b5e20; border: none; width: 100%; max-width: 300px; margin-top: 15px;
             padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .btn-ok:hover { transform: scale(1.05); }
 
+        /* --- ADMIN AREA --- */
+        #admin-login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; justify-content: center; align-items: center; }
+        
+        #admin-panel { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #f4f4f9; z-index: 6000; overflow-y: auto; color: #333; 
+        }
+        .admin-nav { background: #004d40; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .admin-content { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h3 { color: #00695c; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+
+        /* Cadastro Form */
+        .form-row { margin-bottom: 15px; }
+        .form-row label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
+        .form-row input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        
+        /* Captura Foto Cadastro */
+        .photo-preview { width: 100%; height: 200px; background: #ddd; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; border-radius: 5px; overflow: hidden; position: relative; }
+        .photo-preview video { width: 100%; height: 100%; object-fit: cover; }
+        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        
     </style>
 </head>
-<body onload="initSystem()">
-
-    <div id="login-screen">
-        <div class="login-box">
-            <div style="font-size: 40px; margin-bottom: 10px;">💎</div>
-            <h2>MARANATA</h2>
-            <input type="text" id="user" placeholder="ID Usuário">
-            <input type="password" id="pass" placeholder="Senha">
-            <button class="btn-login" onclick="login()">ENTRAR</button>
-        </div>
-    </div>
+<body>
 
     <div id="main-menu">
         <div class="fixed-header">
-            <h2>O que deseja registrar?</h2>
-            <p style="font-size:12px; color:#aaa;">Role para selecionar</p>
+            <h2>Maranata Bio</h2>
+            <p>Selecione o Registro</p>
         </div>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #002200 0%, #000 70%);">
-            <button class="circle-btn btn-entrada" onclick="iniciarProcesso('ENTRADA')">
-                <div style="font-size:40px">☀️</div> Entrada
+            <button class="circle-btn btn-entrada" onclick="iniciarFluxo('ENTRADA')">
+                <div class="emoji">☀️</div> Entrada
             </button>
             <div class="hint">▼ Pausa</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #332200 0%, #000 70%);">
-            <button class="circle-btn btn-pausa" onclick="iniciarProcesso('INÍCIO PAUSA')">
-                <div style="font-size:40px">☕</div> Início Pausa
+            <button class="circle-btn btn-pausa" onclick="iniciarFluxo('INÍCIO PAUSA')">
+                <div class="emoji">☕</div> Início Pausa
             </button>
             <div class="hint">▼ Retorno</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #001133 0%, #000 70%);">
-            <button class="circle-btn btn-retorno" onclick="iniciarProcesso('RETORNO PAUSA')">
-                <div style="font-size:40px">🔙</div> Retorno Pausa
+            <button class="circle-btn btn-retorno" onclick="iniciarFluxo('RETORNO PAUSA')">
+                <div class="emoji">🔙</div> Retorno Pausa
             </button>
             <div class="hint">▼ Fim</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #330000 0%, #000 70%);">
-            <button class="circle-btn btn-fim" onclick="iniciarProcesso('FIM EXPEDIENTE')">
-                <div style="font-size:40px">🌙</div> Fim Expediente
+            <button class="circle-btn btn-fim" onclick="iniciarFluxo('FIM EXPEDIENTE')">
+                <div class="emoji">🌙</div> Fim Expediente
+            </button>
+            <div class="hint">▼ Gestor</div>
+        </section>
+
+        <section class="scroll-section" style="background: #111;">
+            <button class="circle-btn btn-admin" onclick="abrirLoginAdmin()">
+                <div class="emoji">⚙️</div> Admin<br>Gestor
             </button>
         </section>
     </div>
@@ -196,75 +194,117 @@
     <div id="camera-modal">
         <div class="camera-viewport">
             <video id="video-feed" autoplay playsinline muted></video>
-            <div class="face-silhouette" id="silhouette"></div>
+            <div class="face-silhouette" id="silhouette">
+                <div class="scanner-laser" id="scanner"></div>
+            </div>
             <div class="status-msg">
-                <h3 id="ia-status">Buscando Rosto...</h3>
-                <p id="ia-details">Posicione-se na silhueta</p>
+                <h3 id="ia-status">Aguardando Rosto...</h3>
+                <p id="ia-sub">Consultando banco de dados...</p>
             </div>
         </div>
     </div>
 
     <div id="justificativa-modal">
         <div class="just-box">
-            <h3>⚠️ Ponto Externo</h3>
-            <p>Você está fora da cerca virtual da Sede.<br>Descreva o motivo:</p>
-            <textarea id="txt-motivo" placeholder="Motivo..."></textarea>
-            <button class="btn-confirm-just" onclick="confirmarJustificativa()">CONFIRMAR E REGISTRAR</button>
+            <h3 style="color:#ffb300">⚠️ Ponto Externo</h3>
+            <p>A IA validou sua face, mas você está fora da Sede.<br>Motivo:</p>
+            <textarea id="txt-motivo" placeholder="Digite a justificativa..."></textarea>
+            <button class="btn-action" onclick="confirmarJustificativa()">CONFIRMAR</button>
         </div>
     </div>
 
     <div id="success-screen">
-        <div class="check-circle">
-            <span>✓</span>
-        </div>
-        <h2 style="font-size:28px; margin-bottom:5px;">REGISTRADO!</h2>
-        <p style="opacity:0.8;">Seu ponto foi computado com sucesso.</p>
+        <div class="check-circle"><span>✓</span></div>
+        <h2 id="success-user">NOME COLABORADOR</h2>
+        <p>Ponto registrado com sucesso.</p>
+        <p id="success-detail" style="font-size:12px; opacity:0.7; margin-top:5px;"></p>
         
-        <div class="success-actions">
-            <button class="btn-download" onclick="baixarComprovante()">
-                📄 Baixar Comprovante
-            </button>
+        <button class="btn-download" onclick="baixarComprovante()">📄 Baixar Comprovante</button>
+        <button class="btn-ok" onclick="voltarAoInicio()">OK (Voltar ao Início)</button>
+    </div>
 
-            <button class="btn-ok" onclick="voltarParaMenu()">
-                OK (Voltar ao Início)
-            </button>
+    <div id="admin-login-modal">
+        <div class="just-box">
+            <h3>Acesso Gestor</h3>
+            <input type="password" id="admin-pass" placeholder="Senha Mestra" style="width:100%; padding:10px; margin:10px 0; background:#333; color:white; border:1px solid #555;">
+            <button class="btn-action" style="background:var(--primary); color:white;" onclick="verificarAdmin()">Entrar</button>
+            <button onclick="document.getElementById('admin-login-modal').style.display='none'" style="margin-top:10px; background:none; border:none; color:#888; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="admin-panel">
+        <nav class="admin-nav">
+            <strong>Maranata Gestão</strong>
+            <button onclick="sairAdmin()" style="background:none; border:none; color:white; cursor:pointer;">Sair</button>
+        </nav>
+        <div class="admin-content">
+            
+            <div class="card">
+                <h3>👤 Cadastrar Novo Colaborador</h3>
+                <div class="form-row">
+                    <label>Nome Completo:</label>
+                    <input type="text" id="reg-nome" placeholder="Ex: Carlos Silva">
+                </div>
+                <div class="form-row">
+                    <label>Cargo:</label>
+                    <input type="text" id="reg-cargo" placeholder="Ex: Analista">
+                </div>
+                
+                <div class="form-row">
+                    <label>Biometria Facial (Foto Matriz):</label>
+                    <div class="photo-preview" id="reg-preview">
+                        <video id="reg-video" autoplay playsinline muted></video>
+                        <img id="reg-img">
+                        <div style="position:absolute; color:#555; font-size:12px;" id="reg-placeholder">Câmera desligada</div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="ligarCameraCadastro()" style="flex:1; padding:8px; cursor:pointer;">📷 Ligar Câmera</button>
+                        <button onclick="tirarFotoCadastro()" style="flex:1; padding:8px; cursor:pointer; background:#ddd;">📸 Capturar</button>
+                    </div>
+                </div>
+
+                <button class="btn-action" style="background:var(--primary); color:white;" onclick="salvarColaborador()">💾 Salvar no Banco</button>
+            </div>
+
+            <div class="card">
+                <h3>📋 Colaboradores no Banco de Dados</h3>
+                <ul id="lista-colab" style="padding-left:20px; font-size:14px; color:#555;">
+                    <li>Nenhum registro ainda.</li>
+                </ul>
+            </div>
+
         </div>
     </div>
 
     <script>
-        // CONFIG
+        // --- CONFIGURAÇÃO ---
         const SEDE_LAT = -22.9035; 
         const SEDE_LNG = -43.2800; 
-        const RAIO_METROS = 50; 
-        
-        // DADOS DA SESSÃO
+        const RAIO_METROS = 50;
+
+        // --- BANCO DE DADOS LOCAL (Simulando Firebase) ---
+        let bancoColaboradores = []; 
+        // Formato: { nome, cargo, fotoBase64 }
+
+        // --- ESTADO TEMPORÁRIO ---
         let stream = null;
         let tipoAtual = "";
-        let usuarioAtual = "";
+        let colaboradorIdentificado = null;
+        let registroFinal = {};
         let estaDentro = false;
-        let registroFinal = {}; // Guarda dados para o comprovante
 
-        function initSystem() { console.log("Sistema Pronto"); }
-
-        function login() {
-            const u = document.getElementById('user').value;
-            if(u) {
-                usuarioAtual = u;
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-menu').style.display = 'block';
-            } else { alert("Login obrigatório"); }
-        }
-
-        // --- 1. CLIQUE / INÍCIO ---
-        function iniciarProcesso(tipo) {
+        // --- FLUXO PRINCIPAL: BATER PONTO ---
+        function iniciarFluxo(tipo) {
             tipoAtual = tipo;
             const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
+            const originalHtml = btn.innerHTML;
+            
+            // 1. Verificação GPS (Invisível)
             btn.innerHTML = "🛰️ Verificando...";
 
             if(!navigator.geolocation) {
-                alert("GPS Obrigatório!");
-                btn.innerHTML = originalHTML;
+                alert("Ative o GPS para registrar.");
+                btn.innerHTML = originalHtml;
                 return;
             }
 
@@ -273,56 +313,76 @@
                     const dist = calcularDist(pos.coords.latitude, pos.coords.longitude, SEDE_LAT, SEDE_LNG);
                     estaDentro = (dist <= RAIO_METROS);
                     
-                    // Salva dados parciais
                     registroFinal = {
                         data: new Date(),
                         lat: pos.coords.latitude,
                         lng: pos.coords.longitude,
-                        local: estaDentro ? "SEDE ADMINISTRATIVA" : "LOCAL EXTERNO",
-                        justificativa: estaDentro ? "Registro Normal" : ""
+                        local: estaDentro ? "SEDE" : "EXTERNO",
+                        justificativa: estaDentro ? "Registro Padrão" : ""
                     };
 
-                    btn.innerHTML = originalHTML;
-                    abrirCameraIA();
+                    btn.innerHTML = originalHtml;
+                    abrirCameraReconhecimento(); // 2. Vai para a IA
                 },
                 (err) => {
                     alert("Erro GPS.");
-                    btn.innerHTML = originalHTML;
+                    btn.innerHTML = originalHtml;
                 }
             );
         }
 
-        // --- 2. CÂMERA IA ---
-        async function abrirCameraIA() {
+        // --- RECONHECIMENTO FACIAL (VARREDURA NO BANCO) ---
+        async function abrirCameraReconhecimento() {
             const modal = document.getElementById('camera-modal');
             const h3 = document.getElementById('ia-status');
+            const sub = document.getElementById('ia-sub');
             const silhueta = document.getElementById('silhouette');
+            const scanner = document.getElementById('scanner');
 
             modal.style.display = 'flex';
-            h3.innerText = "Buscando Rosto..."; h3.style.color="white";
+            h3.innerText = "Buscando Rosto..."; h3.style.color = "white";
+            sub.innerText = "Consultando banco de dados...";
             silhueta.classList.remove('scanning');
+            scanner.style.display = 'none';
 
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('video-feed').srcObject = stream;
 
+                // Fase 1: Escaneamento
                 setTimeout(() => {
-                    h3.innerText = "Analisando...";
+                    h3.innerText = "Escaneando...";
                     silhueta.classList.add('scanning');
+                    scanner.style.display = 'block';
                 }, 1500);
 
+                // Fase 2: Comparação com Banco (Simulado)
                 setTimeout(() => {
-                    h3.innerText = "ROSTO IDENTIFICADO";
+                    if(bancoColaboradores.length === 0) {
+                        alert("ERRO: Nenhum colaborador cadastrado no banco de dados!\nCadastre-se no menu Gestor.");
+                        fecharCamera();
+                        return;
+                    }
+
+                    // SIMULAÇÃO: A IA "achou" o último cadastrado (para teste)
+                    // Na vida real, aqui entraria a API de Face Match
+                    colaboradorIdentificado = bancoColaboradores[bancoColaboradores.length - 1]; 
+
+                    h3.innerText = "IDENTIFICADO: " + colaboradorIdentificado.nome.toUpperCase();
                     h3.style.color = "#00e676";
-                    
+                    sub.innerText = "Cargo: " + colaboradorIdentificado.cargo;
+                    scanner.style.display = 'none';
+
+                    // Fase 3: Conclusão
                     setTimeout(() => {
                         fecharCamera();
-                        verificarDestino(); // Decisão
+                        verificarDestino();
                     }, 1500);
-                }, 3500);
 
-            } catch (err) {
-                alert("Erro Câmera: " + err.message);
+                }, 4000);
+
+            } catch(err) {
+                alert("Erro Câmera: " + err);
                 modal.style.display = 'none';
             }
         }
@@ -332,82 +392,137 @@
             if(stream) stream.getTracks().forEach(t => t.stop());
         }
 
-        // --- 3. DECISÃO E JUSTIFICATIVA ---
+        // --- DECISÃO E JUSTIFICATIVA ---
         function verificarDestino() {
-            if (estaDentro) {
-                exibirTelaSucesso();
+            if(estaDentro) {
+                finalizarSucesso();
             } else {
-                abrirPopupJustificativa();
+                // Abre justificativa
+                document.getElementById('justificativa-modal').style.display = 'flex';
+                document.getElementById('txt-motivo').value = "";
             }
         }
 
-        function abrirPopupJustificativa() {
-            document.getElementById('txt-motivo').value = "";
-            document.getElementById('justificativa-modal').style.display = 'flex';
-        }
-
         function confirmarJustificativa() {
-            const motivo = document.getElementById('txt-motivo').value;
-            if(motivo.length < 3) { alert("Justifique!"); return; }
-            
-            registroFinal.justificativa = motivo;
+            const txt = document.getElementById('txt-motivo').value;
+            if(txt.length < 3) { alert("Justifique."); return; }
+            registroFinal.justificativa = txt;
             document.getElementById('justificativa-modal').style.display = 'none';
-            exibirTelaSucesso();
+            finalizarSucesso();
         }
 
-        // --- 4. TELA FINAL (BOTOES DE AÇÃO) ---
-        function exibirTelaSucesso() {
-            // Preenche dados finais (Hora exata do registro)
+        function finalizarSucesso() {
             registroFinal.data = new Date();
-            
-            const screen = document.getElementById('success-screen');
-            screen.style.display = 'flex';
+            document.getElementById('success-user').innerText = colaboradorIdentificado.nome.toUpperCase();
+            document.getElementById('success-detail').innerText = `${tipoAtual} • ${registroFinal.local}`;
+            document.getElementById('success-screen').style.display = 'flex';
         }
 
-        // AÇÃO: VOLTAR PARA O INÍCIO
-        function voltarParaMenu() {
+        function voltarAoInicio() {
             document.getElementById('success-screen').style.display = 'none';
-            // O sistema já está resetado pois a câmera fechou e variáveis locais foram usadas.
-            // O app volta ao estado de espera no menu de scroll.
         }
 
-        // AÇÃO: BAIXAR COMPROVANTE (TIPO CUPOM FISCAL)
         function baixarComprovante() {
             const dt = registroFinal.data;
-            const dia = dt.toLocaleDateString('pt-BR');
-            const hora = dt.toLocaleTimeString('pt-BR');
-            
-            // Layout do "Papelzinho"
-            const textoComprovante = `
+            const texto = `
 ================================
-    ASSOCIAÇÃO MARANATA RH    
-      Comprovante de Ponto      
+     MARANATA RH - PONTO
 ================================
-CNPJ: 26.123.456/0001-00
+COLABORADOR: ${colaboradorIdentificado.nome.toUpperCase()}
+CARGO: ${colaboradorIdentificado.cargo}
 --------------------------------
-COLABORADOR: ${usuarioAtual.toUpperCase()}
-DATA: ${dia}
-HORA: ${hora}
+DATA: ${dt.toLocaleDateString()}
+HORA: ${dt.toLocaleTimeString()}
 TIPO: ${tipoAtual}
+LOCAL: ${registroFinal.local}
 --------------------------------
-STATUS: ${registroFinal.local}
-${!estaDentro ? "JUSTIFICATIVA: " + registroFinal.justificativa : ""}
+JUSTIFICATIVA:
+${registroFinal.justificativa}
 --------------------------------
-ID REGISTRO: ${Math.floor(Math.random() * 100000000)}
-AUTENTICAÇÃO: ${btoa(usuarioAtual + hora).substring(0, 15)}
+ID ÚNICO: ${Date.now()}
 ================================
-   Guardar para conferência.    
 `;
-
-            // Cria o arquivo TXT para download
-            const blob = new Blob([textoComprovante], { type: 'text/plain' });
+            const blob = new Blob([texto], {type: 'text/plain'});
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.download = `Comprovante_Maranata_${dia.replace(/\//g,'-')}_${hora}.txt`;
+            link.download = `Comprovante_${Date.now()}.txt`;
             link.click();
         }
 
-        // --- UTILS ---
+        // --- ADMIN / GESTÃO / CADASTRO ---
+        function abrirLoginAdmin() { document.getElementById('admin-login-modal').style.display = 'flex'; }
+        
+        function verificarAdmin() {
+            if(document.getElementById('admin-pass').value === 'RH Arilson 123') {
+                document.getElementById('admin-login-modal').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+                document.getElementById('admin-pass').value = '';
+                atualizarListaAdmin();
+            } else { alert("Senha incorreta"); }
+        }
+        function sairAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
+
+        // Funções da Câmera de Cadastro
+        let streamCadastro = null;
+        async function ligarCameraCadastro() {
+            const video = document.getElementById('reg-video');
+            document.getElementById('reg-placeholder').style.display = 'none';
+            document.getElementById('reg-img').style.display = 'none';
+            video.style.display = 'block';
+            streamCadastro = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = streamCadastro;
+        }
+
+        function tirarFotoCadastro() {
+            const video = document.getElementById('reg-video');
+            const img = document.getElementById('reg-img');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            // Pausa vídeo e mostra foto
+            img.src = canvas.toDataURL('image/png');
+            img.style.display = 'block';
+            video.style.display = 'none';
+            
+            // Para a câmera
+            if(streamCadastro) streamCadastro.getTracks().forEach(t => t.stop());
+        }
+
+        function salvarColaborador() {
+            const nome = document.getElementById('reg-nome').value;
+            const cargo = document.getElementById('reg-cargo').value;
+            const img = document.getElementById('reg-img').src;
+
+            if(!nome || !cargo || !img) { alert("Preencha tudo e tire a foto!"); return; }
+
+            // Salva no "Banco" (Array em memória)
+            bancoColaboradores.push({ nome, cargo, foto: img });
+            
+            alert("Colaborador Cadastrado com Sucesso!");
+            // Limpa form
+            document.getElementById('reg-nome').value = '';
+            document.getElementById('reg-cargo').value = '';
+            document.getElementById('reg-img').style.display = 'none';
+            document.getElementById('reg-placeholder').style.display = 'block';
+            
+            atualizarListaAdmin();
+        }
+
+        function atualizarListaAdmin() {
+            const ul = document.getElementById('lista-colab');
+            ul.innerHTML = '';
+            if(bancoColaboradores.length === 0) {
+                ul.innerHTML = '<li>Nenhum registro.</li>';
+                return;
+            }
+            bancoColaboradores.forEach(c => {
+                ul.innerHTML += `<li style="margin-bottom:5px; border-bottom:1px solid #ddd; padding:5px;"><strong>${c.nome}</strong> (${c.cargo}) <span style="color:green; font-size:10px;">BIO OK</span></li>`;
+            });
+        }
+
+        // UTILS
         function calcularDist(lat1, lon1, lat2, lon2) {
             const R = 6371e3; 
             const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
@@ -415,6 +530,7 @@ AUTENTICAÇÃO: ${btoa(usuarioAtual + hora).substring(0, 15)}
             const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2) * Math.sin(Δλ/2)**2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
+
     </script>
 </body>
 </html>
