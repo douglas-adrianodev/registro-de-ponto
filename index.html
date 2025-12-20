@@ -3,34 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Maranata - Sistema Integrado</title>
+    <title>Maranata System - Integrado</title>
     <style>
-        /* --- ESTILO BASE --- */
+        /* --- VARIÁVEIS GERAIS --- */
         :root {
             --primary: #00695c;
-            --accent: #00e676; /* Verde Neon */
-            --bg-dark: #050505;
+            --primary-dark: #004d40;
+            --accent: #00e676;
+            --bg-app: #050505;       /* Fundo do App (Celular) */
+            --bg-dash: #f4f6f8;      /* Fundo do Painel (Gestão) */
+            --text-main: #333;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; width: 100vw; }
+        
+        /* --- MODO APP (TELA ESCURA) --- */
+        body.mode-app { background: var(--bg-app); color: white; overflow: hidden; }
+        
+        /* --- MODO DASHBOARD (TELA CLARA) --- */
+        body.mode-dash { background: var(--bg-dash); color: var(--text-main); overflow-y: auto; }
 
-        /* --- MENU SCROLL (TELA INICIAL) --- */
-        #main-menu { display: block; height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
-        #main-menu::-webkit-scrollbar { display: none; }
+        /* =========================================
+           1. TELA DO COLABORADOR (SCROLL SNAP)
+           ========================================= */
+        #app-container { display: block; height: 100vh; width: 100vw; overflow-y: scroll; scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+        #app-container::-webkit-scrollbar { display: none; }
 
-        .fixed-header {
-            position: fixed; top: 0; width: 100%; padding: 25px; text-align: center; z-index: 1000;
-            pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
+        /* Cabeçalho Fixo do App */
+        .app-header {
+            position: fixed; top: 0; width: 100%; padding: 20px; z-index: 1000;
+            display: flex; justify-content: space-between; align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent); pointer-events: none;
         }
-        .fixed-header h2 { font-weight: 300; font-size: 22px; color: #fff; text-shadow: 0 2px 5px black; }
+        .app-title h2 { font-weight: 300; font-size: 20px; color: #fff; text-shadow: 0 2px 5px black; }
+        
+        /* BOTÃO GESTOR NO CANTO SUPERIOR DIREITO */
+        .btn-admin-top {
+            pointer-events: auto; /* Permite clique */
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3);
+            width: 45px; height: 45px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 22px; cursor: pointer; backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        .btn-admin-top:hover { background: var(--accent); color: black; border-color: var(--accent); }
 
-        /* SEÇÕES SCROLL */
+        /* Seções de Scroll */
         .scroll-section {
             height: 100vh; width: 100vw; scroll-snap-align: center;
             display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative;
         }
         
-        /* BOTÕES */
         .circle-btn {
             width: 220px; height: 220px; border-radius: 50%; border: none; color: white;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -46,12 +68,14 @@
         .btn-pausa { background: linear-gradient(135deg, #f9a825, #f57f17); border: 2px solid #fbc02d; }
         .btn-retorno { background: linear-gradient(135deg, #0277bd, #01579b); border: 2px solid #039be5; }
         .btn-fim { background: linear-gradient(135deg, #c62828, #b71c1c); border: 2px solid #ef5350; }
-        .btn-admin { background: linear-gradient(135deg, #424242, #212121); border: 2px solid #616161; }
 
         .hint { position: absolute; bottom: 40px; opacity: 0.5; font-size: 12px; animation: bounce 2s infinite; }
         @keyframes bounce { 0%, 100% {transform:translateY(0);} 50% {transform:translateY(-10px);} }
 
-        /* --- CÂMERA IA (HUD) --- */
+        /* =========================================
+           2. MODAIS DO APP (Câmera, Justificativa, Sucesso)
+           ========================================= */
+        /* Câmera */
         #camera-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: black; z-index: 3000; flex-direction: column; justify-content: center; align-items: center;
@@ -66,127 +90,137 @@
         }
         .face-silhouette.scanning { border-color: var(--accent); border-style: solid; box-shadow: 0 0 30px var(--accent), 0 0 0 100vmax rgba(0,0,0,0.9); }
 
-        .scanner-laser {
-            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
-            background: var(--accent); box-shadow: 0 0 15px var(--accent);
-            animation: scanDown 2s infinite; display: none;
-        }
-        @keyframes scanDown { 0% {top:0; opacity:0;} 20%{opacity:1;} 90%{opacity:1;} 100%{top:100%; opacity:0;} }
-
-        .status-msg {
-            position: absolute; bottom: 100px; width: 100%; text-align: center; z-index: 20;
-            color: white; text-shadow: 0 2px 5px black;
-        }
-        .status-msg h3 { font-size: 24px; margin-bottom: 5px; }
-
-        /* --- JUSTIFICATIVA --- */
+        .status-msg { position: absolute; bottom: 100px; width: 100%; text-align: center; z-index: 20; color: white; text-shadow: 0 2px 5px black; }
+        
+        /* Justificativa Popup */
         #justificativa-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 3500;
-            justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.9); z-index: 3500; justify-content: center; align-items: center;
         }
-        .just-box {
+        .modal-box {
             background: #1e1e1e; width: 90%; max-width: 350px; padding: 25px;
-            border-radius: 15px; border: 1px solid #ffb300; text-align: center;
-            box-shadow: 0 10px 30px black;
+            border-radius: 15px; border: 1px solid #ffb300; text-align: center; box-shadow: 0 10px 30px black; color: white;
         }
-        .just-box textarea {
-            width: 100%; height: 80px; background: #333; border: 1px solid #555; color: white;
-            padding: 10px; border-radius: 8px; font-size: 14px; margin-bottom: 15px; resize: none;
-        }
-        .btn-action {
-            width: 100%; padding: 12px; background: #ffb300; color: black; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer; margin-top:10px;
-        }
+        .modal-box textarea { width: 100%; height: 80px; background: #333; border: 1px solid #555; color: white; padding: 10px; margin: 15px 0; border-radius: 5px;}
+        .btn-modal { width: 100%; padding: 12px; background: #ffb300; color: black; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
 
-        /* --- TELA SUCESSO --- */
+        /* Tela Sucesso */
         #success-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #1b5e20 0%, #004d40 100%); z-index: 4000;
-            flex-direction: column; justify-content: center; align-items: center;
-            color: white; text-align: center; padding: 20px;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; color: white;
         }
-        .check-circle {
-            width: 100px; height: 100px; border-radius: 50%; background: white;
-            display: flex; justify-content: center; align-items: center;
-            margin-bottom: 30px; animation: scaleUp 0.5s;
-        }
+        .check-circle { width: 100px; height: 100px; border-radius: 50%; background: white; display: flex; justify-content: center; align-items: center; margin-bottom: 20px; }
         .check-circle span { font-size: 60px; color: #1b5e20; }
-        @keyframes scaleUp { from{transform:scale(0);} to{transform:scale(1);} }
-
-        .btn-download {
-            background: rgba(255,255,255,0.2); border: 2px solid white; color: white;
-            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer; width: 100%; max-width: 300px; margin-top: 20px;
-            display: flex; justify-content: center; align-items: center; gap: 10px;
-        }
-        .btn-ok {
-            background: white; color: #1b5e20; border: none; width: 100%; max-width: 300px; margin-top: 15px;
-            padding: 15px; border-radius: 30px; font-weight: bold; cursor: pointer;
-        }
-
-        /* --- ADMIN AREA --- */
-        #admin-login-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 5000; justify-content: center; align-items: center; }
         
-        #admin-panel { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #f4f4f9; z-index: 6000; overflow-y: auto; color: #333; 
-        }
-        .admin-nav { background: #004d40; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .admin-content { padding: 20px; max-width: 800px; margin: 0 auto; }
-        .card { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .card h3 { color: #00695c; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .btn-download { background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 15px; border-radius: 30px; width: 250px; margin-top: 20px; cursor: pointer; display:flex; justify-content:center; gap:10px; }
+        .btn-ok { background: white; color: #1b5e20; border: none; width: 250px; padding: 15px; border-radius: 30px; margin-top: 15px; font-weight: bold; cursor: pointer; }
 
-        /* Cadastro Form */
-        .form-row { margin-bottom: 15px; }
-        .form-row label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; }
-        .form-row input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        /* =========================================
+           3. PAINEL GESTOR (DASHBOARD COMPLETO)
+           ========================================= */
+        #dashboard-container {
+            display: none; /* Escondido por padrão */
+            min-height: 100vh;
+        }
         
-        /* Captura Foto Cadastro */
-        .photo-preview { width: 100%; height: 200px; background: #ddd; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; border-radius: 5px; overflow: hidden; position: relative; }
-        .photo-preview video { width: 100%; height: 100%; object-fit: cover; }
-        .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        /* Navbar Gestor */
+        .dash-nav {
+            background: var(--primary-dark); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 500;
+        }
+        .nav-links button {
+            background: none; border: none; color: rgba(255,255,255,0.7); margin-left: 20px; font-size: 15px; cursor: pointer; padding: 5px 10px; transition: 0.3s;
+        }
+        .nav-links button.active { color: white; font-weight: bold; border-bottom: 2px solid var(--accent); }
+        .nav-links button:hover { color: white; }
+
+        /* Conteúdo do Dashboard */
+        .dash-content { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        .section { display: none; animation: fadeIn 0.4s; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards e Tabelas do Gestor */
+        .dash-card {
+            background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px;
+        }
+        .dash-card h3 { color: var(--primary); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #666; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+
+        .btn-dash { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-dash:hover { background: var(--primary-dark); }
+        .btn-danger { background: #d32f2f; }
+
+        /* Tabela Gestor */
+        .dash-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .dash-table th { background: #f8f9fa; text-align: left; padding: 12px; border-bottom: 2px solid #ddd; color: #555; }
+        .dash-table td { padding: 12px; border-bottom: 1px solid #eee; }
+        
+        /* Papel Timbrado (Relatório) */
+        .report-paper {
+            background: white; padding: 40px; border: 1px solid #ddd; box-shadow: 0 0 15px rgba(0,0,0,0.05); min-height: 800px;
+        }
+        .timbrado-header { text-align: center; border-bottom: 2px double var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+        .timbrado-header h2 { color: var(--primary-dark); text-transform: uppercase; font-size: 24px; }
+        
+        /* Modal Login Admin */
+        #admin-login-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 6000; justify-content: center; align-items: center;
+        }
+
+        /* Foto Cadastro */
+        .photo-area { width: 150px; height: 150px; background: #eee; border-radius: 8px; overflow: hidden; position: relative; margin-bottom: 10px; }
+        .photo-area video, .photo-area img { width: 100%; height: 100%; object-fit: cover; }
+
+        @media print {
+            .dash-nav, .controls, .btn-dash, #app-container { display: none !important; }
+            #dashboard-container, .dash-content, .section.active { display: block !important; margin: 0; padding: 0; }
+            .dash-card { box-shadow: none; border: none; padding: 0; }
+            body { background: white; color: black; }
+        }
     </style>
 </head>
-<body>
+<body class="mode-app">
 
-    <div id="main-menu">
-        <div class="fixed-header">
-            <h2>Maranata Bio</h2>
-            <p>Selecione o Registro</p>
+    <div id="app-container">
+        
+        <div class="app-header">
+            <div class="app-title">
+                <h2>Maranata Bio</h2>
+                <span style="font-size:12px; color:var(--accent);">Sistema de Ponto</span>
+            </div>
+            <button class="btn-admin-top" onclick="abrirLoginAdmin()">⚙️</button>
         </div>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #002200 0%, #000 70%);">
-            <button class="circle-btn btn-entrada" onclick="iniciarFluxo('ENTRADA')">
+            <button class="circle-btn btn-entrada" onclick="iniciarFluxoApp('ENTRADA')">
                 <div class="emoji">☀️</div> Entrada
             </button>
             <div class="hint">▼ Pausa</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #332200 0%, #000 70%);">
-            <button class="circle-btn btn-pausa" onclick="iniciarFluxo('INÍCIO PAUSA')">
+            <button class="circle-btn btn-pausa" onclick="iniciarFluxoApp('INÍCIO PAUSA')">
                 <div class="emoji">☕</div> Início Pausa
             </button>
             <div class="hint">▼ Retorno</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #001133 0%, #000 70%);">
-            <button class="circle-btn btn-retorno" onclick="iniciarFluxo('RETORNO PAUSA')">
+            <button class="circle-btn btn-retorno" onclick="iniciarFluxoApp('RETORNO PAUSA')">
                 <div class="emoji">🔙</div> Retorno Pausa
             </button>
             <div class="hint">▼ Fim</div>
         </section>
 
         <section class="scroll-section" style="background: radial-gradient(circle, #330000 0%, #000 70%);">
-            <button class="circle-btn btn-fim" onclick="iniciarFluxo('FIM EXPEDIENTE')">
+            <button class="circle-btn btn-fim" onclick="iniciarFluxoApp('FIM EXPEDIENTE')">
                 <div class="emoji">🌙</div> Fim Expediente
-            </button>
-            <div class="hint">▼ Gestor</div>
-        </section>
-
-        <section class="scroll-section" style="background: #111;">
-            <button class="circle-btn btn-admin" onclick="abrirLoginAdmin()">
-                <div class="emoji">⚙️</div> Admin<br>Gestor
             </button>
         </section>
     </div>
@@ -194,335 +228,403 @@
     <div id="camera-modal">
         <div class="camera-viewport">
             <video id="video-feed" autoplay playsinline muted></video>
-            <div class="face-silhouette" id="silhouette">
-                <div class="scanner-laser" id="scanner"></div>
-            </div>
-            <div class="status-msg">
-                <h3 id="ia-status">Aguardando Rosto...</h3>
-                <p id="ia-sub">Consultando banco de dados...</p>
-            </div>
+            <div class="face-silhouette" id="silhouette"></div>
+            <div class="status-msg"><h3 id="ia-status">Aguardando...</h3></div>
         </div>
     </div>
 
     <div id="justificativa-modal">
-        <div class="just-box">
+        <div class="modal-box">
             <h3 style="color:#ffb300">⚠️ Ponto Externo</h3>
-            <p>A IA validou sua face, mas você está fora da Sede.<br>Motivo:</p>
+            <p>Fora do perímetro da Sede.<br>Motivo:</p>
             <textarea id="txt-motivo" placeholder="Digite a justificativa..."></textarea>
-            <button class="btn-action" onclick="confirmarJustificativa()">CONFIRMAR</button>
+            <button class="btn-modal" onclick="confirmarJustificativa()">CONFIRMAR</button>
         </div>
     </div>
 
     <div id="success-screen">
         <div class="check-circle"><span>✓</span></div>
-        <h2 id="success-user">NOME COLABORADOR</h2>
-        <p>Ponto registrado com sucesso.</p>
-        <p id="success-detail" style="font-size:12px; opacity:0.7; margin-top:5px;"></p>
-        
+        <h2 id="suc-nome">REGISTRADO</h2>
+        <p>Dados salvos com sucesso.</p>
         <button class="btn-download" onclick="baixarComprovante()">📄 Baixar Comprovante</button>
-        <button class="btn-ok" onclick="voltarAoInicio()">OK (Voltar ao Início)</button>
+        <button class="btn-ok" onclick="voltarAoApp()">OK (Voltar)</button>
     </div>
 
     <div id="admin-login-modal">
-        <div class="just-box">
+        <div class="modal-box" style="border-color: #00e676;">
             <h3>Acesso Gestor</h3>
-            <input type="password" id="admin-pass" placeholder="Senha Mestra" style="width:100%; padding:10px; margin:10px 0; background:#333; color:white; border:1px solid #555;">
-            <button class="btn-action" style="background:var(--primary); color:white;" onclick="verificarAdmin()">Entrar</button>
+            <input type="password" id="admin-pass" placeholder="Senha" style="width:100%; padding:10px; margin:15px 0; background:#333; border:1px solid #555; color:white; text-align:center;">
+            <button class="btn-modal" style="background: var(--accent);" onclick="validarAdmin()">ENTRAR</button>
             <button onclick="document.getElementById('admin-login-modal').style.display='none'" style="margin-top:10px; background:none; border:none; color:#888; cursor:pointer;">Cancelar</button>
         </div>
     </div>
 
-    <div id="admin-panel">
-        <nav class="admin-nav">
-            <strong>Maranata Gestão</strong>
-            <button onclick="sairAdmin()" style="background:none; border:none; color:white; cursor:pointer;">Sair</button>
-        </nav>
-        <div class="admin-content">
-            
-            <div class="card">
-                <h3>👤 Cadastrar Novo Colaborador</h3>
-                <div class="form-row">
-                    <label>Nome Completo:</label>
-                    <input type="text" id="reg-nome" placeholder="Ex: Carlos Silva">
-                </div>
-                <div class="form-row">
-                    <label>Cargo:</label>
-                    <input type="text" id="reg-cargo" placeholder="Ex: Analista">
-                </div>
-                
-                <div class="form-row">
-                    <label>Biometria Facial (Foto Matriz):</label>
-                    <div class="photo-preview" id="reg-preview">
-                        <video id="reg-video" autoplay playsinline muted></video>
-                        <img id="reg-img">
-                        <div style="position:absolute; color:#555; font-size:12px;" id="reg-placeholder">Câmera desligada</div>
-                    </div>
-                    <div style="display:flex; gap:10px;">
-                        <button onclick="ligarCameraCadastro()" style="flex:1; padding:8px; cursor:pointer;">📷 Ligar Câmera</button>
-                        <button onclick="tirarFotoCadastro()" style="flex:1; padding:8px; cursor:pointer; background:#ddd;">📸 Capturar</button>
-                    </div>
-                </div>
 
-                <button class="btn-action" style="background:var(--primary); color:white;" onclick="salvarColaborador()">💾 Salvar no Banco</button>
+    <div id="dashboard-container">
+        <nav class="dash-nav">
+            <div style="display:flex; align-items:center;">
+                <h2 style="margin-right:20px;">Maranata Gestão</h2>
+                <div class="nav-links">
+                    <button onclick="nav('unidades')" class="active" id="lnk-unidades">🏢 Unidades</button>
+                    <button onclick="nav('colaboradores')" id="lnk-colaboradores">👥 Colaboradores</button>
+                    <button onclick="nav('relatorios')" id="lnk-relatorios">📊 Relatórios</button>
+                </div>
+            </div>
+            <button onclick="sairDoAdmin()" style="background:rgba(255,255,255,0.2); padding:5px 15px; border-radius:20px; border:none; color:white; cursor:pointer;">Sair do Painel</button>
+        </nav>
+
+        <div class="dash-content">
+            
+            <div id="sec-unidades" class="section active">
+                <div class="dash-card">
+                    <h3>Gerenciar Unidades</h3>
+                    <div class="form-grid">
+                        <div class="form-group"><label>Nome da Unidade</label><input type="text" id="uni-nome"></div>
+                        <div class="form-group"><label>CNPJ</label><input type="text" id="uni-cnpj"></div>
+                        <div class="form-group"><label>Endereço Completo</label><input type="text" id="uni-end"></div>
+                    </div>
+                    <button class="btn-dash" onclick="salvarUnidade()">💾 Salvar Unidade</button>
+                </div>
+                <div class="dash-card">
+                    <h3>Unidades Cadastradas</h3>
+                    <table class="dash-table">
+                        <thead><tr><th>Nome</th><th>CNPJ</th><th>Endereço</th><th>Ação</th></tr></thead>
+                        <tbody id="tb-unidades"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="card">
-                <h3>📋 Colaboradores no Banco de Dados</h3>
-                <ul id="lista-colab" style="padding-left:20px; font-size:14px; color:#555;">
-                    <li>Nenhum registro ainda.</li>
-                </ul>
+            <div id="sec-colaboradores" class="section">
+                <div class="dash-card">
+                    <h3>Cadastrar Colaborador (Biometria)</h3>
+                    <div style="display:flex; gap:20px;">
+                        <div class="photo-area">
+                            <video id="reg-video" autoplay playsinline muted></video>
+                            <img id="reg-img" style="display:none;">
+                        </div>
+                        <div style="flex:1;">
+                            <div class="form-group"><label>Nome Completo</label><input type="text" id="col-nome"></div>
+                            <div class="form-group"><label>Cargo</label><input type="text" id="col-cargo"></div>
+                            <div class="form-group"><label>Unidade</label><select id="col-unidade"></select></div>
+                            <div style="margin-top:10px;">
+                                <button class="btn-dash" onclick="ligarCamCadastro()">📷 Ligar Câmera</button>
+                                <button class="btn-dash" style="background:#f57c00;" onclick="capturarFoto()">📸 Capturar Foto</button>
+                                <button class="btn-dash" style="background:#2e7d32;" onclick="salvarColaborador()">💾 Salvar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-card">
+                    <h3>Funcionários Ativos</h3>
+                    <table class="dash-table">
+                        <thead><tr><th>Nome</th><th>Cargo</th><th>Unidade</th><th>Biometria</th></tr></thead>
+                        <tbody id="tb-colaboradores"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="sec-relatorios" class="section">
+                <div class="dash-card controls">
+                    <h3>Emissão de Relatórios</h3>
+                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr);">
+                        <div class="form-group"><label>Tipo</label>
+                            <select id="rel-tipo" onchange="renderRelatorio()">
+                                <option value="fechamento">Fechamento Mensal</option>
+                                <option value="auditoria">Auditoria (Mapa/Justificativas)</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Unidade</label><select id="rel-unidade" onchange="renderRelatorio()"></select></div>
+                        <div class="form-group"><label>Mês</label><select id="rel-mes"><option>Dezembro</option></select></div>
+                        <div class="form-group"><label style="color:transparent">.</label><button class="btn-dash" onclick="window.print()">🖨️ Imprimir</button></div>
+                    </div>
+                </div>
+
+                <div class="report-paper">
+                    <div class="timbrado-header" id="timbrado-area">
+                        </div>
+                    <table class="dash-table">
+                        <thead id="rel-thead"></thead>
+                        <tbody id="rel-tbody"></tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO ---
-        const SEDE_LAT = -22.9035; 
-        const SEDE_LNG = -43.2800; 
-        const RAIO_METROS = 50;
+        // === BANCO DE DADOS (SIMULADO) ===
+        let unidadesDB = [
+            { nome: "Sede Administrativa", cnpj: "26.123.456/0001-00", end: "Rua Adolfo Bergamini, 199" },
+            { nome: "Unidade Centro", cnpj: "10.000.000/0001-99", end: "Av. Rio Branco, 50" }
+        ];
+        
+        // Colaboradores (Necessário para a IA reconhecer)
+        let colaboradoresDB = [
+            { nome: "Carlos Silva", cargo: "Analista", unidade: "Sede Administrativa", foto: "" }
+        ];
 
-        // --- BANCO DE DADOS LOCAL (Simulando Firebase) ---
-        let bancoColaboradores = []; 
-        // Formato: { nome, cargo, fotoBase64 }
+        // Registros de Ponto (Onde ficam os dados para o relatório)
+        let registrosDB = [];
 
-        // --- ESTADO TEMPORÁRIO ---
+        // Configuração Cerca
+        const SEDE_LAT = -22.9035;
+        const SEDE_LNG = -43.2800;
+        const RAIO = 50;
+
+        // Variáveis de Estado
         let stream = null;
         let tipoAtual = "";
+        let registroTemp = {};
         let colaboradorIdentificado = null;
-        let registroFinal = {};
-        let estaDentro = false;
 
-        // --- FLUXO PRINCIPAL: BATER PONTO ---
-        function iniciarFluxo(tipo) {
+        // === LÓGICA DO APP (COLABORADOR) ===
+
+        function iniciarFluxoApp(tipo) {
             tipoAtual = tipo;
             const btn = event.currentTarget;
-            const originalHtml = btn.innerHTML;
-            
-            // 1. Verificação GPS (Invisível)
-            btn.innerHTML = "🛰️ Verificando...";
+            const oldHtml = btn.innerHTML;
+            btn.innerHTML = "🛰️ ...";
 
-            if(!navigator.geolocation) {
-                alert("Ative o GPS para registrar.");
-                btn.innerHTML = originalHtml;
-                return;
-            }
+            if(!navigator.geolocation) { alert("GPS necessário"); btn.innerHTML = oldHtml; return; }
 
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const dist = calcularDist(pos.coords.latitude, pos.coords.longitude, SEDE_LAT, SEDE_LNG);
-                    estaDentro = (dist <= RAIO_METROS);
-                    
-                    registroFinal = {
-                        data: new Date(),
-                        lat: pos.coords.latitude,
-                        lng: pos.coords.longitude,
-                        local: estaDentro ? "SEDE" : "EXTERNO",
-                        justificativa: estaDentro ? "Registro Padrão" : ""
-                    };
-
-                    btn.innerHTML = originalHtml;
-                    abrirCameraReconhecimento(); // 2. Vai para a IA
-                },
-                (err) => {
-                    alert("Erro GPS.");
-                    btn.innerHTML = originalHtml;
-                }
-            );
+            navigator.geolocation.getCurrentPosition(pos => {
+                const dist = calcularDist(pos.coords.latitude, pos.coords.longitude, SEDE_LAT, SEDE_LNG);
+                const dentro = dist <= RAIO;
+                
+                registroTemp = {
+                    data: new Date(),
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude,
+                    local: dentro ? "SEDE" : "EXTERNO",
+                    justificativa: dentro ? "Padrão" : ""
+                };
+                
+                btn.innerHTML = oldHtml;
+                abrirCameraIA();
+            }, () => { alert("Erro GPS"); btn.innerHTML = oldHtml; });
         }
 
-        // --- RECONHECIMENTO FACIAL (VARREDURA NO BANCO) ---
-        async function abrirCameraReconhecimento() {
+        async function abrirCameraIA() {
             const modal = document.getElementById('camera-modal');
-            const h3 = document.getElementById('ia-status');
-            const sub = document.getElementById('ia-sub');
-            const silhueta = document.getElementById('silhouette');
-            const scanner = document.getElementById('scanner');
-
             modal.style.display = 'flex';
-            h3.innerText = "Buscando Rosto..."; h3.style.color = "white";
-            sub.innerText = "Consultando banco de dados...";
-            silhueta.classList.remove('scanning');
-            scanner.style.display = 'none';
+            document.getElementById('ia-status').innerText = "Buscando Rosto...";
+            document.getElementById('silhouette').classList.remove('scanning');
 
             try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"}});
                 document.getElementById('video-feed').srcObject = stream;
-
-                // Fase 1: Escaneamento
+                
+                // Simulação IA
                 setTimeout(() => {
-                    h3.innerText = "Escaneando...";
-                    silhueta.classList.add('scanning');
-                    scanner.style.display = 'block';
+                    document.getElementById('ia-status').innerText = "Analisando...";
+                    document.getElementById('silhouette').classList.add('scanning');
                 }, 1500);
 
-                // Fase 2: Comparação com Banco (Simulado)
                 setTimeout(() => {
-                    if(bancoColaboradores.length === 0) {
-                        alert("ERRO: Nenhum colaborador cadastrado no banco de dados!\nCadastre-se no menu Gestor.");
+                    // Match simples: Pega o ultimo cadastrado ou aleatório se tiver
+                    if(colaboradoresDB.length > 0) {
+                        colaboradorIdentificado = colaboradoresDB[colaboradoresDB.length - 1]; // Pega o ultimo para teste
+                        document.getElementById('ia-status').innerText = "OLÁ " + colaboradorIdentificado.nome.toUpperCase();
+                        
+                        setTimeout(() => {
+                            fecharCamera();
+                            finalizarFluxo();
+                        }, 1500);
+                    } else {
+                        alert("Rosto não cadastrado! Procure o Gestor.");
                         fecharCamera();
-                        return;
                     }
+                }, 3500);
 
-                    // SIMULAÇÃO: A IA "achou" o último cadastrado (para teste)
-                    // Na vida real, aqui entraria a API de Face Match
-                    colaboradorIdentificado = bancoColaboradores[bancoColaboradores.length - 1]; 
-
-                    h3.innerText = "IDENTIFICADO: " + colaboradorIdentificado.nome.toUpperCase();
-                    h3.style.color = "#00e676";
-                    sub.innerText = "Cargo: " + colaboradorIdentificado.cargo;
-                    scanner.style.display = 'none';
-
-                    // Fase 3: Conclusão
-                    setTimeout(() => {
-                        fecharCamera();
-                        verificarDestino();
-                    }, 1500);
-
-                }, 4000);
-
-            } catch(err) {
-                alert("Erro Câmera: " + err);
-                modal.style.display = 'none';
-            }
+            } catch(e) { alert("Erro Câmera"); modal.style.display='none'; }
         }
 
         function fecharCamera() {
             document.getElementById('camera-modal').style.display = 'none';
-            if(stream) stream.getTracks().forEach(t => t.stop());
+            if(stream) stream.getTracks().forEach(t=>t.stop());
         }
 
-        // --- DECISÃO E JUSTIFICATIVA ---
-        function verificarDestino() {
-            if(estaDentro) {
-                finalizarSucesso();
-            } else {
-                // Abre justificativa
+        function finalizarFluxo() {
+            if(registroTemp.local === "EXTERNO") {
                 document.getElementById('justificativa-modal').style.display = 'flex';
                 document.getElementById('txt-motivo').value = "";
+            } else {
+                salvarRegistro();
             }
         }
 
         function confirmarJustificativa() {
             const txt = document.getElementById('txt-motivo').value;
-            if(txt.length < 3) { alert("Justifique."); return; }
-            registroFinal.justificativa = txt;
+            if(txt.length < 3) { alert("Justifique!"); return; }
+            registroTemp.justificativa = txt;
             document.getElementById('justificativa-modal').style.display = 'none';
-            finalizarSucesso();
+            salvarRegistro();
         }
 
-        function finalizarSucesso() {
-            registroFinal.data = new Date();
-            document.getElementById('success-user').innerText = colaboradorIdentificado.nome.toUpperCase();
-            document.getElementById('success-detail').innerText = `${tipoAtual} • ${registroFinal.local}`;
+        function salvarRegistro() {
+            // Salva no banco global para o relatório ver
+            registrosDB.push({
+                colaborador: colaboradorIdentificado.nome,
+                cargo: colaboradorIdentificado.cargo,
+                unidade: colaboradorIdentificado.unidade,
+                data: registroTemp.data,
+                tipo: tipoAtual,
+                status: registroTemp.local === "SEDE" ? "OK" : "Justificado",
+                justificativa: registroTemp.justificativa,
+                coords: `${registroTemp.lat}, ${registroTemp.lng}`
+            });
+
+            document.getElementById('suc-nome').innerText = colaboradorIdentificado.nome.toUpperCase();
             document.getElementById('success-screen').style.display = 'flex';
         }
 
-        function voltarAoInicio() {
+        function voltarAoApp() {
             document.getElementById('success-screen').style.display = 'none';
         }
 
         function baixarComprovante() {
-            const dt = registroFinal.data;
-            const texto = `
-================================
-     MARANATA RH - PONTO
-================================
-COLABORADOR: ${colaboradorIdentificado.nome.toUpperCase()}
-CARGO: ${colaboradorIdentificado.cargo}
---------------------------------
-DATA: ${dt.toLocaleDateString()}
-HORA: ${dt.toLocaleTimeString()}
-TIPO: ${tipoAtual}
-LOCAL: ${registroFinal.local}
---------------------------------
-JUSTIFICATIVA:
-${registroFinal.justificativa}
---------------------------------
-ID ÚNICO: ${Date.now()}
-================================
-`;
-            const blob = new Blob([texto], {type: 'text/plain'});
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.download = `Comprovante_${Date.now()}.txt`;
-            link.click();
+            const txt = `MARANATA PONTO\n${colaboradorIdentificado.nome}\n${new Date().toLocaleString()}\n${tipoAtual}\n${registroTemp.local}`;
+            const blob = new Blob([txt], {type:'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'comprovante.txt';
+            a.click();
         }
 
-        // --- ADMIN / GESTÃO / CADASTRO ---
+        // === LÓGICA DO GESTOR (ADMIN) ===
+
         function abrirLoginAdmin() { document.getElementById('admin-login-modal').style.display = 'flex'; }
         
-        function verificarAdmin() {
+        function validarAdmin() {
             if(document.getElementById('admin-pass').value === 'RH Arilson 123') {
                 document.getElementById('admin-login-modal').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-                document.getElementById('admin-pass').value = '';
-                atualizarListaAdmin();
-            } else { alert("Senha incorreta"); }
-        }
-        function sairAdmin() { document.getElementById('admin-panel').style.display = 'none'; }
-
-        // Funções da Câmera de Cadastro
-        let streamCadastro = null;
-        async function ligarCameraCadastro() {
-            const video = document.getElementById('reg-video');
-            document.getElementById('reg-placeholder').style.display = 'none';
-            document.getElementById('reg-img').style.display = 'none';
-            video.style.display = 'block';
-            streamCadastro = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = streamCadastro;
+                document.getElementById('app-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'block';
+                document.body.classList.replace('mode-app', 'mode-dash');
+                
+                // Inicializa dados do painel
+                atualizarTabelaUnidades();
+                atualizarSelectUnidades();
+                atualizarTabelaColaboradores();
+                renderRelatorio();
+            } else { alert("Senha Incorreta"); }
         }
 
-        function tirarFotoCadastro() {
-            const video = document.getElementById('reg-video');
-            const img = document.getElementById('reg-img');
-            const canvas = document.createElement('canvas');
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            canvas.getContext('2d').drawImage(video, 0, 0);
-            
-            // Pausa vídeo e mostra foto
-            img.src = canvas.toDataURL('image/png');
-            img.style.display = 'block';
-            video.style.display = 'none';
-            
-            // Para a câmera
-            if(streamCadastro) streamCadastro.getTracks().forEach(t => t.stop());
+        function sairDoAdmin() {
+            document.getElementById('dashboard-container').style.display = 'none';
+            document.getElementById('app-container').style.display = 'block';
+            document.body.classList.replace('mode-dash', 'mode-app');
         }
 
-        function salvarColaborador() {
-            const nome = document.getElementById('reg-nome').value;
-            const cargo = document.getElementById('reg-cargo').value;
-            const img = document.getElementById('reg-img').src;
-
-            if(!nome || !cargo || !img) { alert("Preencha tudo e tire a foto!"); return; }
-
-            // Salva no "Banco" (Array em memória)
-            bancoColaboradores.push({ nome, cargo, foto: img });
-            
-            alert("Colaborador Cadastrado com Sucesso!");
-            // Limpa form
-            document.getElementById('reg-nome').value = '';
-            document.getElementById('reg-cargo').value = '';
-            document.getElementById('reg-img').style.display = 'none';
-            document.getElementById('reg-placeholder').style.display = 'block';
-            
-            atualizarListaAdmin();
+        function nav(area) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById('sec-' + area).classList.add('active');
+            document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+            document.getElementById('lnk-' + area).classList.add('active');
         }
 
-        function atualizarListaAdmin() {
-            const ul = document.getElementById('lista-colab');
-            ul.innerHTML = '';
-            if(bancoColaboradores.length === 0) {
-                ul.innerHTML = '<li>Nenhum registro.</li>';
-                return;
+        // --- CRUD UNIDADES ---
+        function salvarUnidade() {
+            const nome = document.getElementById('uni-nome').value;
+            const cnpj = document.getElementById('uni-cnpj').value;
+            const end = document.getElementById('uni-end').value;
+            if(nome && cnpj) {
+                unidadesDB.push({nome, cnpj, end});
+                atualizarTabelaUnidades();
+                atualizarSelectUnidades();
+                alert("Unidade Salva");
+                document.getElementById('uni-nome').value = "";
             }
-            bancoColaboradores.forEach(c => {
-                ul.innerHTML += `<li style="margin-bottom:5px; border-bottom:1px solid #ddd; padding:5px;"><strong>${c.nome}</strong> (${c.cargo}) <span style="color:green; font-size:10px;">BIO OK</span></li>`;
+        }
+        function atualizarTabelaUnidades() {
+            const tb = document.getElementById('tb-unidades');
+            tb.innerHTML = "";
+            unidadesDB.forEach(u => {
+                tb.innerHTML += `<tr><td>${u.nome}</td><td>${u.cnpj}</td><td>${u.end}</td><td><button class="btn-dash btn-danger" onclick="alert('Excluir?')">Excluir</button></td></tr>`;
+            });
+        }
+        function atualizarSelectUnidades() {
+            const s1 = document.getElementById('col-unidade');
+            const s2 = document.getElementById('rel-unidade');
+            s1.innerHTML = ""; s2.innerHTML = "";
+            unidadesDB.forEach(u => {
+                const opt = `<option value="${u.nome}">${u.nome}</option>`;
+                s1.innerHTML += opt;
+                s2.innerHTML += opt;
             });
         }
 
-        // UTILS
+        // --- CADASTRO COLABORADOR ---
+        let streamReg = null;
+        async function ligarCamCadastro() {
+            streamReg = await navigator.mediaDevices.getUserMedia({video:true});
+            document.getElementById('reg-video').srcObject = streamReg;
+        }
+        function capturarFoto() {
+            const vid = document.getElementById('reg-video');
+            const cvs = document.createElement('canvas');
+            cvs.width = vid.videoWidth; cvs.height = vid.videoHeight;
+            cvs.getContext('2d').drawImage(vid,0,0);
+            document.getElementById('reg-img').src = cvs.toDataURL('image/png');
+            document.getElementById('reg-img').style.display = 'block';
+            if(streamReg) streamReg.getTracks().forEach(t=>t.stop());
+        }
+        function salvarColaborador() {
+            const nome = document.getElementById('col-nome').value;
+            const cargo = document.getElementById('col-cargo').value;
+            const uni = document.getElementById('col-unidade').value;
+            if(nome && cargo) {
+                colaboradoresDB.push({nome, cargo, unidade: uni, foto: 'base64...'});
+                atualizarTabelaColaboradores();
+                alert("Colaborador Cadastrado para IA!");
+            }
+        }
+        function atualizarTabelaColaboradores() {
+            const tb = document.getElementById('tb-colaboradores');
+            tb.innerHTML = "";
+            colaboradoresDB.forEach(c => {
+                tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.cargo}</td><td>${c.unidade}</td><td style="color:green">Cadastrada</td></tr>`;
+            });
+        }
+
+        // --- RELATÓRIOS ---
+        function renderRelatorio() {
+            const tipo = document.getElementById('rel-tipo').value;
+            const uniNome = document.getElementById('rel-unidade').value;
+            const unidadeObj = unidadesDB.find(u => u.nome === uniNome) || unidadesDB[0];
+            
+            // Header Timbrado
+            document.getElementById('timbrado-area').innerHTML = `
+                <h2>Associação Maranata</h2>
+                <p>${unidadeObj.nome}</p>
+                <p>CNPJ: ${unidadeObj.cnpj} | ${unidadeObj.end}</p>
+            `;
+
+            const thead = document.getElementById('rel-thead');
+            const tbody = document.getElementById('rel-tbody');
+            tbody.innerHTML = "";
+
+            // Filtra registros
+            const dados = registrosDB.filter(r => r.unidade === uniNome);
+
+            if(tipo === 'fechamento') {
+                thead.innerHTML = `<tr><th>Data/Hora</th><th>Colaborador</th><th>Tipo</th><th>Status</th></tr>`;
+                dados.forEach(d => {
+                    tbody.innerHTML += `<tr><td>${d.data.toLocaleString()}</td><td>${d.colaborador}</td><td>${d.tipo}</td><td>${d.status}</td></tr>`;
+                });
+                if(dados.length===0) tbody.innerHTML = "<tr><td colspan='4'>Sem registros.</td></tr>";
+            } else {
+                // Auditoria
+                thead.innerHTML = `<tr><th>Data</th><th>Colaborador</th><th>Justificativa</th><th>Mapa</th></tr>`;
+                const externos = dados.filter(d => d.status === 'Justificado');
+                externos.forEach(d => {
+                    tbody.innerHTML += `<tr><td>${d.data.toLocaleString()}</td><td>${d.colaborador}</td><td>${d.justificativa}</td><td><a href="http://maps.google.com/?q=${d.coords}" target="_blank">Ver Mapa</a></td></tr>`;
+                });
+                if(externos.length===0) tbody.innerHTML = "<tr><td colspan='4'>Nenhuma ocorrência externa.</td></tr>";
+            }
+        }
+
         function calcularDist(lat1, lon1, lat2, lon2) {
             const R = 6371e3; 
             const φ1 = lat1 * Math.PI/180, φ2 = lat2 * Math.PI/180;
@@ -530,7 +632,6 @@ ID ÚNICO: ${Date.now()}
             const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2) * Math.sin(Δλ/2)**2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
-
     </script>
 </body>
 </html>
