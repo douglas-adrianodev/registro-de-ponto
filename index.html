@@ -3,790 +3,704 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MaranaTime Cloud - Gestão Total</title>
+    <title>MaranaTime - Gestão Inteligente</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     
     <style>
-        /* --- ESTILOS GERAIS (DARK TECH THEME) --- */
+        /* --- TEMA --- */
         :root {
             --bg: #0f172a; --card-bg: #1e293b; --input-bg: #334155;
             --text: #f1f5f9; --text-muted: #94a3b8; --border: #334155;
-            --primary: #0ea5e9; --primary-dark: #0284c7; --secondary: #6366f1;
+            --primary: #0ea5e9; --secondary: #6366f1;
             --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
-            --glow: 0 0 20px rgba(14, 165, 233, 0.3);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); overflow: hidden; font-size: 14px; }
-        .app-container { height: 100%; width: 100%; max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; padding: 10px; position: relative; }
         
-        /* Header */
-        .main-header { text-align: center; margin-bottom: 5px; flex-shrink: 0; position: relative; z-index: 10; }
-        .logo-area h1 { color: var(--primary); font-size: 1.5rem; margin: 0; text-transform: uppercase; letter-spacing: 1px; }
-        .status-bar { font-size: 0.7rem; font-weight: bold; margin-top: 2px; display: flex; justify-content: center; gap: 8px; }
-        .status-item { padding: 2px 8px; border-radius: 10px; background: var(--input-bg); color: var(--text-muted); border: 1px solid var(--border); white-space: nowrap; }
-        .status-item.online { color: #34d399; border-color: #34d399; }
+        .app-container { height: 100%; display: flex; flex-direction: column; position: relative; }
+
+        /* --- UI COMPONENTS --- */
+        .screen { display: none; flex-direction: column; height: 100%; padding: 15px; overflow-y: auto; align-items: center; }
+        .screen.active { display: flex; animation: fadeIn 0.3s; }
+
+        .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px; margin-top: 20px; }
+        .action-btn {
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px;
+            padding: 30px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .action-btn:active { transform: scale(0.98); }
+        .action-btn span { font-size: 2.5rem; }
+        .btn-entry { border-bottom: 4px solid var(--success); }
+        .btn-pause { border-bottom: 4px solid var(--warning); }
+        .btn-return { border-bottom: 4px solid var(--primary); }
+        .btn-exit { border-bottom: 4px solid var(--danger); }
+
+        .camera-wrapper { width: 100%; max-width: 400px; aspect-ratio: 3/4; background: #000; border-radius: 20px; overflow: hidden; position: relative; border: 2px solid var(--primary); margin-bottom: 15px; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #ai-overlay { position: absolute; top:0; left:0; width:100%; height:100%; transform: scaleX(-1); }
         
-        /* Nav */
-        .nav-bar { display: flex; gap: 8px; margin-bottom: 10px; background: var(--card-bg); padding: 5px; border-radius: 12px; flex-shrink: 0; border: 1px solid var(--border); }
-        .nav-btn { flex: 1; padding: 10px; border: none; background: transparent; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 8px; transition: 0.2s; white-space: nowrap; }
-        .nav-btn.active { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; box-shadow: var(--glow); }
-
-        /* Content */
-        .view-section { display: none; flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
-        .view-section.active { display: flex; flex-direction: column; }
-        #view-ponto.active { align-items: center; justify-content: center; }
+        .header { width: 100%; padding: 15px; border-bottom: 1px solid var(--border); background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; }
         
-        /* Admin Navigation Grid */
-        .admin-menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; width: 100%; margin-top: 20px; }
-        .admin-menu-btn { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-        .admin-menu-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-3px); border-color: var(--primary); }
-        .admin-menu-icon { font-size: 2rem; margin-bottom: 5px; }
-        .admin-menu-label { font-weight: bold; font-size: 0.9rem; color: var(--text); }
-        .sub-section { display: none; width: 100%; animation: fadeIn 0.3s; }
-        .sub-section.active { display: block; }
-        .btn-back { background: transparent; border: 1px solid var(--border); color: var(--text-muted); width: auto; padding: 5px 15px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 15px; }
-
-        /* Cards */
-        .card { background: var(--card-bg); padding: 15px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 600px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
-        #view-admin .card { max-width: 100%; display: block; }
+        /* BOTÕES & INPUTS */
+        button.primary { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; font-size: 1rem; cursor: pointer; background: var(--primary); color: white; margin-top: 10px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(1); }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; width: auto; display: inline-block; margin: 2px; }
         
-        /* Camera */
-        .camera-wrapper { position: relative; margin-bottom: 15px; padding: 4px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--secondary)); width: min(280px, 60vw); height: min(280px, 60vw); flex-shrink: 0; box-shadow: var(--glow); }
-        .camera-container { position: relative; width: 100%; height: 100%; background: #000; border-radius: 50%; overflow: hidden; mask-image: radial-gradient(white, black); -webkit-mask-image: -webkit-radial-gradient(white, black); border: 2px solid #000; }
-        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); opacity: 0.9; }
-        #ai-overlay { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; pointer-events: none; transform: scaleX(-1); }
-        .face-mold { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60%; height: 75%; border: 2px dashed rgba(255, 255, 255, 0.3); border-radius: 55% 55% 45% 45%; pointer-events: none; z-index: 5; }
-        .scanner-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--primary); box-shadow: 0 0 10px var(--primary); opacity: 0.8; animation: scanDown 2s ease-in-out infinite; z-index: 6; pointer-events: none; }
-        @keyframes scanDown { 0%,100% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .spinner { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; display: none; }
+        button.loading .spinner { display: inline-block; }
+        button.loading span { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Inputs */
-        .input-group { margin-bottom: 10px; width: 100%; }
-        label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
-        input, select, textarea { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; background: var(--input-bg); color: white; transition: 0.3s; }
-        input:focus, select:focus { border-color: var(--primary); outline: none; }
-        #employee-name-display { background-color: rgba(14, 165, 233, 0.1); color: var(--primary); border-color: var(--primary); font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 5px rgba(14, 165, 233, 0.5); }
-        input[readonly] { cursor: default; opacity: 0.7; }
+        input, select, textarea { width: 100%; padding: 12px; background: var(--input-bg); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 10px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
-        /* Buttons */
-        button { cursor: pointer; border: none; border-radius: 8px; font-weight: 600; transition: 0.2s; font-size: 0.95rem; width: 100%; padding: 12px; display: flex; justify-content: center; align-items: center; gap: 5px; }
-        button:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-primary { background: linear-gradient(to right, var(--primary), var(--secondary)); color: white; }
-        .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); width: auto; min-width: 100px;}
-        .btn-success { background: #059669; color: white; width: auto; }
-        .btn-danger { background: #dc2626; color: white; width: auto; }
-        .btn-purple { background: #7c3aed; color: white; width: auto; }
-        .btn-edit { background: #d97706; color: white; padding: 4px 8px; font-size: 0.75rem; width: auto; }
-        .btn-danger.small { font-size: 0.8rem; padding: 4px 8px; width: auto; }
-
-        /* Admin Layout */
-        .filters-area, .input-group.admin-panel { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border); }
-        .filter-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-        .filter-item { flex: 1 1 140px; }
-        .form-row { display: grid; gap: 10px; margin-top: 10px; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); align-items: end; }
+        /* ADMIN */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; justify-content: center; align-items: center; padding: 15px; }
+        .modal-overlay.active { display: flex; }
+        .admin-panel { width: 100%; max-width: 900px; height: 90vh; background: var(--bg); border-radius: 15px; border: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+        .admin-header { padding: 15px; background: var(--card-bg); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+        .admin-content { padding: 15px; overflow-y: auto; flex: 1; }
         
-        /* Dashboard & Charts */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 15px; }
-        .kpi-card { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 12px; padding: 15px; text-align: center; }
-        .kpi-value { font-size: 1.6rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
-        .kpi-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .tab-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; }
+        .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* TABELA DE REGISTROS */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--card-bg); }
         
-        .charts-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .chart-container { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 10px; border: 1px solid var(--border); flex: 1; min-width: 300px; height: 300px; position: relative; }
+        /* CORES DAS LINHAS */
+        tr.late td { color: #fca5a5; background: rgba(239, 68, 68, 0.15); } /* Vermelho Atraso */
+        tr.ok td { color: #86efac; background: rgba(16, 185, 129, 0.15); } /* Verde Abonado/Justificado */
 
-        /* Tabela */
-        .table-responsive { overflow-x: auto; margin-top: 10px; max-height: 400px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 800px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-muted); }
-        th { background: #1e293b; position: sticky; top: 0; z-index: 10; color: var(--text); }
-        td { color: #cbd5e1; }
-        /* AQUI É O CSS PARA AS LINHAS VERMELHAS E VERDES */
-        tr.irregular td { color: #fca5a5 !important; background: rgba(239, 68, 68, 0.15) !important; font-weight: bold; }
-        tr.abonado td { color: #86efac !important; background: rgba(34, 197, 94, 0.15) !important; font-weight: bold; }
-        .local-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .local-info b { color: var(--success); }
-
-        /* Clock */
-        .system-clock { position: absolute; top: 10px; right: 10px; text-align: right; z-index: 100; pointer-events: none; font-family: monospace; }
-        .digital-time { font-size: 1.2rem; font-weight: bold; color: var(--success); text-shadow: 0 0 5px rgba(57, 255, 20, 0.5); }
-        .digital-date { font-size: 0.65rem; color: var(--success); opacity: 0.8; text-transform: uppercase; }
-
-        /* Modals & Feedback */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); padding: 10px; }
-        .modal-overlay.active { display: flex; animation: fadeIn 0.2s; }
-        .modal-card { background: var(--card-bg); padding: 25px; border-radius: 16px; width: 100%; max-width: 500px; border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        .modal-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        
-        #success-message, #error-message { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 50px; z-index: 20; font-weight: bold; animation: popIn 0.4s; }
-        #success-message { background: rgba(16, 185, 129, 0.95); color: white; }
-        #error-message { background: rgba(220, 38, 38, 0.95); color: white; }
-        
-        .modal-card.error-style { border-color: var(--danger); background: #3f1010; }
-        .modal-card.error-style h3 { color: #fca5a5; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes popIn { from { opacity: 0; transform: translate(-50%, -40%) scale(0.8); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
-        @media(max-width: 900px) { .form-row { grid-template-columns: 1fr; } .filter-row { flex-direction: column; gap: 10px; } .filter-item, .filter-item-large { width: 100%; } .charts-row { flex-direction: column; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="system-clock"><div class="digital-time" id="digital-time">00:00</div><div class="digital-date" id="digital-date">--</div></div>
-
-    <header class="main-header">
-        <div class="logo-area"><h1>☁️ MaranaTime</h1><p>Gestão Total</p></div>
-        <div class="status-bar"><span id="ia-status" class="status-item">IA: ...</span><span id="db-status" class="status-item">Conectando...</span></div>
+    
+    <header class="header">
+        <div style="font-weight: bold; color: var(--primary);">☁️ MaranaTime</div>
+        <div id="clock" style="font-family: monospace; color: var(--success);">00:00</div>
+        <button onclick="app.abrirLoginAdmin()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">⚙️</button>
     </header>
 
-    <nav class="nav-bar">
-        <button onclick="window.app.switchTab('ponto')" id="btn-ponto" class="nav-btn active">🕒 Ponto</button>
-        <button onclick="window.app.switchTab('admin')" id="btn-admin" class="nav-btn">🛠️ Gestão</button>
-    </nav>
-
-    <section id="view-ponto" class="view-section active">
-        <div class="card">
-            <div class="camera-wrapper">
-                <div class="camera-container">
-                    <video id="video-feed" autoplay playsinline muted></video>
-                    <canvas id="ai-overlay"></canvas>
-                    <div class="face-mold"></div>
-                    <div class="scanner-laser"></div>
-                    <div id="success-message">✅ <span id="success-text">OK</span></div>
-                    <div id="error-message">⚠️ <span id="error-text">Erro</span></div>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>👤 Colaborador Identificado</label>
-                <input type="text" id="employee-name-display" placeholder="Aguardando..." readonly>
-                <input type="hidden" id="employee-id">
-            </div>
-            <div class="input-group">
-                <label>📌 Ação</label>
-                <select id="punch-type" style="text-align: center;">
-                    <option value="Entrada">🟢 Registrar Entrada</option>
-                    <option value="Saída Almoço">🍽️ Saída Almoço</option>
-                    <option value="Volta Almoço">🔙 Volta Almoço</option>
-                    <option value="Fim Expediente">🔴 Encerrar Expediente</option>
-                </select>
-            </div>
+    <div id="screen-home" class="screen active">
+        <h2 style="margin-top: 20px;">O que deseja registrar?</h2>
+        <div class="home-grid">
+            <div class="action-btn btn-entry" onclick="app.iniciarFluxo('Entrada')"><span>🟢</span><label>Entrada</label></div>
+            <div class="action-btn btn-pause" onclick="app.iniciarFluxo('Início Pausa')"><span>⏸️</span><label>Início Pausa</label></div>
+            <div class="action-btn btn-return" onclick="app.iniciarFluxo('Fim Pausa')"><span>▶️</span><label>Fim Pausa</label></div>
+            <div class="action-btn btn-exit" onclick="app.iniciarFluxo('Saída')"><span>🔴</span><label>Saída</label></div>
         </div>
-    </section>
+        <p id="system-status" style="margin-top: 30px; color: var(--text-muted); font-size: 0.8rem;">Sistema Pronto</p>
+    </div>
 
-    <section id="view-admin" class="view-section">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2>Painel Administrativo</h2>
-                <button onclick="window.app.logoutAdmin()" class="btn-danger small">🔒 Sair</button>
-            </div>
-
-            <div id="admin-main-menu">
-                <div class="admin-menu-grid">
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('dashboard')">
-                        <span class="admin-menu-icon">📊</span><span class="admin-menu-label">Dashboard</span>
-                    </div>
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('cadastro')">
-                        <span class="admin-menu-icon">👤</span><span class="admin-menu-label">Novo Cadastro</span>
-                    </div>
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('locais')">
-                        <span class="admin-menu-icon">📍</span><span class="admin-menu-label">Unidades (GPS)</span>
-                    </div>
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('colaboradores')">
-                        <span class="admin-menu-icon">📋</span><span class="admin-menu-label">Minha Equipe</span>
-                    </div>
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('relatorios')">
-                        <span class="admin-menu-icon">🖨️</span><span class="admin-menu-label">Relatórios</span>
-                    </div>
-                    <div class="admin-menu-btn" onclick="window.app.openSubSection('historico')">
-                        <span class="admin-menu-icon">🕒</span><span class="admin-menu-label">Histórico</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="admin-sub-dashboard" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="filters-area">
-                    <label style="font-weight: bold; color: var(--primary);">📊 Painel Executivo</label>
-                    <div class="filter-row" style="margin-top: 10px;">
-                         <div class="filter-item"><label>Colaborador:</label><select id="dashboard-employee-select" onchange="window.app.atualizarDashboard()"><option value="">Selecione...</option></select></div>
-                         <div class="filter-item"><label>Mês:</label><input type="month" id="dashboard-month" onchange="window.app.atualizarDashboard()"></div>
-                    </div>
-                    
-                    <div class="dashboard-grid" style="margin-top: 20px;">
-                        <div class="kpi-card"><div class="kpi-label">Saldo do Mês (Compensação)</div><div class="kpi-value" id="kpi-balance">--</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Dias Trabalhados</div><div class="kpi-value" id="kpi-days">0</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Média Atraso</div><div class="kpi-value" id="kpi-avg-delay">0m</div></div>
-                        <div class="kpi-card"><div class="kpi-label">Taxa Presença</div><div class="kpi-value" id="kpi-presence">--%</div></div>
-                        <div class="kpi-card" style="display:none;"><div class="kpi-label">Pontualidade</div><div class="kpi-value" id="kpi-punctuality">0%</div></div>
-                    </div>
-
-                    <div class="charts-row">
-                        <div class="chart-container" style="flex:2;">
-                            <canvas id="performanceChart"></canvas> </div>
-                        <div class="chart-container" style="flex:1;">
-                            <canvas id="statusChart"></canvas> </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="admin-sub-cadastro" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="input-group admin-panel">
-                    <h3 style="color: var(--primary); font-size: 1rem;">👤 Novo Cadastro</h3>
-                    <div class="form-row">
-                        <div><label>ID</label><input type="number" id="new-user-id"></div>
-                        <div><label>Nome</label><input type="text" id="new-user-name"></div>
-                        <div><label>Unidade</label><select id="new-user-unit"><option value="">...</option></select></div>
-                    </div>
-                    <div class="form-row">
-                         <div><label>Regime</label><select id="new-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div>
-                        <div><label>Hrs/Sem</label><input type="number" id="new-user-hours" value="44"></div>
-                    </div>
-                    <div class="form-row" style="margin-top: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;">
-                        <div><label>Entrada</label><input type="time" id="new-user-start"></div>
-                        <div><label>Pausa (min)</label><input type="number" id="new-user-break" placeholder="60"></div>
-                        <div><label>Saída</label><input type="time" id="new-user-end"></div>
-                    </div>
-                    <div class="camera-container" style="height: 120px; width: 120px; margin: 10px auto 0; border: 2px solid var(--primary);"> 
-                        <video id="admin-video-feed" autoplay playsinline muted style="transform: none; object-fit: cover;"></video>
-                    </div>
-                    <button onclick="window.app.cadastrarBiometria()" class="btn-primary" style="margin-top: 10px;">📸 Salvar Cadastro</button>
-                </div>
-            </div>
-
-            <div id="admin-sub-locais" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="input-group admin-panel">
-                    <h3 style="color: #34d399; font-size: 1rem;">📍 Unidades</h3>
-                    <div class="form-row" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <div><label>Nome</label><input type="text" id="loc-name"></div>
-                        <div><label>CNPJ</label><input type="text" id="loc-cnpj"></div>
-                        <div><label>Endereço</label><input type="text" id="loc-address"></div>
-                    </div>
-                    <div class="form-row">
-                        <div><label>Lat</label><input type="text" id="loc-lat" readonly style="background:rgba(0,0,0,0.2)"></div>
-                        <div><label>Lon</label><input type="text" id="loc-lon" readonly style="background:rgba(0,0,0,0.2)"></div>
-                    </div>
-                    <div class="input-group" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
-                        <label style="color: var(--warning);">Para abrir o mapa no local correto:</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="pre-map-search" placeholder="Ex: Rua Dias da Cruz, Rio de Janeiro" style="flex:1;">
-                            <button onclick="window.app.abrirMapaSelecao()" class="btn-secondary" style="border-color:#34d399; color:#34d399; width: auto;">🗺️ Abrir Mapa</button>
-                        </div>
-                    </div>
-                    <button onclick="window.app.salvarLocal()" class="btn-success" style="margin-top: 15px;">Salvar Unidade</button>
-                    <div id="lista-locais" style="max-height: 100px; overflow-y: auto; margin-top: 10px; font-size: 0.8rem;"></div>
-                </div>
-            </div>
-
-            <div id="admin-sub-colaboradores" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h3 style="font-size: 1rem; margin:0;">Colaboradores</h3>
-                        <select id="filter-employees-unit" onchange="window.app.renderizarListaFuncionarios()" style="width: 130px; padding: 6px;">
-                            <option value="">Todas</option>
-                        </select>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="employees-table">
-                            <thead><tr><th>ID</th><th>Nome</th><th>Unid.</th><th>Hrs</th><th>Ações</th></tr></thead>
-                            <tbody id="employees-tbody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div id="admin-sub-relatorios" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="filters-area">
-                    <label style="font-weight:bold; color: var(--primary);">Relatórios:</label>
-                    <div class="filter-row" style="margin-top:10px;">
-                        <div class="filter-item"><label>Mês:</label><input type="month" id="admin-month-filter"></div>
-                        <div class="filter-item"><label>Unidade:</label><select id="admin-unit-filter"><option value="">Todas</option></select></div>
-                        <div class="filter-item"><button onclick="window.app.carregarTabelaPontos()" class="btn-secondary" style="margin-top:23px;">Atualizar Lista</button></div>
-                    </div>
-                    <div class="actions-row">
-                        <button onclick="window.app.imprimirRelatorioDetalhado()" class="btn-success">🖨️ Extrato Detalhado (PDF/Mapa)</button>
-                        <button onclick="window.app.imprimirRelatorioFechamento()" class="btn-purple">📊 Fechamento da Unidade</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="admin-sub-historico" class="sub-section">
-                <button class="btn-back" onclick="window.app.closeSubSection()">⬅ Voltar</button>
-                <div class="logs-area">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <h3 style="font-size: 1rem; margin: 0;">Acompanhamento Diário (Mês Atual)</h3>
-                        <select id="filter-history-unit" onchange="window.app.carregarHistoricoRecente()" style="padding: 5px; border-radius: 4px; font-size: 0.8rem;">
-                            <option value="">Todas Unidades</option>
-                        </select>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="logs-table">
-                            <thead><tr><th>Data</th><th>Hora</th><th>Colaborador</th><th>Tipo</th><th>Status</th><th>Detalhes</th><th>Ações</th></tr></thead>
-                            <tbody id="logs-tbody"></tbody>
-                        </table>
-                    </div>
-                    <p style="font-size: 0.75rem; color: #fca5a5; margin-top: 5px;">* Linhas vermelhas indicam divergência de horário.</p>
-                </div>
-            </div>
-
+    <div id="screen-camera" class="screen">
+        <h3 id="camera-title">Identificando...</h3>
+        <div class="camera-wrapper">
+            <video id="video-feed" autoplay playsinline muted></video>
+            <canvas id="ai-overlay"></canvas>
         </div>
-    </section>
+        <p id="feedback-msg" style="color: var(--warning);">Posicione o rosto</p>
+        <button class="primary" style="background: var(--danger); max-width: 200px;" onclick="app.cancelarFluxo()">Cancelar</button>
+    </div>
+
+    <div id="screen-success" class="screen">
+        <div style="text-align:center; background:var(--card-bg); padding:30px; border-radius:20px; border:1px solid var(--success);">
+            <span style="font-size:4rem;">✅</span>
+            <h2>Registrado!</h2>
+            <div style="text-align:left; background:rgba(0,0,0,0.2); padding:15px; border-radius:10px; margin:20px 0;">
+                <p><b>Nome:</b> <span id="receipt-name"></span></p>
+                <p><b>Tipo:</b> <span id="receipt-type"></span></p>
+                <p><b>Hora:</b> <span id="receipt-time"></span></p>
+                <p><b>Hash:</b> <span id="receipt-hash" style="font-family:monospace;"></span></p>
+            </div>
+            <button class="primary" onclick="app.baixarComprovante()">📥 Baixar Comprovante</button>
+            <button class="primary" style="background:transparent; border:1px solid var(--border);" onclick="app.voltarHome()">Voltar</button>
+        </div>
+    </div>
+
 </div>
 
-<div id="modal-login" class="modal-overlay"><div class="modal-card"><h3>🔒 Login</h3><div class="input-group"><label>Usuário</label><input type="text" id="login-user" autocomplete="off"></div><div class="input-group"><label>Senha</label><input type="password" id="login-pass" autocomplete="new-password"></div><div class="modal-actions"><button onclick="window.app.verificarLogin()" class="btn-primary">Entrar</button><button onclick="window.app.fecharLogin()" class="btn-danger">Cancelar</button></div></div></div>
+<div id="modal-login" class="modal-overlay">
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; width: 300px;">
+        <h3>Acesso Gestor</h3>
+        <input type="password" id="admin-pass" placeholder="Senha (123)">
+        <button class="primary" onclick="app.loginAdmin()">Entrar</button>
+        <button class="primary" style="background:transparent; margin-top:5px;" onclick="document.getElementById('modal-login').classList.remove('active')">Cancelar</button>
+    </div>
+</div>
 
-<div id="modal-edit" class="modal-overlay"><div class="modal-card"><h3>✏️ Editar</h3><input type="hidden" id="edit-user-id-hidden"><div class="input-group"><label>Nome</label><input type="text" id="edit-user-name"></div><div class="input-group"><label>Unidade</label><select id="edit-user-unit"><option value="">...</option></select></div><div class="input-group"><label>Regime</label><select id="edit-user-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select></div><div class="input-group"><label>Carga Horária</label><input type="number" id="edit-user-hours"></div>
-<div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;"><label style="color: var(--primary);">Escala de Horário:</label><div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px;"><div><label>Entrada</label><input type="time" id="edit-user-start"></div><div><label>Pausa</label><input type="number" id="edit-user-break"></div><div><label>Saída</label><input type="time" id="edit-user-end"></div></div></div>
-<div class="modal-actions"><button onclick="window.app.salvarEdicao()" class="btn-success">Salvar</button><button onclick="window.app.excluirUsuario(document.getElementById('edit-user-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
+<div id="modal-justify" class="modal-overlay">
+    <div style="background: var(--card-bg); padding: 20px; border-radius: 10px; width: 400px; border: 1px solid var(--border);">
+        <h3 style="color: var(--warning);">📝 Justificar Ponto</h3>
+        <p id="justify-info" style="font-size: 0.9rem; color: var(--text-muted); margin-bottom:10px;"></p>
+        <input type="hidden" id="justify-doc-id">
+        <textarea id="justify-text" rows="4" placeholder="Descreva o motivo (Ex: Atestado Médico entregue)..."></textarea>
+        <button class="primary" onclick="app.salvarJustificativa()">💾 Salvar Justificativa</button>
+        <button class="primary" style="background:transparent;" onclick="document.getElementById('modal-justify').classList.remove('active')">Cancelar</button>
+    </div>
+</div>
 
-<div id="modal-admin-justify" class="modal-overlay"><div class="modal-card"><h3>📝 Abonar/Justificar</h3><p id="justify-target-info" style="color:var(--primary);margin-bottom:15px;"></p><input type="hidden" id="justify-log-id"><div class="input-group"><div style="display:flex;gap:10px;margin-bottom:10px;"><button onclick="window.app.setJustifyMode('bonificar')" id="btn-mode-bonificar" class="btn-success" style="flex:1;">✅ Bonificar</button><button onclick="window.app.setJustifyMode('justificar')" id="btn-mode-justificar" class="btn-secondary" style="flex:1;">📝 Justificar (Texto)</button></div></div><div id="justify-text-area" style="display:none;"><textarea id="admin-justification-text" rows="5" oninput="window.app.contarPalavras()" style="width:100%;color:#333;background:white;" placeholder="Mínimo 20 palavras..."></textarea><p id="word-count" style="text-align:right;font-size:0.7rem;color:#888;">0/20</p></div><div class="modal-actions"><button id="btn-save-justify" onclick="window.app.salvarJustificativaAdmin()" class="btn-success" disabled>Confirmar</button><button onclick="window.app.fecharModalJustify()" class="btn-danger" style="width:100%">Fechar</button></div></div></div>
+<div id="modal-admin" class="modal-overlay">
+    <div class="admin-panel">
+        <div class="admin-header">
+            <h3>Gestão</h3>
+            <button onclick="app.sairAdmin()" style="background:none; border:none; color:white; font-size:1.2rem;">✖</button>
+        </div>
+        
+        <div style="display:flex; border-bottom:1px solid var(--border);">
+            <button class="tab-btn active" onclick="app.mudarAba('cadastro')" id="btn-tab-cadastro">👤 Colaboradores</button>
+            <button class="tab-btn" onclick="app.mudarAba('unidades')" id="btn-tab-unidades">📍 Unidades</button>
+            <button class="tab-btn" onclick="app.mudarAba('registros')" id="btn-tab-registros">📋 Histórico</button>
+            <button class="tab-btn" onclick="app.mudarAba('relatorios')" id="btn-tab-relatorios">🖨️ Relatórios</button>
+        </div>
 
-<div id="modal-justification" class="modal-overlay"><div class="modal-card" style="border:2px solid #f59e0b;background:#fffbeb;"><h3 style="color:#b45309;">⚠️ Ponto Externo</h3><p style="color:#78350f;margin-bottom:10px;">Fora dos locais cadastrados.</p><textarea id="justification-text" rows="3" style="background:white;color:black;width:100%;"></textarea><div class="modal-actions"><button id="btn-send-justification" class="btn-primary">Enviar</button><button onclick="window.app.cancelarPonto()" class="btn-danger">Cancelar</button></div></div></div>
-<div id="custom-alert" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title" id="alert-title">Aviso</span><span class="alert-msg" id="alert-msg"></span><button onclick="window.app.fecharAlert()" class="btn-primary">OK</button></div></div>
-<div id="custom-confirm" class="modal-overlay"><div class="modal-card" style="text-align:center;"><span class="alert-title">Confirmação</span><span class="alert-msg" id="confirm-msg"></span><div class="modal-actions"><button id="confirm-yes" class="btn-danger">Sim</button><button onclick="window.app.fecharConfirm()" class="btn-secondary">Não</button></div></div></div>
+        <div class="admin-content">
+            
+            <div id="tab-cadastro">
+                <div class="form-row">
+                    <input type="text" id="new-id" placeholder="ID Automático" readonly style="background: rgba(0,0,0,0.3); color: var(--success); font-weight: bold;">
+                    <input type="text" id="new-name" placeholder="Nome Completo">
+                </div>
+                <div class="form-row">
+                    <select id="new-scale"><option value="comum">Comum</option><option value="12x36">12x36</option></select>
+                    <select id="new-unit-select"><option value="">Selecione Unidade...</option></select>
+                </div>
+                <div class="form-row">
+                    <input type="time" id="new-start" placeholder="Entrada">
+                    <input type="time" id="new-end" placeholder="Saída">
+                </div>
+                <div class="camera-wrapper" style="height: 180px; margin: 0 auto;">
+                    <video id="video-admin" autoplay playsinline muted></video>
+                </div>
+                <button id="btn-save-user" class="primary" onclick="app.salvarColaborador()">
+                    <div class="spinner"></div> <span>📸 Salvar Cadastro</span>
+                </button>
+                <div id="list-users" style="margin-top:20px; font-size:0.85rem; color:#ccc;"></div>
+            </div>
 
-<div id="modal-map" class="modal-overlay"><div class="modal-card" style="max-width: 800px; width: 95%; max-height: 80vh;"><h3>🗺️ Selecione o Local Exato</h3><p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">Clique no mapa ou arraste o pino para definir o centro da cerca de 100m.</p><div style="display: flex; gap: 5px; margin-bottom: 10px;"><input type="text" id="map-search-input" placeholder="Digite endereço para buscar..." style="flex:1;"><button onclick="window.app.buscarNoMapa()" class="btn-secondary" style="width: auto;">🔍 Ir</button></div><div id="map-container" style="height: 400px; border-radius: 8px;"></div><div class="modal-actions"><button onclick="window.app.confirmarMapa()" class="btn-success">Confirmar Posição</button><button onclick="document.getElementById('modal-map').classList.remove('active')" class="btn-danger">Cancelar</button></div></div></div>
-<div id="modal-edit-local" class="modal-overlay"><div class="modal-card"><h3>📍 Editar Unidade</h3><input type="hidden" id="edit-loc-id-hidden"><div class="input-group"><label>Nome do Local</label><input type="text" id="edit-loc-name"></div><div class="input-group"><label>CNPJ</label><input type="text" id="edit-loc-cnpj"></div><div class="input-group"><label>Endereço</label><input type="text" id="edit-loc-address"></div><div class="input-group"><label>Lat</label><input type="text" id="edit-loc-lat"></div><div class="input-group"><label>Lon</label><input type="text" id="edit-loc-lon"></div><div class="modal-actions"><button onclick="window.app.salvarEdicaoLocal()" class="btn-success">Atualizar</button><button onclick="window.app.excluirLocal(document.getElementById('edit-loc-id-hidden').value)" class="btn-danger">Excluir</button><button onclick="document.getElementById('modal-edit-local').classList.remove('active')" class="btn-secondary">Cancelar</button></div></div></div>
-<canvas id="capture-canvas" style="display:none;"></canvas>
+            <div id="tab-unidades" style="display:none;">
+                <h4>Cadastrar Unidade</h4>
+                <input type="text" id="unit-name" placeholder="Nome da Unidade">
+                <input type="text" id="unit-address" placeholder="Endereço">
+                <div class="form-row">
+                    <input type="text" id="unit-lat" placeholder="Latitude">
+                    <input type="text" id="unit-lon" placeholder="Longitude">
+                </div>
+                <button class="primary" style="background: var(--secondary); margin-bottom:10px;" onclick="app.obterGPSAtual()">📍 Pegar GPS Atual</button>
+                <button id="btn-save-unit" class="primary" onclick="app.salvarUnidade()">
+                    <div class="spinner"></div> <span>Salvar Unidade</span>
+                </button>
+                <div id="list-units" style="margin-top:20px;"></div>
+            </div>
+
+            <div id="tab-registros" style="display:none;">
+                <h4>Acompanhamento Diário</h4>
+                <table id="table-logs">
+                    <thead><tr><th>Nome</th><th>Tipo</th><th>Hora</th><th>Status/Obs</th><th>Ações</th></tr></thead>
+                    <tbody id="tbody-logs"></tbody>
+                </table>
+                <p style="font-size:0.7rem; color:#fca5a5; margin-top:5px;">* Vermelho: Atraso (>10min)</p>
+            </div>
+
+            <div id="tab-relatorios" style="display:none;">
+                <h4>Emissão de Relatórios</h4>
+                <div class="form-row">
+                    <input type="month" id="report-month">
+                    <select id="report-unit"><option value="">Todas as Unidades</option></select>
+                </div>
+                <div class="form-row">
+                    <button class="primary" style="background: var(--secondary)" onclick="app.imprimirRelatorioDetalhado()">Extrato Detalhado</button>
+                    <button class="primary" onclick="app.imprimirRelatorioFechamento()">Fechamento da Unidade</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+    // SETUP FIREBASE
     let firebaseConfig;
-    let USERS_COLLECTION, LOGS_COLLECTION, PLACES_COLLECTION;
-    let APP_ID = 'default';
-
+    let APP_ID = 'marana-v6-final'; 
     if (typeof __firebase_config !== 'undefined') {
         firebaseConfig = JSON.parse(__firebase_config);
         APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'default';
-        USERS_COLLECTION = `artifacts/${APP_ID}/public/data/users`;
-        LOGS_COLLECTION = `artifacts/${APP_ID}/public/data/logs`;
-        PLACES_COLLECTION = `artifacts/${APP_ID}/public/data/places`;
-        console.log("Modo Preview Ativado");
     } else {
-        firebaseConfig = {
-            apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ",
-            authDomain: "maranatime.firebaseapp.com",
-            projectId: "maranatime",
-            storageBucket: "maranatime.firebasestorage.app",
-            messagingSenderId: "738069003904",
-            appId: "1:738069003904:web:cc1ca9a2e2f5545f9c7065",
-            measurementId: "G-KTT686MYJ0"
-        };
-        USERS_COLLECTION = "users";
-        LOGS_COLLECTION = "logs";
-        PLACES_COLLECTION = "places";
-        console.log("Modo Produção Ativado");
+        firebaseConfig = { apiKey: "AIzaSyBDBx51fCm4lwnSyDC3uIZ-jc7wKM7oTjQ", projectId: "maranatime", appId: "1:738069003904:web:cc1ca9a2e2f5545f9c7065" };
     }
-    
     const firebaseApp = initializeApp(firebaseConfig);
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
+    
+    // COLEÇÕES
+    const USERS_COLL = `artifacts/${APP_ID}/users`;
+    const PLACES_COLL = `artifacts/${APP_ID}/places`;
+    const LOGS_COLL = `artifacts/${APP_ID}/logs`;
 
-    const COMPANY_INFO = {
+    const COMPANY_BASE_INFO = {
         nome: "ASSOCIAÇÃO MARANATHÁ DO RIO DE JANEIRO",
-        endereco: "Rua: Adolfo Bergamini, 199 - Engenho de Dentro - Rio de Janeiro - RJ",
-        contato: "CEP 20730-000 - Tel.: (21) 3795-8324, 3439-0385",
-        cnpj_site: "CNPJ: 05.284.121/0001-26 - www.maranathario.com"
+        contato: "www.maranathario.com"
     };
 
     const app = {
-        adminConfig: { user: "admin", pass: "123" },
-        adminLogado: false,
-        funcionariosCache: [],
-        locaisCache: [], 
-        modelosCarregados: false,
-        streamAtiva: null,
-        faceMatcher: null,
-        ultimoRegistro: 0,
-        confirmCallback: null,
-        pontoPendente: null,
-        processando: false,
-        chartInstance: null,
-        statusChartInstance: null,
-        justifyMode: null,
-        mapInstance: null,
-        mapMarker: null,
-        mapCircle: null,
+        state: {
+            users: [],
+            units: [],
+            modelsLoaded: false,
+            stream: null,
+            adminStream: null,
+            faceMatcher: null,
+            currentType: null,
+            lastReceipt: null
+        },
 
         els: {
-            videoMain: document.getElementById('video-feed'),
-            videoAdmin: document.getElementById('admin-video-feed'),
+            video: document.getElementById('video-feed'),
+            videoAdm: document.getElementById('video-admin'),
             overlay: document.getElementById('ai-overlay'),
-            canvas: document.getElementById('capture-canvas'),
-            statusDB: document.getElementById('db-status'),
-            employeeNameDisplay: document.getElementById('employee-name-display'),
-            employeeIdHidden: document.getElementById('employee-id'),
-            successMessage: document.getElementById('success-message'),
-            errorMessage: document.getElementById('error-message'),
-            modalLogin: document.getElementById('modal-login'),
-            modalEdit: document.getElementById('modal-edit'),
-            modalAlert: document.getElementById('custom-alert'),
-            modalConfirm: document.getElementById('custom-confirm'),
-            modalJustification: document.getElementById('modal-justification'),
-            modalAdminJustify: document.getElementById('modal-admin-justify'),
-            modalEditLocal: document.getElementById('modal-edit-local'),
-            modalMap: document.getElementById('modal-map'),
-            dateFilter: document.getElementById('admin-month-filter'),
-            unitFilter: document.getElementById('admin-unit-filter'),
-            historyUnitFilter: document.getElementById('filter-history-unit'),
-            listaLocais: document.getElementById('lista-locais'),
-            digitalTime: document.getElementById('digital-time'),
-            digitalDate: document.getElementById('digital-date'),
-            newUserUnit: document.getElementById('new-user-unit'),
-            editUserUnit: document.getElementById('edit-user-unit'),
-            dashEmployee: document.getElementById('dashboard-employee-select'),
-            dashMonth: document.getElementById('dashboard-month'),
-            kpiBalance: document.getElementById('kpi-balance'),
-            kpiDays: document.getElementById('kpi-days'),
-            kpiPunctuality: document.getElementById('kpi-punctuality'),
-            kpiAvgDelay: document.getElementById('kpi-avg-delay'),
-            kpiPresence: document.getElementById('kpi-presence'),
-            btnModeBonificar: document.getElementById('btn-mode-bonificar'),
-            btnModeJustificar: document.getElementById('btn-mode-justificar'),
-            areaJustificativa: document.getElementById('justify-text-area'),
-            txtJustificativa: document.getElementById('admin-justification-text'),
-            wordCount: document.getElementById('word-count'),
-            btnSaveJustify: document.getElementById('btn-save-justify'),
-            statusIA: document.getElementById('ia-status'),
-            adminMenu: document.getElementById('admin-main-menu')
+            status: document.getElementById('system-status'),
+            btnSaveUser: document.getElementById('btn-save-user'),
+            btnSaveUnit: document.getElementById('btn-save-unit')
         },
 
-        // --- DASHBOARD AVANÇADO (COM COMPENSAÇÃO E BONIFICAÇÃO) ---
-        atualizarDashboard: async function() {
-            const userId = this.els.dashEmployee.value;
-            const mesAno = this.els.dashMonth.value;
-            if (!userId || !mesAno) return;
-
-            const func = this.funcionariosCache.find(u => u.id == userId);
-            if (!func) return;
-
-            const q = query(collection(db, LOGS_COLLECTION)); 
-            const snapshot = await getDocs(q);
-            const registros = [];
-            snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mesAno && d.id == userId) registros.push(d); });
-
-            const pontosPorDia = {};
-            registros.forEach(r => {
-                if (!pontosPorDia[r.data]) pontosPorDia[r.data] = { batidas: [], bonificado: false };
-                if (r.adminStatus === 'bonificado' || r.adminStatus === 'justificado') {
-                    pontosPorDia[r.data].bonificado = true; // Marca o dia como bonificado/justificado
-                }
-                const [h, m] = r.hora.split(':').map(Number);
-                pontosPorDia[r.data].batidas.push({ min: h * 60 + m, tipo: r.tipo });
-            });
-
-            // Variaveis de Analise
-            let minutosTotais = 0;
-            let diasTrabalhados = Object.keys(pontosPorDia).length;
-            let diasPontuais = 0;
-            let atrasoTotal = 0;
-            let qtdAtrasos = 0;
-
-            const diasLabels = [];
-            const horasData = [];
-            const metasData = [];
-
-            // Ordenação
-            const diasOrdenados = Object.keys(pontosPorDia).sort((a, b) => {
-                const [d1, m1, y1] = a.split('/'); const [d2, m2, y2] = b.split('/');
-                return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
-            });
-
-            // Meta Diária Estimada
-            let metaDiariaMinutos = 0;
-            if(func.horarioEntrada && func.horarioSaida) {
-                const [hE, mE] = func.horarioEntrada.split(':').map(Number);
-                const [hS, mS] = func.horarioSaida.split(':').map(Number);
-                const pausa = parseInt(func.tempoPausa || 60);
-                metaDiariaMinutos = ((hS*60 + mS) - (hE*60 + mE)) - pausa;
-            } else {
-                metaDiariaMinutos = 480; // 8h padrão
-            }
-
-            diasOrdenados.forEach(dia => {
-                const diaInfo = pontosPorDia[dia];
-                const batidas = diaInfo.batidas.sort((a, b) => a.min - b.min);
-                let minutosDia = 0;
-
-                // Lógica de Bonificação/Justificativa: Se bonificado, ganha o dia cheio
-                if (diaInfo.bonificado) {
-                    minutosDia = metaDiariaMinutos;
-                    diasPontuais++; // Considera pontual para não prejudicar KPI
-                } else {
-                    // Cálculo normal pelas batidas
-                    if (batidas.length > 0 && func.horarioEntrada) {
-                        const [hE, mE] = func.horarioEntrada.split(':').map(Number);
-                        const entradaPrevista = hE * 60 + mE;
-                        const diff = batidas[0].min - entradaPrevista;
-                        if (diff <= 10) diasPontuais++; 
-                        if (diff > 10) {
-                            atrasoTotal += diff;
-                            qtdAtrasos++;
-                        }
-                    }
-                    for (let i = 0; i < batidas.length - 1; i += 2) {
-                        minutosDia += (batidas[i+1].min - batidas[i].min);
-                    }
-                }
-                
-                minutosTotais += minutosDia;
-                diasLabels.push(dia.substring(0, 5));
-                horasData.push((minutosDia / 60).toFixed(2));
-                metasData.push((metaDiariaMinutos / 60).toFixed(2));
-            });
-
-            // KPIs - O Saldo aqui já reflete a compensação (Positivo = Crédito, Negativo = Débito)
-            const saldo = (minutosTotais / 60) - ((metaDiariaMinutos/60) * diasTrabalhados); 
-            const pontualidade = diasTrabalhados > 0 ? (diasPontuais / diasTrabalhados) * 100 : 0;
-            const mediaAtraso = qtdAtrasos > 0 ? (atrasoTotal / qtdAtrasos).toFixed(0) : 0;
-            const diasUteisEstimados = 22; 
-            const taxaPresenca = (diasTrabalhados / diasUteisEstimados) * 100;
-
-            this.els.kpiBalance.innerText = saldo.toFixed(2) + "h";
-            this.els.kpiBalance.style.color = saldo >= 0 ? "var(--success)" : "var(--danger)";
-            this.els.kpiDays.innerText = diasTrabalhados;
-            this.els.kpiPunctuality.innerText = pontualidade.toFixed(0) + "%";
-            
-            if(document.getElementById('kpi-avg-delay')) document.getElementById('kpi-avg-delay').innerText = mediaAtraso + "m";
-            if(document.getElementById('kpi-presence')) document.getElementById('kpi-presence').innerText = Math.min(100, taxaPresenca.toFixed(0)) + "%";
-
-            this.renderizarGraficoPerformance(diasLabels, horasData, metasData);
-            this.renderizarGraficoStatus(diasPontuais, qtdAtrasos, diasTrabalhados);
-        },
-
-        renderizarGraficoPerformance: function(labels, dataActual, dataTarget) {
-            const ctx = document.getElementById('performanceChart').getContext('2d');
-            if (this.chartInstance) this.chartInstance.destroy();
-            
-            this.chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Horas Trabalhadas',
-                            data: dataActual,
-                            backgroundColor: 'rgba(14, 165, 233, 0.6)',
-                            borderColor: '#0ea5e9',
-                            borderWidth: 1,
-                            order: 2
-                        },
-                        {
-                            label: 'Meta Diária',
-                            data: dataTarget,
-                            type: 'line',
-                            borderColor: '#f59e0b',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            pointRadius: 0,
-                            order: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } }, x: { grid: { display: false } } },
-                    plugins: { legend: { labels: { color: '#94a3b8' } } }
-                }
-            });
-        },
-
-        renderizarGraficoStatus: function(pontuais, atrasos, total) {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            if (this.statusChartInstance) this.statusChartInstance.destroy();
-            const outros = total - (pontuais + atrasos); 
-            this.statusChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Pontual', 'Atraso', 'Outros'],
-                    datasets: [{
-                        data: [pontuais, atrasos, Math.max(0, outros)],
-                        backgroundColor: ['#10b981', '#ef4444', '#6366f1'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right', labels: { color: '#94a3b8', boxWidth: 10 } } }
-                }
-            });
-        },
-
-        // --- GERENCIAMENTO DE COLABORADORES ---
-        renderizarListaFuncionarios: function() {
-            const tbody = document.getElementById('employees-tbody');
-            const filtroUnidade = document.getElementById('filter-employees-unit').value;
-            tbody.innerHTML = '';
-            let lista = this.funcionariosCache;
-            if (filtroUnidade) { lista = lista.filter(f => f.unidade === filtroUnidade); }
-            if (lista.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Nenhum colaborador encontrado.</td></tr>'; return; }
-            lista.forEach(func => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${func.id}</td><td>${func.nome}</td><td>${func.unidade}</td><td>${func.horasSemanais || 44}h</td><td><button class="btn-edit" onclick="window.app.abrirEdicao('${func.docId}')">✏️ Editar</button></td>`;
-                tbody.appendChild(tr);
-            });
-        },
-        abrirEdicao: function(docId) {
-            const func = this.funcionariosCache.find(f => f.docId === docId);
-            if (!func) return;
-            document.getElementById('edit-user-id-hidden').value = docId;
-            document.getElementById('edit-user-name').value = func.nome;
-            document.getElementById('edit-user-unit').value = func.unidade;
-            document.getElementById('edit-user-scale').value = func.scale || 'comum';
-            document.getElementById('edit-user-hours').value = func.horasSemanais || 44;
-            document.getElementById('edit-user-start').value = func.horarioEntrada || '';
-            document.getElementById('edit-user-break').value = func.tempoPausa || '';
-            document.getElementById('edit-user-end').value = func.horarioSaida || '';
-            this.els.modalEdit.classList.add('active');
-        },
-        salvarEdicao: async function() {
-            const docId = document.getElementById('edit-user-id-hidden').value;
-            const nome = document.getElementById('edit-user-name').value;
-            const unidade = document.getElementById('edit-user-unit').value;
-            const scale = document.getElementById('edit-user-scale').value;
-            const horas = document.getElementById('edit-user-hours').value;
-            const entrada = document.getElementById('edit-user-start').value;
-            const pausa = document.getElementById('edit-user-break').value;
-            const saida = document.getElementById('edit-user-end').value;
-            try {
-                await updateDoc(doc(db, USERS_COLLECTION, docId), { nome, unidade, scale, horasSemanais: horas, horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida });
-                this.mostrarAlerta("Dados atualizados!", "Sucesso");
-                this.els.modalEdit.classList.remove('active');
-            } catch (e) { this.mostrarAlerta("Erro ao atualizar: " + e.message, "Erro", "error"); }
-        },
-        excluirUsuario: function(docId) {
-            this.mostrarConfirmacao("Tem certeza que deseja excluir este colaborador? O histórico será mantido, mas o acesso será revogado.", async () => {
-                try { await deleteDoc(doc(db, USERS_COLLECTION, docId)); this.mostrarAlerta("Colaborador removido.", "Sucesso"); this.els.modalEdit.classList.remove('active'); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro", "error"); }
-            });
-        },
-
-        // --- RELATÓRIOS E IMPRESSÃO (CORRIGIDO E NOVO) ---
-        imprimirRelatorioDetalhado: async function() {
-            const mes = this.els.dateFilter.value;
-            if (!mes) return this.mostrarAlerta("Selecione um mês.");
-            
-            const q = query(collection(db, LOGS_COLLECTION));
-            const snapshot = await getDocs(q);
-            let registros = [];
-            snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); });
-            
-            // Filtra se houver unidade selecionada
-            const unidNome = document.getElementById('admin-unit-filter').value;
-            if (unidNome) registros = registros.filter(r => r.unidade === unidNome);
-
-            registros.sort((a,b) => b.timestamp - a.timestamp);
-
-            let linhasHTML = "";
-            registros.forEach(r => {
-                let statusLoc = r.localizacaoNome;
-                // Se tiver lat/lon e for "Externo", cria link pro mapa
-                if(r.latitude && r.longitude) {
-                     statusLoc = `<a href="https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}" target="_blank" style="color:blue;text-decoration:underline;">${r.localizacaoNome} 🌎</a>`;
-                }
-
-                linhasHTML += `
-                    <tr>
-                        <td>${r.data}</td>
-                        <td>${r.hora}</td>
-                        <td>${r.nome}</td>
-                        <td>${r.tipo}</td>
-                        <td>${statusLoc}</td>
-                        <td>${r.justificativa || r.adminNote || '-'}</td>
-                    </tr>
-                `;
-            });
-
-            this.gerarRelatorioImpresso(`Extrato Detalhado - ${mes}`, ["Data", "Hora", "Nome", "Tipo", "Localização (GPS)", "Obs/Justificativa"], linhasHTML);
-        },
-
-        // --- INICIALIZAÇÃO E OUTRAS FUNÇÕES ---
         init: async function() {
-            this.els.statusDB.innerText = "Nuvem: ...";
+            this.updateClock();
+            this.els.status.innerText = "Conectando...";
+            const hoje = new Date();
+            document.getElementById('report-month').value = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+            
             try {
                 await signInAnonymously(auth);
-                this.els.statusDB.innerText = "Nuvem: OK";
-                this.sincronizarLocais(); 
-                this.sincronizarFuncionarios();
-            } catch (error) {
-                this.mostrarAlerta("Erro conexão: " + error.message, "Erro");
+                await this.loadAI();
+                this.listenData();
+                this.els.status.innerText = "Sistema Online 🟢";
+            } catch(e) { 
+                console.error(e);
+                this.els.status.innerText = "Erro de Conexão 🔴"; 
+            }
+        },
+
+        updateClock: () => setInterval(() => document.getElementById('clock').innerText = new Date().toLocaleTimeString('pt-BR').substring(0,5), 1000),
+
+        loadAI: async function() {
+            const URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(URL),
+                faceapi.nets.ssdMobilenetv1.loadFromUri(URL)
+            ]);
+            this.state.modelsLoaded = true;
+        },
+
+        listenData: function() {
+            onSnapshot(collection(db, USERS_COLL), (snap) => {
+                this.state.users = [];
+                const descriptors = [];
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    this.state.users.push({ docId: doc.id, ...d });
+                    if(d.descriptor) descriptors.push(new faceapi.LabeledFaceDescriptors(d.id.toString(), [new Float32Array(Object.values(d.descriptor))]));
+                });
+                if(descriptors.length) this.state.faceMatcher = new faceapi.FaceMatcher(descriptors, 0.5);
+                this.renderUserList();
+            });
+
+            onSnapshot(collection(db, PLACES_COLL), (snap) => {
+                this.state.units = [];
+                const selectNew = document.getElementById('new-unit-select');
+                const selectReport = document.getElementById('report-unit');
+                
+                selectNew.innerHTML = '<option value="">Selecione...</option>';
+                selectReport.innerHTML = '<option value="">Todas as Unidades</option>';
+                
+                const list = document.getElementById('list-units');
+                list.innerHTML = '';
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    this.state.units.push({ docId: doc.id, ...d });
+                    selectNew.innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
+                    selectReport.innerHTML += `<option value="${d.nome}">${d.nome}</option>`;
+                    list.innerHTML += `<div style="padding:8px; border-bottom:1px solid #333;">🏠 ${d.nome} <small>(${d.endereco})</small></div>`;
+                });
+            });
+        },
+
+        // --- FLUXO PRINCIPAL ---
+        iniciarFluxo: async function(tipo) {
+            if(!this.state.modelsLoaded) return alert("IA Carregando...");
+            this.state.currentType = tipo;
+            document.getElementById('camera-title').innerText = `Registrando: ${tipo}`;
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-camera').classList.add('active');
+            
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({ video: {} });
+                this.state.stream = s;
+                this.els.video.srcObject = s;
+                this.detectarRosto();
+            } catch(e) { alert("Sem câmera!"); this.voltarHome(); }
+        },
+
+        detectarRosto: function() {
+            const loop = async () => {
+                if(!this.state.stream) return;
+                const opt = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 });
+                const det = await faceapi.detectSingleFace(this.els.video, opt).withFaceLandmarks().withFaceDescriptor();
+                
+                if(det && this.state.faceMatcher) {
+                    const match = this.state.faceMatcher.findBestMatch(det.descriptor);
+                    if(match.label !== 'unknown') {
+                        document.getElementById('feedback-msg').innerText = "Identificado! Processando...";
+                        this.processarPonto(match.label);
+                        return;
+                    }
+                }
+                requestAnimationFrame(loop);
+            };
+            loop();
+        },
+
+        processarPonto: async function(id) {
+            if(this.state.stream) { this.state.stream.getTracks().forEach(t => t.stop()); this.state.stream = null; }
+            
+            const user = this.state.users.find(u => u.id == id);
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const mesAno = `${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,'0')}`;
+            
+            const q = query(collection(db, LOGS_COLL), where("id", "==", id), where("data", "==", hoje), where("tipo", "==", this.state.currentType));
+            const check = await getDocs(q);
+            
+            if(!check.empty) {
+                alert(`⚠️ ATENÇÃO: ${user.nome} já registrou '${this.state.currentType}' hoje!`);
+                this.voltarHome();
                 return;
             }
-            const hoje = new Date();
-            const mesStr = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
-            this.els.dateFilter.value = mesStr;
-            this.els.dashMonth.value = mesStr;
 
-            this.iniciarRelogio();
-            await this.carregarModelosIA();
-            this.iniciarCamera('main');
-            document.getElementById('btn-send-justification').onclick = () => this.enviarJustificativa();
+            // GEOFENCE 50m
+            const geo = await this.getGeo();
+            const local = this.verificarLocalizacao(geo.lat, geo.lon);
+
+            const reg = {
+                id: id, nome: user.nome, tipo: this.state.currentType, unidade: user.unidade,
+                data: hoje, hora: new Date().toLocaleTimeString('pt-BR'), mesAno: mesAno,
+                lat: geo.lat, lon: geo.lon, localNome: local.nome,
+                timestamp: Date.now()
+            };
+            const ref = await addDoc(collection(db, LOGS_COLL), reg);
+            
+            this.state.lastReceipt = { ...reg, hash: ref.id.substring(0,8).toUpperCase() };
+            document.getElementById('receipt-name').innerText = user.nome;
+            document.getElementById('receipt-type').innerText = reg.tipo;
+            document.getElementById('receipt-time').innerText = reg.hora;
+            document.getElementById('receipt-hash').innerText = this.state.lastReceipt.hash;
+            
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-success').classList.add('active');
         },
-        
-        iniciarRelogio: function() { setInterval(() => { const now = new Date(); this.els.digitalTime.innerText = now.toLocaleTimeString('pt-BR'); this.els.digitalDate.innerText = now.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' }).toUpperCase(); }, 1000); },
-        abrirMapaSelecao: function() { this.els.modalMap.classList.add('active'); if (!this.mapInstance) { this.mapInstance = L.map('map-container').setView([-22.9068, -43.1729], 13); L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri' }).addTo(this.mapInstance); this.mapInstance.on('click', (e) => { this.posicionarMarcador(e.latlng.lat, e.latlng.lng); }); } const addr = document.getElementById('pre-map-search').value; if(addr) this.focarMapaNoEndereco(addr); setTimeout(() => { this.mapInstance.invalidateSize(); }, 300); },
-        buscarNoMapa: async function() { const query = document.getElementById('map-search-input').value; if (!query) return; this.focarMapaNoEndereco(query); },
-        focarMapaNoEndereco: async function(endereco) { try { const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}&limit=1`); const data = await res.json(); if (data && data.length > 0) { const lat = parseFloat(data[0].lat); const lon = parseFloat(data[0].lon); this.mapInstance.setView([lat, lon], 16); this.posicionarMarcador(lat, lon); } else { alert("Local não encontrado."); } } catch(e) { console.error(e); } },
-        posicionarMarcador: function(lat, lng) { if (this.mapMarker) { this.mapMarker.setLatLng([lat, lng]); } else { this.mapMarker = L.marker([lat, lng], {draggable: true}).addTo(this.mapInstance); this.mapMarker.on('dragend', (e) => { const pos = e.target.getLatLng(); this.posicionarMarcador(pos.lat, pos.lng); }); } if (this.mapCircle) this.mapInstance.removeLayer(this.mapCircle); this.mapCircle = L.circle([lat, lng], { color: 'blue', fillColor: '#30f', fillOpacity: 0.2, radius: 100 }).addTo(this.mapInstance); },
-        confirmarMapa: function() { if (!this.mapMarker) return alert("Selecione um ponto."); const pos = this.mapMarker.getLatLng(); document.getElementById('loc-lat').value = pos.lat.toFixed(6); document.getElementById('loc-lon').value = pos.lng.toFixed(6); this.els.modalMap.classList.remove('active'); },
-        openSubSection: function(sectionName) { document.getElementById('admin-main-menu').style.display = 'none'; document.querySelectorAll('.sub-section').forEach(el => el.classList.remove('active')); document.getElementById(`admin-sub-${sectionName}`).classList.add('active'); if(sectionName === 'cadastro') this.iniciarCamera('admin'); if(sectionName === 'historico') this.carregarHistoricoRecente(); },
-        closeSubSection: function() { document.querySelectorAll('.sub-section').forEach(el => el.classList.remove('active')); document.getElementById('admin-main-menu').style.display = 'block'; this.iniciarCamera('stop-admin'); },
-        buscarCoordenadas: async function() { this.mostrarAlerta("Use o Mapa.", "Info"); },
-        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        sincronizarLocais: function() { const q = query(collection(db, PLACES_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.locaisCache = []; this.els.listaLocais.innerHTML = ""; querySnapshot.forEach((doc) => { const local = doc.data(); this.locaisCache.push({ docId: doc.id, ...local }); const div = document.createElement('div'); div.className = 'local-item'; div.innerHTML = `<div class="local-info"><b>${local.nome}</b><small>${local.cnpj}</small></div><div class="local-actions"><button class="btn-edit" onclick="window.app.abrirEdicaoLocal('${doc.id}')">✏️</button><button class="btn-danger small" onclick="window.app.excluirLocal('${doc.id}')">🗑️</button></div>`; this.els.listaLocais.appendChild(div); }); this.atualizarOpcoesUnidades(); }); },
-        atualizarOpcoesUnidades: function() { const optionsHTML = '<option value="">Selecione...</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.newUserUnit.innerHTML = optionsHTML; this.els.editUserUnit.innerHTML = optionsHTML; const filterOptions = '<option value="">Todas</option>' + this.locaisCache.map(l => `<option value="${l.nome}">${l.nome}</option>`).join(''); this.els.unitFilter.innerHTML = filterOptions; },
-        cadastrarBiometria: async function() { if (!this.modelosCarregados) return this.mostrarAlerta("Aguarde a IA..."); const id = document.getElementById('new-user-id').value; const nome = document.getElementById('new-user-name').value; const unidade = document.getElementById('new-user-unit').value; const scale = document.getElementById('new-user-scale').value; const horas = document.getElementById('new-user-hours').value; const entrada = document.getElementById('new-user-start').value; const pausa = document.getElementById('new-user-break').value; const saida = document.getElementById('new-user-end').value; if (!id || !nome || !unidade) return this.mostrarAlerta("Preencha campos e horários."); if (this.funcionariosCache.find(u => u.id == id)) return this.mostrarAlerta("ID existe!"); const detection = await faceapi.detectSingleFace(this.els.videoAdmin, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor(); if (!detection) return this.mostrarAlerta("Rosto não detectado!"); const descriptorObj = { ...detection.descriptor }; try { await addDoc(collection(db, USERS_COLLECTION), { id, nome, unidade, scale, horarioEntrada: entrada, tempoPausa: pausa, horarioSaida: saida, horasSemanais: horas, descriptor: descriptorObj }); this.mostrarAlerta("Cadastrado!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        sincronizarFuncionarios: function() { const q = query(collection(db, USERS_COLLECTION)); onSnapshot(q, (querySnapshot) => { this.funcionariosCache = []; const labeledDescriptors = []; const dashboardSelect = this.els.dashEmployee; dashboardSelect.innerHTML = '<option value="">Selecione...</option>'; querySnapshot.forEach((doc) => { const data = doc.data(); if (data.descriptor) { const values = Object.values(data.descriptor); data.descriptor = new Float32Array(values); labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(data.id.toString(), [data.descriptor])); } this.funcionariosCache.push({ docId: doc.id, ...data }); const opt = document.createElement('option'); opt.value = data.id; opt.innerText = `${data.nome}`; dashboardSelect.appendChild(opt); }); if (labeledDescriptors.length > 0) { this.faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.5); this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); } this.atualizarFiltrosUnidade(); if(document.getElementById('view-admin').style.display === 'block') this.renderizarListaFuncionarios(); }); },
-        abrirJustificativaAdmin: function(docId, nome) { document.getElementById('justify-log-id').value = docId; document.getElementById('justify-target-info').innerText = `Colaborador: ${nome}`; this.setJustifyMode(null); document.getElementById('admin-justification-text').value = ""; this.els.modalAdminJustify.classList.add('active'); },
-        setJustifyMode: function(mode) { this.justifyMode = mode; this.els.btnModeBonificar.classList.remove('active'); this.els.btnModeJustificar.classList.remove('active'); if (mode === 'bonificar') { this.els.btnModeBonificar.classList.add('active'); this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = false; this.els.btnSaveJustify.innerText = "Confirmar Bonificação"; } else if (mode === 'justificar') { this.els.btnModeJustificar.classList.add('active'); this.els.areaJustificativa.style.display = 'block'; this.els.btnSaveJustify.disabled = true; this.els.btnSaveJustify.innerText = "Salvar Justificativa"; } else { this.els.areaJustificativa.style.display = 'none'; this.els.btnSaveJustify.disabled = true; } },
-        contarPalavras: function() { const texto = this.els.txtJustificativa.value.trim(); const palavras = texto.length > 0 ? texto.split(/\s+/).length : 0; this.els.wordCount.innerText = `${palavras}/20 palavras`; this.els.btnSaveJustify.disabled = (palavras < 20); },
-        salvarJustificativaAdmin: async function() { const docId = document.getElementById('justify-log-id').value; const texto = this.els.txtJustificativa.value; let updateData = {}; if (this.justifyMode === 'bonificar') { updateData = { adminStatus: 'bonificado', adminNote: 'BONIFICADO (Dia Pago)' }; } else { updateData = { adminStatus: 'justificado', adminNote: texto }; } try { await updateDoc(doc(db, LOGS_COLLECTION, docId), updateData); this.mostrarAlerta("Atualizado!", "Sucesso"); this.fecharModalJustify(); this.carregarTabelaPontos(); } catch (e) { this.mostrarAlerta("Erro: " + e.message, "Erro"); } },
-        fecharModalJustify: function() { this.els.modalAdminJustify.classList.remove('active'); },
-        imprimirRelatorioFechamento: async function() { const mes = this.els.dateFilter.value; const unidNome = document.getElementById('admin-unit-filter').value; if(!mes) return this.mostrarAlerta("Selecione um mês."); let unitInfo = COMPANY_INFO; if (unidNome && unidNome !== "") { const local = this.locaisCache.find(l => l.nome === unidNome); if (local) { unitInfo = { nome: "GRUPO MARANATHÁ - " + local.nome.toUpperCase(), endereco: local.endereco || "Endereço não cadastrado", contato: "", cnpj_site: "CNPJ: " + (local.cnpj || "N/A") }; } } const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); const registros = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) registros.push(d); }); const registrosFiltrados = unidNome ? registros.filter(r => r.unidade === unidNome) : registros; if(registrosFiltrados.length === 0) return this.mostrarAlerta("Sem dados para esta unidade."); const resumo = {}; this.funcionariosCache.forEach(f => { if (!unidNome || f.unidade === unidNome) { resumo[f.id] = { nome: f.nome, unidade: f.unidade, scale: f.scale || "comum", dias: new Set(), pontos: {} }; } }); registrosFiltrados.forEach(r => { if(resumo[r.id]) { resumo[r.id].dias.add(r.data); if(!resumo[r.id].pontos[r.data]) resumo[r.id].pontos[r.data] = []; const [h, m] = r.hora.split(':').map(Number); resumo[r.id].pontos[r.data].push(h * 60 + m); } }); let linhasHTML = ""; Object.keys(resumo).forEach(id => { const f = resumo[id]; let minTotais = 0; Object.values(f.pontos).forEach(batidas => { batidas.sort((a,b) => a - b); for(let i = 0; i < batidas.length - 1; i += 2) minTotais += (batidas[i+1] - batidas[i]); }); const horasTrab = (minTotais / 60).toFixed(2); linhasHTML += `<tr><td>${id}</td><td>${f.nome}</td><td>${f.unidade}</td><td>${f.scale}</td><td>${f.dias.size}</td><td>${horasTrab}h</td></tr>`; }); this.gerarRelatorioImpresso(`Fechamento - ${mes} - ${unidNome || 'Geral'}`, ["ID", "Nome", "Unidade", "Escala", "Dias Trab.", "Horas Trab."], linhasHTML, unitInfo); },
-        gerarRelatorioImpresso: function(titulo, colunas, linhasHTML, companyData = COMPANY_INFO) { const janela = window.open('', '_blank'); const dataHoje = new Date().toLocaleDateString('pt-BR'); const conteudo = `<html><head><title>${titulo}</title><style>body{font-family:'Times New Roman';padding:40px;}.header{text-align:center;border-bottom:2px solid #1e3a8a;padding-bottom:20px;}.header h1{font-size:18pt;color:#1e3a8a;margin:0;}.header p{font-size:10pt;margin:2px;}table{width:100%;border-collapse:collapse;margin-top:20px;font-size:10pt;font-family:Arial;}th,td{border:1px solid #000;padding:6px;text-align:center;}th{background-color:#e0e0e0;}@page{size:landscape;margin:1.5cm;}</style></head><body><div class="header"><h1>${companyData.nome}</h1><p>${companyData.endereco}</p><p>${companyData.cnpj_site}</p></div><h2 style="text-align:center">${titulo}</h2><p style="text-align:right">Emissão: ${dataHoje}</p><table><thead><tr>${colunas.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${linhasHTML}</tbody></table><script>window.onload=function(){window.print()}<\/script></body></html>`; janela.document.write(conteudo); janela.document.close(); },
-        carregarTabelaPontos: async function() { const mes = this.els.dateFilter.value; if(!mes) return this.mostrarAlerta("Escolha o mês."); const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; const q = query(collection(db, LOGS_COLLECTION)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => { const d = doc.data(); if(d.mesAno === mes) dados.push({ docId: doc.id, ...d }); }); const unid = document.getElementById('admin-unit-filter').value; if(unid) dados = dados.filter(d => d.unidade === unid); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.forEach(r => { const func = this.funcionariosCache.find(u => u.id == r.id); let classeIrregular = ""; let statusTexto = "OK"; if (func && r.tipo === "Entrada" && func.horarioEntrada) { const [hP, mP] = func.horarioEntrada.split(':').map(Number); const [hR, mR] = r.hora.split(':').map(Number); const minutosPrevistos = hP * 60 + mP; const minutosReais = hR * 60 + mR; if (minutosReais > minutosPrevistos + 10) { classeIrregular = "irregular"; statusTexto = "ATRASO"; } } if (r.adminStatus === "bonificado") { classeIrregular = "abonado"; statusTexto = "ABONADO"; } if (r.adminStatus === "justificado") { classeIrregular = "abonado"; statusTexto = "JUSTIFICADO"; } tbody.innerHTML += `<tr class="${classeIrregular}"><td>${r.data}</td><td>${r.hora}</td><td>${r.nome}</td><td>${r.tipo}</td><td>${statusTexto}</td><td>${r.localizacaoNome || '-'}</td><td><button class="btn-edit" onclick="window.app.abrirJustificativaAdmin('${r.docId}', '${r.nome}')">Abonar/Justificar</button></td></tr>`; }); },
-        carregarHistoricoRecente: async function() { const hoje = new Date(); const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const tbody = document.getElementById('logs-tbody'); tbody.innerHTML = '<tr><td colspan="6">Carregando...</td></tr>'; try { const q = query(collection(db, LOGS_COLLECTION), where("mesAno", "==", mesAtual)); const snapshot = await getDocs(q); let dados = []; snapshot.forEach(doc => dados.push(doc.data())); const filterUnit = this.els.historyUnitFilter.value; if(filterUnit) dados = dados.filter(d => d.unidade === filterUnit); dados.sort((a,b) => b.timestamp - a.timestamp); tbody.innerHTML = ''; if (dados.length === 0) { tbody.innerHTML = '<tr><td colspan="6">Vazio.</td></tr>'; return; } dados.slice(0, 50).forEach(r => { tbody.innerHTML += `<tr><td>${r.data}</td><td>${r.hora}</td><td>${r.id}</td><td>${r.nome}</td><td>${r.unidade}</td><td>${r.tipo}</td></tr>`; }); } catch(e) { console.error(e); tbody.innerHTML = '<tr><td colspan="6">Erro.</td></tr>'; } },
-        getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) { const R = 6371; const dLat = this.deg2rad(lat2 - lat1); const dLon = this.deg2rad(lon2 - lon1); const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c * 1000; },
-        deg2rad: function(deg) { return deg * (Math.PI/180) },
-        verificarLocalizacao: function(lat, lng) { const TOLERANCIA = 150; for (let local of this.locaisCache) { const dist = this.getDistanceFromLatLonInKm(lat, lng, local.lat, local.lng); if (dist <= TOLERANCIA) return { autorizado: true, nome: local.nome }; } return { autorizado: false, nome: "EXTERNO" }; },
-        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        excluirLocal: async function(docId) { if(confirm("Remover?")) { try { await deleteDoc(doc(db, PLACES_COLLECTION, docId)); } catch(e) { console.error(e); } } },
-        abrirEdicaoLocal: function(docId) { const local = this.locaisCache.find(l => l.docId === docId); if (!local) return; document.getElementById('edit-loc-id-hidden').value = docId; document.getElementById('edit-loc-name').value = local.nome; document.getElementById('edit-loc-cnpj').value = local.cnpj || ""; document.getElementById('edit-loc-address').value = local.endereco || ""; document.getElementById('edit-loc-lat').value = local.lat; document.getElementById('edit-loc-lon').value = local.lng; this.els.modalEditLocal.classList.add('active'); },
-        salvarEdicaoLocal: async function() { const docId = document.getElementById('edit-loc-id-hidden').value; const nome = document.getElementById('edit-loc-name').value; const lat = parseFloat(document.getElementById('edit-loc-lat').value); const lng = parseFloat(document.getElementById('edit-loc-lon').value); if (!nome || isNaN(lat) || isNaN(lng)) return this.mostrarAlerta("Dados inválidos."); try { await updateDoc(doc(db, PLACES_COLLECTION, docId), { nome, lat, lng }); this.mostrarAlerta("Atualizado!", "Sucesso"); this.els.modalEditLocal.classList.remove('active'); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
-        processarReconhecimento: function(id) { if (this.processando) return; const agora = Date.now(); if (agora - this.ultimoRegistro < 10000) return; const func = this.funcionariosCache.find(u => u.id == id); if (func) { this.processando = true; this.els.employeeNameDisplay.value = func.nome.split(' ')[0]; this.els.employeeIdHidden.value = id; this.ultimoRegistro = agora; this.iniciarRegistroPonto(func, true); } },
-        iniciarRegistroPonto: function(func, automatico = false) { if (!navigator.geolocation) { this.prepararRegistro(func, automatico, null, null, "Sem GPS", false); return; } navigator.geolocation.getCurrentPosition((pos) => { const lat = pos.coords.latitude; const lng = pos.coords.longitude; const statusLocal = this.verificarLocalizacao(lat, lng); this.prepararRegistro(func, automatico, lat, lng, statusLocal.nome, statusLocal.autorizado); }, (err) => { this.prepararRegistro(func, automatico, null, null, "GPS Bloqueado", false); }, { enableHighAccuracy: true, timeout: 10000 }); },
-        prepararRegistro: function(func, automatico, lat, lng, localNome, autorizado) { const tipo = document.getElementById('punch-type').value; const agora = new Date(); this.pontoPendente = { func, tipo, agora, lat, lng, localNome, automatico }; if (autorizado) { this.finalizarRegistro(null); } else { this.ultimoRegistro = Date.now() + 60000; document.getElementById('justification-text').value = ""; this.els.modalJustification.classList.add('active'); } },
-        enviarJustificativa: function() { const just = document.getElementById('justification-text').value; if (!just || just.trim().length < 5) return alert("Por favor, justifique."); this.els.modalJustification.classList.remove('active'); this.finalizarRegistro(just); },
-        cancelarPonto: function() { this.els.modalJustification.classList.remove('active'); this.pontoPendente = null; this.ultimoRegistro = 0; this.processando = false; this.els.employeeNameDisplay.value = ""; },
-        finalizarRegistro: async function(justificativa = null) { const { func, tipo, agora, lat, lng, localNome, automatico } = this.pontoPendente; const dataHoje = agora.toLocaleDateString('pt-BR'); const mesAno = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`; try { const q = query(collection(db, LOGS_COLLECTION), where("id", "==", func.id), where("data", "==", dataHoje), where("tipo", "==", tipo)); const querySnapshot = await getDocs(q); if (!querySnapshot.empty) { if (!automatico) this.mostrarAlerta("Período duplicado.", "⚠️ Atenção", "error"); else this.mostrarErro(`⚠️ ${tipo} duplicado!`); this.els.employeeNameDisplay.value = ""; this.processando = false; return; } } catch (err) { console.error(err); } const ctx = this.els.canvas.getContext('2d'); this.els.canvas.width = this.els.videoMain.videoWidth; this.els.canvas.height = this.els.videoMain.videoHeight; ctx.drawImage(this.els.videoMain, 0, 0); const foto = this.els.canvas.toDataURL('image/jpeg', 0.3); try { await addDoc(collection(db, LOGS_COLLECTION), { timestamp: agora.getTime(), id: func.id, nome: func.nome, unidade: func.unidade, tipo: tipo, data: dataHoje, hora: agora.toLocaleTimeString('pt-BR'), mesAno: mesAno, foto: foto, modo: automatico ? "Auto IA" : "Manual", latitude: lat, longitude: lng, localizacaoNome: localNome, justificativa: justificativa }); this.mostrarSucesso(`Ponto Registrado!\n${localNome}`); setTimeout(() => { this.els.employeeNameDisplay.value = ""; this.processando = false; }, 3000); if(this.adminLogado) this.carregarHistoricoRecente(); } catch (e) { console.error(e); this.processando = false; } },
-        mostrarSucesso: function(texto) { this.els.successText.innerText = texto; this.els.successMessage.style.display = "block"; setTimeout(() => { this.els.successMessage.style.display = "none"; }, 3000); },
-        mostrarErro: function(texto) { this.els.errorText.innerText = texto; this.els.errorMessage.style.display = "block"; setTimeout(() => { this.els.errorMessage.style.display = "none"; }, 3000); },
-        mostrarAlerta: function(msg, titulo = "Aviso", tipo = "normal") { const card = this.els.modalAlert.querySelector('.modal-card'); card.classList.remove('error-style'); if (tipo === "error") card.classList.add('error-style'); document.getElementById('alert-title').innerText = titulo; document.getElementById('alert-msg').innerText = msg; this.els.modalAlert.classList.add('active'); },
-        fecharAlert: function() { this.els.modalAlert.classList.remove('active'); },
-        mostrarConfirmacao: function(msg, callback) { document.getElementById('confirm-msg').innerText = msg; this.confirmCallback = callback; this.els.modalConfirm.classList.add('active'); const btnYes = document.getElementById('confirm-yes'); const newBtn = btnYes.cloneNode(true); btnYes.parentNode.replaceChild(newBtn, btnYes); newBtn.addEventListener('click', () => { if (this.confirmCallback) this.confirmCallback(); this.fecharConfirm(); }); },
-        fecharConfirm: function() { this.els.modalConfirm.classList.remove('active'); this.confirmCallback = null; },
-        carregarModelosIA: async function() { this.els.statusIA.innerText = "IA: Baixando..."; try { await Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceLandmark68Net.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.faceRecognitionNet.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models'), faceapi.nets.ssdMobilenetv1.loadFromUri('https://justadudewhohacks.github.io/face-api.js/models')]); this.modelosCarregados = true; this.els.statusIA.innerText = "IA: Online 🟢"; this.els.statusIA.classList.add('ready'); this.iniciarDeteccaoContinua(); } catch (e) { console.error(e); this.els.statusIA.innerText = "IA: Erro 🔴"; } },
-        iniciarCamera: async function(tipo) { if (this.streamAtiva) this.streamAtiva.getTracks().forEach(track => track.stop()); try { const stream = await navigator.mediaDevices.getUserMedia({ video: {} }); this.streamAtiva = stream; if (tipo === 'main') { this.els.videoMain.srcObject = stream; this.els.videoAdmin.srcObject = null; } else { this.els.videoAdmin.srcObject = stream; this.els.videoMain.srcObject = null; } } catch (e) { console.error("Erro Cam", e); } },
-        iniciarDeteccaoContinua: function() { const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }); const loop = async () => { if (this.modelosCarregados && !this.els.videoMain.paused && this.els.videoMain.srcObject !== null && this.faceMatcher && document.getElementById('view-ponto').style.display !== 'none') { try { const detections = await faceapi.detectAllFaces(this.els.videoMain, options).withFaceLandmarks().withFaceDescriptors(); const dims = faceapi.matchDimensions(this.els.overlay, this.els.videoMain, true); const resized = faceapi.resizeResults(detections, dims); const ctx = this.els.overlay.getContext('2d'); ctx.clearRect(0, 0, this.els.overlay.width, this.els.overlay.height); resized.forEach(detection => { const match = this.faceMatcher.findBestMatch(detection.descriptor); const box = detection.detection.box; if (match.label !== 'unknown') { new faceapi.draw.DrawBox(box, { label: match.label, boxColor: '#00ff00' }).draw(this.els.overlay); this.processarReconhecimento(match.label); } else { new faceapi.draw.DrawBox(box, { label: "Desconhecido", boxColor: '#ff0000' }).draw(this.els.overlay); } }); } catch (err) { } } requestAnimationFrame(loop); }; loop(); },
-        atualizarFiltrosUnidade: function() { const unidades = [...new Set(this.funcionariosCache.map(f => f.unidade))]; const opts = '<option value="">Todas</option>' + unidades.map(u => `<option value="${u}">${u}</option>`).join(''); this.els.unitFilter.innerHTML = opts; if(document.getElementById('filter-employees-unit')) document.getElementById('filter-employees-unit').innerHTML = opts; },
-        switchTab: function(tab) { if(tab === 'admin' && !this.adminLogado) { this.els.modalLogin.classList.add('active'); return; } if(tab !== 'admin') this.adminLogado = false; document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active')); document.getElementById(`view-${tab}`).classList.add('active'); if (tab === 'admin') { this.iniciarCamera('admin'); this.renderizarListaFuncionarios(); this.carregarHistoricoRecente(); } else { this.iniciarCamera('main'); } },
-        verificarLogin: function() { if (document.getElementById('login-user').value === this.adminConfig.user && document.getElementById('login-pass').value === this.adminConfig.pass) { this.adminLogado = true; this.els.modalLogin.classList.remove('active'); document.getElementById('login-user').value = ''; document.getElementById('login-pass').value = ''; this.switchTab('admin'); } else { this.mostrarAlerta("Senha incorreta", "Erro"); } },
-        fecharLogin: function() { this.els.modalLogin.classList.remove('active'); },
-        logoutAdmin: function() { this.adminLogado = false; this.switchTab('ponto'); },
-        salvarLocal: async function() { const nome = document.getElementById('loc-name').value; const cnpj = document.getElementById('loc-cnpj').value; const endereco = document.getElementById('loc-address').value; const lat = parseFloat(document.getElementById('loc-lat').value); const lng = parseFloat(document.getElementById('loc-lon').value); if (!nome || !cnpj || !endereco || isNaN(lat)) return this.mostrarAlerta("Preencha todos os dados."); try { await addDoc(collection(db, PLACES_COLLECTION), { nome, cnpj, endereco, lat, lng }); this.mostrarAlerta("Salvo!", "Sucesso"); } catch (e) { this.mostrarAlerta(e.message, "Erro"); } },
+
+        getGeo: function() {
+            return new Promise(resolve => {
+                if(!navigator.geolocation) resolve({lat:0, lon:0});
+                navigator.geolocation.getCurrentPosition(p => resolve({lat:p.coords.latitude, lon:p.coords.longitude}), () => resolve({lat:0,lon:0}), {enableHighAccuracy:true});
+            });
+        },
+
+        verificarLocalizacao: function(lat, lng) {
+            const TOLERANCIA = 50; // 50 METROS
+            for(let u of this.state.units) {
+                const dist = this.getDistanceFromLatLonInKm(lat, lng, u.lat, u.lon);
+                if(dist <= TOLERANCIA) return { nome: u.nome, autorizado: true };
+            }
+            return { nome: "EXTERNO", autorizado: false };
+        },
+
+        getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) {
+            const R = 6371; const dLat = this.deg2rad(lat2-lat1); const dLon = this.deg2rad(lon2-lon1);
+            const a = Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(this.deg2rad(lat1))*Math.cos(this.deg2rad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1000;
+        },
+        deg2rad: (deg) => deg * (Math.PI/180),
+
+        cancelarFluxo: function() {
+            if(this.state.stream) this.state.stream.getTracks().forEach(t => t.stop());
+            this.voltarHome();
+        },
+        voltarHome: function() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-home').classList.add('active');
+        },
+        baixarComprovante: function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text(`COMPROVANTE MARANATIME`, 20, 20);
+            doc.text(`-----------------------`, 20, 30);
+            doc.text(`Colaborador: ${this.state.lastReceipt.nome}`, 20, 40);
+            doc.text(`Ação: ${this.state.lastReceipt.tipo}`, 20, 50);
+            doc.text(`Data: ${this.state.lastReceipt.data} - ${this.state.lastReceipt.hora}`, 20, 60);
+            doc.text(`Local: ${this.state.lastReceipt.localNome}`, 20, 70);
+            doc.text(`HASH: ${this.state.lastReceipt.hash}`, 20, 90);
+            doc.save('comprovante.pdf');
+        },
+
+        // --- ADMIN ---
+        abrirLoginAdmin: () => document.getElementById('modal-login').classList.add('active'),
+        loginAdmin: function() {
+            if(document.getElementById('admin-pass').value === '123') {
+                document.getElementById('modal-login').classList.remove('active');
+                document.getElementById('modal-admin').classList.add('active');
+                this.iniciarCamAdmin();
+                this.gerarIdAleatorio();
+            } else alert("Senha errada.");
+        },
+        sairAdmin: function() {
+            document.getElementById('modal-admin').classList.remove('active');
+            if(this.state.adminStream) this.state.adminStream.getTracks().forEach(t=>t.stop());
+        },
+        iniciarCamAdmin: async function() {
+            try {
+                const s = await navigator.mediaDevices.getUserMedia({video:{}});
+                this.state.adminStream = s;
+                this.els.videoAdm.srcObject = s;
+            } catch(e){}
+        },
+        mudarAba: function(aba) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-tab-${aba}`).classList.add('active');
+            ['cadastro','unidades','registros','relatorios'].forEach(t => document.getElementById(`tab-${t}`).style.display = 'none');
+            document.getElementById(`tab-${aba}`).style.display = 'block';
+            if(aba === 'registros') this.carregarLogsAdmin();
+        },
+        gerarIdAleatorio: function() {
+            document.getElementById('new-id').value = Math.floor(100000 + Math.random() * 900000);
+        },
+
+        // --- SALVAR (COM DUPLICIDADE E LOADING) ---
+        salvarColaborador: async function() {
+            const btn = this.els.btnSaveUser;
+            const nome = document.getElementById('new-name').value.trim();
+            const id = document.getElementById('new-id').value;
+            const unidade = document.getElementById('new-unit-select').value;
+            const inicio = document.getElementById('new-start').value;
+
+            if(!nome || !unidade) return alert("Preencha Nome e Unidade.");
+            const duplicado = this.state.users.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+            if(duplicado) return alert("❌ Nome já existe!");
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const det = await faceapi.detectSingleFace(this.els.videoAdm, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
+                if(!det) throw new Error("Rosto não detectado!");
+
+                await addDoc(collection(db, USERS_COLL), {
+                    id: id, nome: nome, unidade: unidade, horarioEntrada: inicio,
+                    scale: document.getElementById('new-scale').value,
+                    descriptor: { ...det.descriptor }
+                });
+
+                alert("✅ Cadastro Realizado!");
+                this.limparFormulario('user');
+            } catch(e) { alert("Erro: " + e.message); } 
+            finally { btn.classList.remove('loading'); btn.disabled = false; }
+        },
+
+        salvarUnidade: async function() {
+            const btn = this.els.btnSaveUnit;
+            const nome = document.getElementById('unit-name').value.trim();
+            if(!nome) return alert("Preencha o Nome.");
+            const duplicado = this.state.units.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+            if(duplicado) return alert("❌ Unidade já existe!");
+
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, PLACES_COLL), {
+                    nome: nome, endereco: document.getElementById('unit-address').value,
+                    lat: document.getElementById('unit-lat').value, lon: document.getElementById('unit-lon').value
+                });
+                alert("✅ Unidade Salva!");
+                this.limparFormulario('unit');
+            } catch(e) { alert("Erro ao salvar."); }
+            finally { btn.classList.remove('loading'); btn.disabled = false; }
+        },
+
+        obterGPSAtual: function() {
+            navigator.geolocation.getCurrentPosition(p => {
+                document.getElementById('unit-lat').value = p.coords.latitude;
+                document.getElementById('unit-lon').value = p.coords.longitude;
+            });
+        },
+
+        limparFormulario: function(tipo) {
+            if(tipo === 'user') {
+                document.getElementById('new-name').value = "";
+                document.getElementById('new-start').value = "";
+                document.getElementById('new-end').value = "";
+                this.gerarIdAleatorio();
+            } else {
+                document.getElementById('unit-name').value = "";
+                document.getElementById('unit-address').value = "";
+            }
+        },
+
+        renderUserList: function() {
+            document.getElementById('list-users').innerHTML = this.state.users.map(u => `<div>👤 ${u.nome} (ID: ${u.id})</div>`).join('');
+        },
+
+        // --- HISTÓRICO E GESTÃO DE PONTOS ---
+        carregarLogsAdmin: function() {
+            const tbody = document.getElementById('tbody-logs');
+            tbody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
+            
+            const hoje = new Date().toLocaleDateString('pt-BR');
+            const q = query(collection(db, LOGS_COLL), where("data", "==", hoje));
+            
+            onSnapshot(q, (snap) => {
+                let html = "";
+                if(snap.empty) { tbody.innerHTML = "<tr><td colspan='5'>Sem registros hoje.</td></tr>"; return; }
+
+                snap.forEach(doc => {
+                    const d = doc.data();
+                    const docId = doc.id;
+                    const user = this.state.users.find(u => u.id == d.id);
+                    
+                    let statusClass = "";
+                    let statusText = d.adminStatus ? (d.adminStatus === 'bonificado' ? 'ABONADO' : 'JUSTIFICADO') : 'Normal';
+                    
+                    if (d.adminStatus) {
+                        statusClass = "ok";
+                    } else if (d.tipo === 'Entrada' && user && user.horarioEntrada) {
+                        const [hC, mC] = user.horarioEntrada.split(':').map(Number);
+                        const [hR, mR] = d.hora.split(':').map(Number);
+                        if ((hR * 60 + mR) > (hC * 60 + mC) + 10) { statusClass = "late"; statusText = "ATRASO"; }
+                    }
+
+                    const botoes = `
+                        <button class="primary btn-small" style="background:var(--success)" onclick="app.abonarPonto('${docId}')">✅</button>
+                        <button class="primary btn-small" style="background:var(--warning); color:black;" onclick="app.abrirJustificativa('${docId}', '${d.nome}')">📝</button>
+                    `;
+
+                    html += `<tr class="${statusClass}"><td>${d.nome}</td><td>${d.tipo}</td><td>${d.hora}</td><td>${statusText} ${d.adminNote ? '<br><small>('+d.adminNote+')</small>' : ''}</td><td>${botoes}</td></tr>`;
+                });
+                tbody.innerHTML = html;
+            });
+        },
+
+        abonarPonto: async function(docId) {
+            if(confirm("Deseja ABONAR este ponto?")) {
+                await updateDoc(doc(db, LOGS_COLL, docId), { adminStatus: 'bonificado', adminNote: 'Abonado pelo Gestor' });
+            }
+        },
+
+        abrirJustificativa: function(docId, nome) {
+            document.getElementById('justify-doc-id').value = docId;
+            document.getElementById('justify-info').innerText = `Colaborador: ${nome}`;
+            document.getElementById('justify-text').value = "";
+            document.getElementById('modal-justify').classList.add('active');
+        },
+
+        salvarJustificativa: async function() {
+            const docId = document.getElementById('justify-doc-id').value;
+            const texto = document.getElementById('justify-text').value;
+            if(!texto) return alert("Digite o motivo.");
+            await updateDoc(doc(db, LOGS_COLL, docId), { adminStatus: 'justificado', adminNote: texto });
+            document.getElementById('modal-justify').classList.remove('active');
+        },
+
+        // --- RELATÓRIOS ---
+        imprimirRelatorioFechamento: async function() {
+            const mesInput = document.getElementById('report-month').value;
+            const unidade = document.getElementById('report-unit').value;
+            if(!mesInput) return alert("Selecione o mês.");
+
+            const q = query(collection(db, LOGS_COLLECTION));
+            const snap = await getDocs(q);
+            const pontos = [];
+            snap.forEach(d => { if(d.data().mesAno === mesInput) pontos.push(d.data()) });
+            
+            const filtrados = unidade ? pontos.filter(p => p.unidade === unidade) : pontos;
+            
+            // FORMATAÇÃO DO TÍTULO E DATA
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const [ano, mesNum] = mesInput.split('-');
+            const mesNome = meses[parseInt(mesNum)-1];
+            
+            const tituloRelatorio = `Fechamento - ${mesNome}/${ano} - ${unidade || 'Geral'}`;
+            const nomeEmpresa = unidade ? `${COMPANY_BASE_INFO.nome} - ${unidade.toUpperCase()}` : COMPANY_BASE_INFO.nome;
+
+            // AGRUPAR DADOS (Exemplo Simplificado para Relatório)
+            let html = "";
+            filtrados.forEach(p => {
+                html += `<tr><td>${p.nome}</td><td>${p.data}</td><td>${p.tipo}</td><td>${p.hora}</td></tr>`;
+            });
+
+            this.gerarImpressao(tituloRelatorio, nomeEmpresa, html, ["Nome", "Data", "Tipo", "Hora"]);
+        },
+
+        imprimirRelatorioDetalhado: async function() {
+            // Reutiliza lógica similar ou cria específica
+            this.imprimirRelatorioFechamento(); 
+        },
+
+        gerarImpressao: function(titulo, empresa, linhas, headers) {
+            const win = window.open('', '_blank');
+            win.document.write(`
+                <html>
+                <head>
+                    <title>${titulo}</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; }
+                        table { width: 100%; border-collapse: collapse; margin-top:20px; }
+                        th, td { border: 1px solid #000; padding: 8px; text-align: center; }
+                        th { background: #eee; }
+                        @media print { .no-print { display: none !important; } }
+                        .btn-print { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: #0ea5e9; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+                        .btn-print:hover { background: #0284c7; }
+                    </style>
+                </head>
+                <body>
+                    <button class="btn-print no-print" onclick="window.print()">🖨️ Imprimir Relatório</button>
+                    
+                    <div style="text-align:center; border-bottom: 2px solid #0ea5e9; padding-bottom: 10px; margin-bottom: 20px;">
+                        <h2>${empresa}</h2>
+                        <p>CNPJ: 05.284.121/0001-26 | ${COMPANY_BASE_INFO.contato}</p>
+                    </div>
+                    
+                    <h3 style="text-align:center; background:#f0f9ff; padding:10px; border-radius:8px;">${titulo}</h3>
+                    
+                    <table>
+                        <thead>
+                            <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                        </thead>
+                        <tbody>${linhas}</tbody>
+                    </table>
+                </body>
+                </html>
+            `);
+            win.document.close();
+        }
     };
 
     window.app = app;
-    document.addEventListener('DOMContentLoaded', () => app.init());
+    window.onload = () => app.init();
 </script>
 </body>
 </html>
